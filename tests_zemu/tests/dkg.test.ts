@@ -20,7 +20,8 @@ import IronfishApp, {IronfishKeys} from '@zondax/ledger-ironfish'
 import {
     isValidPublicAddress,
     multisig,
-    UnsignedTransaction
+    UnsignedTransaction,
+    verifyTransactions
 } from '@ironfish/rust-nodejs'
 import {
     Transaction
@@ -357,8 +358,9 @@ describe.each(models)('DKG', function (m) {
                     unsignedTxRaw.toString("hex"),
                     signingPackage.frostSigningPackage().toString("hex"),
                     signatures)
-                const signedTx = new Transaction(signedTxRaw)
+                expect(verifyTransactions([signedTxRaw])).toBeTruthy();
 
+                const signedTx = new Transaction(signedTxRaw)
                 expect(signedTx.spends.length).toBe(1);
                 expect(signedTx.mints.length).toBe(1);
                 expect(signedTx.burns.length).toBe(0);
