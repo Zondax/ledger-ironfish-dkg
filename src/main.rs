@@ -19,6 +19,10 @@
 #![no_main]
 
 mod parser;
+mod chacha20poly {
+    pub mod encrypt;
+}
+
 mod utils;
 mod app_ui {
     pub mod menu;

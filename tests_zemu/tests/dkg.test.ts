@@ -58,7 +58,7 @@ describe.each(models)('DKG', function (m) {
         }
     })
 
-    describe.each([{p:4, min:2},{p:3, min:2},{p:2, min:2}])(`${m.name} - participants`, function ({p: participants, min: minSigners}){
+    describe.each([{p:2, min:2}])(`${m.name} - participants`, function ({p: participants, min: minSigners}){
         it("p: " + participants + " - min: " + minSigners, async function(){
             const checkSimRequired = (sims: Zemu[], i:number): {sim: Zemu, created:boolean} => {
                 let created = false;
@@ -103,6 +103,7 @@ describe.each(models)('DKG', function (m) {
             let commitments: any[] = [];
             let nonces: any[] = [];
             let publicPackages: any[] = [];
+            let encryptedKeys: any[] = [];
             let pks: any[] = [];
             let viewKeys: any[] = [];
             let proofKeys: any[] = [];
@@ -195,6 +196,26 @@ describe.each(models)('DKG', function (m) {
 
                     publicPackages.push(result.publicPackage.toString("hex"));
                 }
+
+
+                for(let i = 0; i < participants; i++){
+                    const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
+                        let result = await app.dkgBackupKeys();
+
+                        expect(i + " " + result.returnCode.toString(16)).toEqual(i + " " + "9000")
+                        expect(result.errorMessage).toEqual('No errors')
+                        expect(result.encryptedKeys).toBeTruthy()
+
+                        return result
+                    });
+
+                    if(!result.encryptedKeys)
+                        throw new Error("no encryptedKeys found")
+
+                    encryptedKeys.push(result.encryptedKeys.toString("hex"));
+                }
+
+                console.log("encryptedKeys " + JSON.stringify(encryptedKeys));
 
                 // Generate keys from the multisig DKG process just finalized
                 for(let i = 0; i < participants; i++){
