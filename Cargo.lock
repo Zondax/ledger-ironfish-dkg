@@ -853,8 +853,10 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 name = "ledger-ironfish"
 version = "1.5.0"
 dependencies = [
+ "aead",
  "blake2b_simd",
  "blake2s_simd",
+ "chacha20poly1305",
  "ff 0.12.1",
  "getrandom",
  "group 0.12.1",

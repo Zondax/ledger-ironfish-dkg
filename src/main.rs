@@ -18,6 +18,10 @@
 #![no_std]
 #![no_main]
 
+mod chacha20poly {
+    pub mod encrypt;
+}
+
 mod utils;
 mod app_ui {
     pub mod menu;
@@ -32,6 +36,7 @@ mod ironfish {
 }
 
 mod handlers {
+    pub mod dkg_backup_keys;
     pub mod dkg_commitments;
     pub mod dkg_get_identity;
     pub mod dkg_get_keys;
@@ -71,6 +76,7 @@ ledger_device_sdk::set_panic!(ledger_device_sdk::exiting_panic);
 extern crate alloc;
 
 use crate::context::TxContext;
+use crate::handlers::dkg_backup_keys::handler_dkg_backup_keys;
 use crate::handlers::dkg_get_public_package::handler_dkg_get_public_package;
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::{init_comm, NbglReviewStatus, StatusType};
@@ -104,6 +110,7 @@ pub enum AppSW {
     InvalidKeyPackage = 0xB015,
     InvalidPublicPackage = 0xB016,
     InvalidGroupSecretKey = 0xB017,
+    EncryptionFail = 0xB018,
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,
 }
@@ -120,6 +127,7 @@ pub enum Instruction {
     GetAppName,
     DkgGetIdentity,
     DkgGetPublicPackage,
+    DkgBackupKeys,
     DkgRound1 { chunk: u8 },
     DkgRound2 { chunk: u8 },
     DkgRound3 { chunk: u8 },
@@ -156,6 +164,7 @@ impl TryFrom<ApduHeader> for Instruction {
             (22, 0, 0..=2) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
             (23, 0..=2, 0) => Ok(Instruction::DkgNonces { chunk: value.p1 }),
             (24, 0..=2, 0) => Ok(Instruction::DkgGetPublicPackage),
+            (25, 0..=2, 0) => Ok(Instruction::DkgBackupKeys),
             (3..=4, _, _) => Err(AppSW::WrongP1P2),
             (17..=22, _, _) => Err(AppSW::WrongP1P2),
             (_, _, _) => Err(AppSW::InsNotSupported),
@@ -222,5 +231,6 @@ fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Resul
         Instruction::DkgGetKeys { key_type } => handler_dkg_get_keys(comm, key_type),
         Instruction::DkgNonces { chunk } => handler_dkg_nonces(comm, *chunk, ctx),
         Instruction::DkgGetPublicPackage => handler_dkg_get_public_package(comm),
+        Instruction::DkgBackupKeys => handler_dkg_backup_keys(comm),
     }
 }
