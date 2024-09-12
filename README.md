@@ -1,4 +1,4 @@
-# Ledger Rust Ironfish Application
+# Ledger Ironfish DKG
 
 ## Compilation and load
 
