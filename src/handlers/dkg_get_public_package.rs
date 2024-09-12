@@ -15,9 +15,9 @@
  *  limitations under the License.
  *****************************************************************************/
 
+use crate::bolos::zlog_stack;
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::utils::zlog_stack;
 use crate::{AppSW, Instruction};
 use alloc::vec::Vec;
 use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};

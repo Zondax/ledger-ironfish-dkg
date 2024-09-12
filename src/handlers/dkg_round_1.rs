@@ -16,11 +16,11 @@
  *****************************************************************************/
 
 use crate::accumulator::accumulate_data;
+use crate::bolos::{zlog, zlog_stack};
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::utils::{zlog, zlog_stack};
 use crate::{AppSW, Instruction};
 use alloc::vec::Vec;
 use ironfish_frost::dkg;
