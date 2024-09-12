@@ -1,9 +1,8 @@
-
-use jubjub::AffinePoint;
 use crate::ironfish::constants::PUBLIC_KEY_GENERATOR;
 use crate::ironfish::errors::IronfishError;
 use crate::ironfish::sapling::SaplingKey;
 use crate::ironfish::view_keys::IncomingViewKey;
+use jubjub::AffinePoint;
 
 pub const PUBLIC_ADDRESS_SIZE: usize = 32;
 
@@ -14,7 +13,6 @@ pub const PUBLIC_ADDRESS_SIZE: usize = 32;
 pub struct PublicAddress(pub(crate) AffinePoint);
 
 impl PublicAddress {
-
     /// Initialize a public address from its 32 byte representation.
     pub fn new(bytes: &[u8; PUBLIC_ADDRESS_SIZE]) -> Result<Self, IronfishError> {
         Option::from(AffinePoint::from_bytes(*bytes))

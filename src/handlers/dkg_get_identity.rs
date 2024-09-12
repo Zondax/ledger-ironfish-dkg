@@ -15,21 +15,24 @@
  *  limitations under the License.
  *****************************************************************************/
 
+use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;
 use ironfish_frost::participant::Secret as ironfishSecret;
-use crate::AppSW;
-use ledger_device_sdk::ecc::{Secret, bip32_derive, CurvesId, ChainCode};
+use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 use ledger_device_sdk::io::Comm;
 
-const MAX_IDENTITY_INDEX:u8 = 5;
+const MAX_IDENTITY_INDEX: u8 = 5;
 
 #[inline(never)]
 pub fn handler_dkg_get_identity(comm: &mut Comm) -> Result<(), AppSW> {
-    let data_vec = comm.get_data().map_err(|_| AppSW::WrongApduLength)?.to_vec();
+    let data_vec = comm
+        .get_data()
+        .map_err(|_| AppSW::WrongApduLength)?
+        .to_vec();
     let data = data_vec.as_slice();
 
-    if data.len() != 1 || data[0] > MAX_IDENTITY_INDEX{
+    if data.len() != 1 || data[0] > MAX_IDENTITY_INDEX {
         return Err(AppSW::InvalidIdentityIndex);
     }
 
@@ -46,10 +49,20 @@ pub fn compute_dkg_secret(index: u8) -> ironfishSecret {
     let index_1 = (index * 2) as u32;
     let index_2 = index_1 + 1;
 
-    let path_0: Vec<u32> = vec![(0x80000000 | 0x2c), (0x80000000 | 0x53a), (0x80000000 | 0x0), (0x80000000 | 0x0),
-                                (0x80000000 | index_1)];
-    let path_1: Vec<u32> = vec![(0x80000000 | 0x2c), (0x80000000 | 0x53a), (0x80000000 | 0x0), (0x80000000 | 0x0),
-                                (0x80000000 | index_2)];
+    let path_0: Vec<u32> = vec![
+        (0x80000000 | 0x2c),
+        (0x80000000 | 0x53a),
+        (0x80000000 | 0x0),
+        (0x80000000 | 0x0),
+        (0x80000000 | index_1),
+    ];
+    let path_1: Vec<u32> = vec![
+        (0x80000000 | 0x2c),
+        (0x80000000 | 0x53a),
+        (0x80000000 | 0x0),
+        (0x80000000 | 0x0),
+        (0x80000000 | index_2),
+    ];
 
     let mut secret_key_0 = Secret::<64>::new();
     let mut secret_key_1 = Secret::<64>::new();
@@ -71,6 +84,6 @@ pub fn compute_dkg_secret(index: u8) -> ironfishSecret {
 
     ironfishSecret::from_secret_keys(
         secret_key_0.as_ref()[0..32].try_into().unwrap(),
-        secret_key_1.as_ref()[0..32].try_into().unwrap()
+        secret_key_1.as_ref()[0..32].try_into().unwrap(),
     )
 }

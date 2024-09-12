@@ -1,15 +1,11 @@
-use ledger_device_sdk::io::Comm;
-use crate::AppSW;
-use crate::nvm::buffer::{Buffer, BUFFER_SIZE};
 use crate::context::TxContext;
+use crate::nvm::buffer::{Buffer, BUFFER_SIZE};
 use crate::utils::zlog_stack;
+use crate::AppSW;
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
-pub fn accumulate_data(
-    comm: &mut Comm,
-    chunk: u8,
-    ctx: &mut TxContext
-) -> Result<(), AppSW> {
+pub fn accumulate_data(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
     zlog_stack("start accumulate_data\0");
 
     // Try to get data from comm
@@ -20,8 +16,8 @@ pub fn accumulate_data(
         // Reset transaction context
         ctx.reset();
         return Ok(());
-    // Next chunks, append data to raw_tx and return or parse
-    // the transaction if it is the last chunk.
+        // Next chunks, append data to raw_tx and return or parse
+        // the transaction if it is the last chunk.
     }
 
     if ctx.buffer.pos + data.len() > BUFFER_SIZE {

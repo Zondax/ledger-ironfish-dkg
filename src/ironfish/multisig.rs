@@ -1,8 +1,8 @@
-use jubjub::{AffinePoint, Fr};
 use crate::ironfish::constants::PROOF_GENERATION_KEY_GENERATOR;
 use crate::ironfish::public_address::PublicAddress;
 use crate::ironfish::sapling::SaplingKey;
 use crate::ironfish::view_keys::{IncomingViewKey, OutgoingViewKey, ViewKey};
+use jubjub::{AffinePoint, Fr};
 
 pub struct MultisigAccountKeys {
     /// Equivalent to [`crate::keys::SaplingKey::proof_authorizing_key`]
@@ -17,7 +17,7 @@ pub struct MultisigAccountKeys {
     pub public_address: PublicAddress,
 }
 
-pub fn  derive_account_keys(
+pub fn derive_account_keys(
     authorizing_key: &[u8; 32], //&VerifyingKey,
     group_secret_key: &[u8; 32],
 ) -> MultisigAccountKeys {
@@ -31,7 +31,8 @@ pub fn  derive_account_keys(
 
     // Nullifier keys (nsk and nk), derived from the gsk
     let proof_authorizing_key = Fr::from(group_secret_key.sapling_proof_generation_key().nsk);
-    let nullifier_deriving_key_ep = PROOF_GENERATION_KEY_GENERATOR.multiply_bits(&proof_authorizing_key.to_bytes());
+    let nullifier_deriving_key_ep =
+        PROOF_GENERATION_KEY_GENERATOR.multiply_bits(&proof_authorizing_key.to_bytes());
     let nullifier_deriving_key = AffinePoint::from(&nullifier_deriving_key_ep);
 
     // Incoming view key (ivk), derived from the ak and the nk

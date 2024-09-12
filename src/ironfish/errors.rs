@@ -1,4 +1,3 @@
-
 /// Error type to handle all errors within the code and dependency-raised
 /// errors. This serves 2 purposes. The first is to keep a consistent error type
 /// in the code to reduce the cognitive load needed for using Result and Error

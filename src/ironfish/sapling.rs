@@ -1,9 +1,11 @@
-use crate::ironfish::constants::{CRH_IVK_PERSONALIZATION, PROOF_GENERATION_KEY_GENERATOR, SPENDING_KEY_GENERATOR};
-use blake2b_simd::Params as Blake2b;
-use blake2s_simd::Params as Blake2s;
-use jubjub::{AffinePoint};
+use crate::ironfish::constants::{
+    CRH_IVK_PERSONALIZATION, PROOF_GENERATION_KEY_GENERATOR, SPENDING_KEY_GENERATOR,
+};
 use crate::ironfish::errors::IronfishError;
 use crate::ironfish::view_keys::{IncomingViewKey, OutgoingViewKey, ProofGenerationKey, ViewKey};
+use blake2b_simd::Params as Blake2b;
+use blake2s_simd::Params as Blake2s;
+use jubjub::AffinePoint;
 
 const EXPANDED_SPEND_BLAKE2_KEY: &[u8; 16] = b"Iron Fish Money ";
 
@@ -73,9 +75,13 @@ impl SaplingKey {
             view_key: outgoing_viewing_key,
         };
         // ak
-        let authorizing_key = AffinePoint::from(SPENDING_KEY_GENERATOR.multiply_bits(&spend_authorizing_key.to_bytes()));
+        let authorizing_key = AffinePoint::from(
+            SPENDING_KEY_GENERATOR.multiply_bits(&spend_authorizing_key.to_bytes()),
+        );
         //nk
-        let nullifier_deriving_key = AffinePoint::from(PROOF_GENERATION_KEY_GENERATOR.multiply_bits(&proof_authorizing_key.to_bytes()));
+        let nullifier_deriving_key = AffinePoint::from(
+            PROOF_GENERATION_KEY_GENERATOR.multiply_bits(&proof_authorizing_key.to_bytes()),
+        );
         let view_key = ViewKey {
             authorizing_key,
             nullifier_deriving_key,

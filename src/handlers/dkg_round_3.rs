@@ -15,21 +15,20 @@
  *  limitations under the License.
  *****************************************************************************/
 
-use crate::{AppSW};
+use crate::accumulator::accumulate_data;
+use crate::context::TxContext;
+use crate::handlers::dkg_get_identity::compute_dkg_secret;
+use crate::nvm::buffer::Buffer;
+use crate::nvm::dkg_keys::DkgKeys;
+use crate::utils::zlog_stack;
+use crate::AppSW;
 use alloc::vec::Vec;
 use ironfish_frost::dkg;
 use ironfish_frost::dkg::group_key::GroupSecretKey;
-use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
 use ironfish_frost::error::IronfishFrostError;
 use ironfish_frost::frost::keys::KeyPackage;
-use ledger_device_sdk::io::{Comm};
-use crate::accumulator::accumulate_data;
-use crate::nvm::buffer::{Buffer};
-use crate::context::TxContext;
-use crate::handlers::dkg_get_identity::compute_dkg_secret;
-use crate::nvm::dkg_keys::DkgKeys;
-use crate::utils::{zlog_stack};
-
+use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
+use ledger_device_sdk::io::Comm;
 
 pub struct MinTx {
     identity_index: u8,
@@ -41,11 +40,7 @@ pub struct MinTx {
 }
 
 #[inline(never)]
-pub fn handler_dkg_round_3(
-    comm: &mut Comm,
-    chunk: u8,
-    ctx: &mut TxContext,
-) -> Result<(), AppSW> {
+pub fn handler_dkg_round_3(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_round_3\0");
 
     accumulate_data(comm, chunk, ctx)?;
@@ -56,8 +51,8 @@ pub fn handler_dkg_round_3(
     // Try to deserialize the transaction
     let min_tx = parse_tx_min(&ctx.buffer)?;
 
-    let (key_package, public_key_package, group_secret_key)
-        = compute_dkg_round_3_min(&min_tx).map_err(|_| AppSW::DkgRound3Fail)?;
+    let (key_package, public_key_package, group_secret_key) =
+        compute_dkg_round_3_min(&min_tx).map_err(|_| AppSW::DkgRound3Fail)?;
     drop(min_tx);
 
     DkgKeys.save_keys(key_package, public_key_package, group_secret_key);
@@ -66,25 +61,25 @@ pub fn handler_dkg_round_3(
 }
 
 #[inline(never)]
-fn parse_tx_min(buffer: &Buffer) -> Result<MinTx, AppSW>{
+fn parse_tx_min(buffer: &Buffer) -> Result<MinTx, AppSW> {
     zlog_stack("start parse_tx_min round3\0");
 
-    let mut tx_pos:usize = 0;
+    let mut tx_pos: usize = 0;
 
     let identity_index = buffer.get_element(tx_pos)?;
-    tx_pos +=1;
+    tx_pos += 1;
 
     // Round 1 public packages
     let elements = buffer.get_element(tx_pos)?;
-    tx_pos +=1;
+    tx_pos += 1;
 
     let len = buffer.get_u16(tx_pos)?;
-    tx_pos +=2;
+    tx_pos += 2;
 
     let mut round_1_packages = Vec::with_capacity(elements as usize);
     for _i in 0..elements {
         zlog_stack("start parse_round_1 - e\0");
-        let package = buffer.get_slice(tx_pos,tx_pos+len)?;
+        let package = buffer.get_slice(tx_pos, tx_pos + len)?;
         tx_pos += len;
 
         zlog_stack("push parse_round_1 - e\0");
@@ -94,15 +89,15 @@ fn parse_tx_min(buffer: &Buffer) -> Result<MinTx, AppSW>{
 
     // Round 2 public packages
     let elements = buffer.get_element(tx_pos)?;
-    tx_pos +=1;
+    tx_pos += 1;
 
     let len = buffer.get_u16(tx_pos)?;
-    tx_pos +=2;
+    tx_pos += 2;
 
     let mut round_2_packages = Vec::with_capacity(elements as usize);
     for _i in 0..elements {
         zlog_stack("start parse_round_2 - e\0");
-        let r2_package = buffer.get_slice(tx_pos,tx_pos+len)?;
+        let r2_package = buffer.get_slice(tx_pos, tx_pos + len)?;
         tx_pos += len;
 
         zlog_stack("push parse_round_2 - e\0");
@@ -112,23 +107,23 @@ fn parse_tx_min(buffer: &Buffer) -> Result<MinTx, AppSW>{
 
     // round 2 secret pkg
     let len = buffer.get_u16(tx_pos)?;
-    tx_pos +=2;
+    tx_pos += 2;
 
-    let round_2_secret_package_slice = buffer.get_slice(tx_pos,tx_pos+len)?;
+    let round_2_secret_package_slice = buffer.get_slice(tx_pos, tx_pos + len)?;
     let round_2_secret_package = round_2_secret_package_slice.to_vec();
     tx_pos += len;
 
     // participants
     let elements = buffer.get_element(tx_pos)?;
-    tx_pos +=1;
+    tx_pos += 1;
 
     let len = buffer.get_u16(tx_pos)?;
-    tx_pos +=2;
+    tx_pos += 2;
 
     let mut participants = Vec::with_capacity(elements as usize);
     for _i in 0..elements {
         zlog_stack("start parse participants - e\0");
-        let participant = buffer.get_slice(tx_pos,tx_pos+len)?;
+        let participant = buffer.get_slice(tx_pos, tx_pos + len)?;
         tx_pos += len;
 
         zlog_stack("push parse participants - e\0");
@@ -138,15 +133,15 @@ fn parse_tx_min(buffer: &Buffer) -> Result<MinTx, AppSW>{
 
     // gsk bytes
     let elements = buffer.get_element(tx_pos)?;
-    tx_pos +=1;
+    tx_pos += 1;
 
     let len = buffer.get_u16(tx_pos)?;
-    tx_pos +=2;
+    tx_pos += 2;
 
     let mut gsk_bytes = Vec::with_capacity(elements as usize);
     for _i in 0..elements {
         zlog_stack("start parse gsk - e\0");
-        let gsk = buffer.get_slice(tx_pos,tx_pos+len)?;
+        let gsk = buffer.get_slice(tx_pos, tx_pos + len)?;
         tx_pos += len;
 
         zlog_stack("push parse sgk - e\0");
@@ -160,7 +155,7 @@ fn parse_tx_min(buffer: &Buffer) -> Result<MinTx, AppSW>{
 
     zlog_stack("done parse_tx round3_min\0");
 
-    Ok(MinTx{
+    Ok(MinTx {
         round_2_secret_package,
         round_1_packages,
         round_2_packages,
@@ -171,22 +166,25 @@ fn parse_tx_min(buffer: &Buffer) -> Result<MinTx, AppSW>{
 }
 
 #[inline(never)]
-fn compute_dkg_round_3_min(min_tx: &MinTx) -> Result<(KeyPackage, FrostPublicKeyPackage, GroupSecretKey), IronfishFrostError> {
+fn compute_dkg_round_3_min(
+    min_tx: &MinTx,
+) -> Result<(KeyPackage, FrostPublicKeyPackage, GroupSecretKey), IronfishFrostError> {
     zlog_stack("start compute_dkg_round_3\0");
 
     let secret = compute_dkg_secret(min_tx.identity_index);
 
     let p = min_tx.participants.iter().map(|p| p.as_slice()).collect();
-    let r1 = min_tx.round_1_packages.iter().map(|r| r.as_slice()).collect();
-    let r2 = min_tx.round_2_packages.iter().map(|r| r.as_slice()).collect();
+    let r1 = min_tx
+        .round_1_packages
+        .iter()
+        .map(|r| r.as_slice())
+        .collect();
+    let r2 = min_tx
+        .round_2_packages
+        .iter()
+        .map(|r| r.as_slice())
+        .collect();
     let gsk = min_tx.gsk_bytes.iter().map(|g| g.as_slice()).collect();
 
-    dkg::round3::round3_min(
-        &secret,
-        p,
-        &min_tx.round_2_secret_package,
-        r1,
-        r2,
-        gsk,
-    )
+    dkg::round3::round3_min(&secret, p, &min_tx.round_2_secret_package, r1, r2, gsk)
 }

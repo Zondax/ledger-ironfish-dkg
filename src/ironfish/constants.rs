@@ -1,4 +1,3 @@
-
 use jubjub::{AffineNielsPoint, AffinePoint, Fq};
 
 pub const SPENDING_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_unchecked(
@@ -15,7 +14,7 @@ pub const SPENDING_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_unche
         0x57a1_019e_6de9_b675,
     ]),
 )
-    .to_niels();
+.to_niels();
 
 pub const PROOF_GENERATION_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_unchecked(
     Fq::from_raw([
@@ -31,7 +30,7 @@ pub const PROOF_GENERATION_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_r
         0x54b6_d107_18df_2a7a,
     ]),
 )
-    .to_niels();
+.to_niels();
 
 pub const PUBLIC_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_unchecked(
     Fq::from_raw([
@@ -47,7 +46,6 @@ pub const PUBLIC_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_uncheck
         0x6996_932c_ece1_f4bb,
     ]),
 )
-
-    .to_niels();
+.to_niels();
 /// BLAKE2s Personalization for CRH^ivk = BLAKE2s(ak | nk)
 pub const CRH_IVK_PERSONALIZATION: &[u8; 8] = b"Zcashivk";

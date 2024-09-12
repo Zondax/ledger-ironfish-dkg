@@ -53,7 +53,6 @@ pub struct OutgoingViewKey {
     pub(crate) view_key: [u8; 32],
 }
 
-
 #[derive(Clone)]
 pub struct ProofGenerationKey {
     pub ak: jubjub::AffinePoint,

@@ -2,7 +2,7 @@ use crate::nvm::buffer::Buffer;
 
 pub struct TxContext {
     pub buffer: Buffer,
-    pub done: bool
+    pub done: bool,
 }
 
 // Implement constructor for TxInfo with default values
@@ -11,7 +11,7 @@ impl TxContext {
     pub fn new() -> TxContext {
         TxContext {
             buffer: Buffer::new(),
-            done: false
+            done: false,
         }
     }
 
