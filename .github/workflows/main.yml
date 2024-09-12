@@ -1,0 +1,62 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - master # for safety reasons
+      - dev  # for safety reasons
+
+jobs:
+  configure:
+    runs-on: ${{ github.repository_owner == 'zondax' && 'zondax-runners' || 'ubuntu-latest' }}
+    outputs:
+      uid_gid: ${{ steps.get-user.outputs.uid_gid }}
+    steps:
+      - id: get-user
+        run: echo "uid_gid=$(id -u):$(id -g)" >> $GITHUB_OUTPUT
+
+  build_ledger:
+    runs-on: ${{ github.repository_owner == 'zondax' && 'zondax-runners' || 'ubuntu-latest' }}
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl protobuf-compiler build-essential git wget unzip python3 python3-pip \
+            libssl-dev libffi-dev libreadline-dev zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
+            libgdbm-dev libnss3-dev liblzma-dev libxml2-dev libxmlsec1-dev libffi-dev libyaml-dev \
+            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2023-11-10
+          components: rust-src
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install yarn
+        run: |
+          npm install -g yarn
+      - name: Install ledger deps
+        run: |
+          cargo install cargo-ledger
+          cargo ledger setup
+          pip install ledgerwallet
+      - name: Build app
+        run: |
+          export PATH=/home/runner/.local/bin:$PATH
+          make build
+      - name: Install zemu deps
+        run: make zemu_install
+      - name: Run tests
+        run: make zemu_test
