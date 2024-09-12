@@ -1,0 +1,60 @@
+[package]
+name = "ledger-ironfish"
+version = "1.5.0"
+authors = ["yhql", "agrojean-ledger"]
+edition = "2021"
+
+[dependencies]
+ledger_device_sdk = { git="https://github.com/Zondax/ledger-device-rust-sdk", rev = "4fab5c832de179b2e38be10e7acd2cc70565404a" }
+# ledger_device_sdk = { version="1.14.0" }
+include_gif = "1.2.0"
+serde = {version="1.0.192", default_features = false, features = ["derive"]}
+serde-json-core = { git = "https://github.com/rust-embedded-community/serde-json-core"}
+hex = { version = "0.4.3", default-features = false, features = ["serde", "alloc"] }
+numtoa = "0.2.4"
+jubjub = { version = "0.10.0", default-features = false }
+blake2b_simd = { version = "1.0.0", default-features = false }
+blake2s_simd = { version = "1.0.0", default-features = false }
+ff = "0.12.0"
+group = "0.12.0"
+
+ironfish-frost = { git = "https://github.com/Zondax/ironfish-frost.git", rev = "ac50614438fc4857e0cc244d1ec1b45a527be819", default-features = false, features = ["dkg", "signing"]}
+#ironfish-frost = { path = "../ironfish-frost", default-features = false, features = ["dkg", "signing"]}
+
+getrandom = { version = "0.2", features = ["custom"] }
+
+[profile.release]
+# changed from z (default on template) to s in order to reduce stack size
+# it will increase the binary size, but it is something we can afford here
+opt-level = "s"
+lto = true
+
+# heap 15k, opt-level=z -> 3 participants fail on signing because of heap fragmentation, app size XXX
+# heap 16.3k, opt-level=s -> 3 participants work, app size 680K
+
+[features]
+default = ["pending_review_screen"]
+pending_review_screen = []
+
+[package.metadata.ledger]
+curve = ["secp256k1"]
+flags = "0"
+path = ["44'/1338'"]
+name = "Ironfish"
+
+[package.metadata.ledger.nanox]
+icon = "nanox_icon.gif"
+
+[package.metadata.ledger.nanosplus]
+icon = "nanox_icon.gif"
+
+[package.metadata.ledger.stax]
+icon = "stax_icon.gif"
+
+[package.metadata.ledger.flex]
+icon = "stax_icon.gif"
+
+# TODO: This change shouldn't be necessary, the ledger targets clearly define atomics as only supporting 32 not 64 (as seen in /opt/rustup/toolchains/1.75.0-aarch64-unknown-linux-musl/lib/rustlib/nanosplus/target.json)
+# solve why this is happening rather than using modified radium
+[patch.crates-io]
+radium = { git = "https://github.com/iron-fish/radium", rev = "674c8faf1e74f931a58671f70586e6435353e9b6" }
