@@ -49,3 +49,5 @@ pub const PUBLIC_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_uncheck
 .to_niels();
 /// BLAKE2s Personalization for CRH^ivk = BLAKE2s(ak | nk)
 pub const CRH_IVK_PERSONALIZATION: &[u8; 8] = b"Zcashivk";
+
+pub const SHARED_KEY_PERSONALIZATION: &[u8; 16] = b"Iron Fish Keyenc";

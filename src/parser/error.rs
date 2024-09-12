@@ -12,6 +12,7 @@ pub enum ParserError {
     InvalidTxVersion,
     InvalidKey,
     InvalidAffinePoint,
+    InvalidScalar,
 
     InvalidTypeId,
 

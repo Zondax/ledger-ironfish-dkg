@@ -5,9 +5,17 @@ use group::{
     Curve, Group, GroupEncoding,
 };
 
-use crate::{crypto::parse_affine_point, FromBytes};
 use crate::{
-    crypto::parse_extended_point,
+    crypto::{calculate_key_for_encryption_keys, parse_affine_point, read_fr, read_scalar},
+    ironfish::{
+        errors::IronfishError,
+        view_keys::{shared_secret, OutgoingViewKey},
+    },
+    FromBytes,
+};
+use crate::{
+    crypto::{decrypt, parse_extended_point},
+    ironfish::public_address::PublicAddress,
     parser::{
         ParserError, AFFINE_POINT_SIZE, ENCRYPTED_NOTE_SIZE, MAC_SIZE, NOTE_ENCRYPTION_KEY_SIZE,
     },
@@ -17,13 +25,17 @@ use jubjub::AffinePoint;
 use jubjub::{ExtendedPoint, Scalar, SubgroupPoint};
 use nom::bytes::complete::take;
 
+use super::{Note, ENCRYPTED_SHARED_KEY_SIZE};
+
 #[derive(Clone, Debug)]
 pub struct MerkleNote<'a> {
     /// Randomized value commitment. Sometimes referred to as
     /// `cv` in the literature. It's calculated by multiplying a value by a
     /// random number. Commits this note to the value it contains
     /// without revealing what that value is.
-    pub(crate) value_commitment: ExtendedPoint,
+    /// Use AffinePoint instead of ExtendedPoint
+    /// for simplicity and easy conversion from/to bytes
+    pub(crate) value_commitment: AffinePoint,
 
     /// The hash of the note, committing to it's internal state
     pub(crate) note_commitment: Scalar,
@@ -56,7 +68,7 @@ impl<'a> FromBytes<'a> for MerkleNote<'a> {
         let affine = affine
             .try_into()
             .map_err(|_| ParserError::ValueOutOfRange)?;
-        let value_commitment = parse_extended_point(affine)?;
+        let value_commitment = parse_affine_point(affine)?;
 
         let (rem, raw_scalar) = take(3232usize)(rem)?;
         let raw_scalar = array_ref!(raw_scalar, 0, 32);
@@ -93,5 +105,35 @@ impl<'a> FromBytes<'a> for MerkleNote<'a> {
             addr_of_mut!((*out).note_encryption_keys).write(note_encryption_keys);
         }
         Ok(rem)
+    }
+}
+
+impl<'a> MerkleNote<'a> {
+    pub fn decrypt_note_for_spender(
+        &self,
+        spender_key: &OutgoingViewKey,
+    ) -> Result<Note, IronfishError> {
+        let encryption_key = calculate_key_for_encryption_keys(
+            spender_key,
+            &self.value_commitment,
+            &self.note_commitment,
+            &self.ephemeral_public_key.to_bytes(),
+        );
+
+        let note_encryption_keys: [u8; ENCRYPTED_SHARED_KEY_SIZE] =
+            decrypt(&encryption_key, self.note_encryption_keys)?;
+
+        let public_address = PublicAddress::new(&note_encryption_keys[..32].try_into().unwrap())?;
+
+        let (rem, secret_key) =
+            read_fr(&note_encryption_keys[32..]).map_err(|_| IronfishError::InvalidScalar)?;
+        let shared_key = shared_secret(&secret_key, &public_address.0, &self.ephemeral_public_key);
+        let note =
+            Note::from_spender_encrypted(public_address.0, &shared_key, &self.encrypted_note)?;
+
+        // FIXME: Verify the node commitment
+        // note.verify_commitment(self.note_commitment)?;
+
+        Ok(note)
     }
 }

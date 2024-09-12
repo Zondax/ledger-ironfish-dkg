@@ -1,12 +1,15 @@
+use chacha20poly1305::{ChaCha20Poly1305, Key, KeyInit, Nonce};
 use core::convert::TryFrom;
 use ff::PrimeField;
 use group::Group;
 use group::{cofactor::CofactorGroup, GroupEncoding};
-use jubjub::{AffinePoint, ExtendedPoint, Fq, Fr, SubgroupPoint};
+use jubjub::{AffinePoint, ExtendedPoint, Fq, Fr, Scalar};
+use nom::bytes::complete::take;
 
 use crate::ironfish::constants::{
     PROOF_GENERATION_KEY_GENERATOR, PUBLIC_KEY_GENERATOR, SPENDING_KEY_GENERATOR,
 };
+use crate::ironfish::errors::IronfishError;
 use crate::{parser::ParserError, ConstantKey};
 
 #[inline(never)]
@@ -86,3 +89,52 @@ pub fn parse_affine_point(raw_bytes: &[u8; 32]) -> Result<AffinePoint, ParserErr
 pub fn parse_extended_point(raw_bytes: &[u8; 32]) -> Result<ExtendedPoint, ParserError> {
     parse_affine_point(raw_bytes).map(ExtendedPoint::from)
 }
+
+/// Decrypt the encrypted text using the given key and ciphertext, also checking
+/// that the mac tag is correct.
+
+pub(crate) fn decrypt<const SIZE: usize>(
+    key: &[u8; 32],
+    ciphertext: &[u8],
+) -> Result<[u8; SIZE], IronfishError> {
+    use chacha20poly1305::AeadInPlace;
+
+    let decryptor = ChaCha20Poly1305::new(Key::from_slice(key));
+
+    let mut plaintext = [0u8; SIZE];
+    plaintext.copy_from_slice(&ciphertext[..SIZE]);
+
+    decryptor
+        .decrypt_in_place_detached(
+            &Nonce::default(),
+            &[],
+            &mut plaintext,
+            ciphertext[SIZE..].into(),
+        )
+        .map_err(|_| IronfishError::InvalidDecryptionKey)?;
+
+    Ok(plaintext)
+}
+
+/// Reads a PrimeField element from a byte array, valid PrimeField elements are:
+/// Fr: Fr::Repr is [u8; 32]
+/// Scalar: Scalar::Repr is [u8; 32]
+/// Fp: Fp::Repr is [u8; 32]
+/// Fq: Fq::Repr is [u8; 32]
+macro_rules! generate_from_bytes_conversion {
+    ($type:ty, $func_name:ident) => {
+        pub fn $func_name(bytes: &[u8]) -> Result<(&[u8], $type), ParserError> {
+            let (rem, raw) = take(32usize)(bytes)?;
+            let bytes = arrayref::array_ref!(raw, 0, 32);
+            <$type>::from_bytes(bytes)
+                .into_option()
+                .ok_or(ParserError::InvalidScalar)
+                .map(|f| (rem, f))
+        }
+    };
+}
+
+// Generates functions
+generate_from_bytes_conversion!(Fr, read_fr);
+generate_from_bytes_conversion!(Fq, read_fq);
+generate_from_bytes_conversion!(Scalar, read_scalar);
