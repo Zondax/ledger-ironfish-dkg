@@ -73,12 +73,14 @@ use crate::context::TxContext;
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::{init_comm, NbglReviewStatus, StatusType};
 
+const APP_CLA: u8 = 0x63;
+
 #[no_mangle]
 extern "C" fn sample_main() {
     // Create the communication manager, and configure it to accept only APDU from the 0xe0 class.
     // If any APDU with a wrong class value is received, comm will respond automatically with
     // BadCla status word.
-    let mut comm = Comm::new().set_expected_cla(0x59);
+    let mut comm = Comm::new().set_expected_cla(APP_CLA);
 
     // Initialize reference to Comm instance for NBGL
     // API calls.
