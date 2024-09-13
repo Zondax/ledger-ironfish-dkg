@@ -20,6 +20,7 @@
 
 mod parser;
 mod chacha20poly {
+    pub mod constants;
     pub mod decrypt;
     pub mod encrypt;
     pub mod key;
