@@ -19,6 +19,7 @@
 #![no_main]
 
 mod chacha20poly {
+    pub mod decrypt;
     pub mod encrypt;
     pub mod key;
 }
@@ -43,6 +44,7 @@ mod handlers {
     pub mod dkg_get_keys;
     pub mod dkg_get_public_package;
     pub mod dkg_nonces;
+    pub mod dkg_restore_keys;
     pub mod dkg_round_1;
     pub mod dkg_round_2;
     pub mod dkg_round_3;
@@ -79,6 +81,7 @@ extern crate alloc;
 use crate::context::TxContext;
 use crate::handlers::dkg_backup_keys::handler_dkg_backup_keys;
 use crate::handlers::dkg_get_public_package::handler_dkg_get_public_package;
+use crate::handlers::dkg_restore_keys::handler_dkg_restore_keys;
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::{init_comm, NbglReviewStatus, StatusType};
 
@@ -112,6 +115,7 @@ pub enum AppSW {
     InvalidPublicPackage = 0xB016,
     InvalidGroupSecretKey = 0xB017,
     EncryptionFail = 0xB018,
+    DecryptionFail = 0xB019,
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,
 }
@@ -136,6 +140,7 @@ pub enum Instruction {
     DkgSign { chunk: u8 },
     DkgGetKeys { key_type: u8 },
     DkgNonces { chunk: u8 },
+    DkgRestoreKeys { chunk: u8 },
 }
 
 impl TryFrom<ApduHeader> for Instruction {
@@ -165,9 +170,10 @@ impl TryFrom<ApduHeader> for Instruction {
             (22, 0, 0..=2) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
             (23, 0..=2, 0) => Ok(Instruction::DkgNonces { chunk: value.p1 }),
             (24, 0..=2, 0) => Ok(Instruction::DkgGetPublicPackage),
-            (25, 0..=2, 0) => Ok(Instruction::DkgBackupKeys),
+            (25, 0, 0) => Ok(Instruction::DkgBackupKeys),
+            (26, 0..=2, 0) => Ok(Instruction::DkgRestoreKeys),
             (3..=4, _, _) => Err(AppSW::WrongP1P2),
-            (17..=22, _, _) => Err(AppSW::WrongP1P2),
+            (17..=26, _, _) => Err(AppSW::WrongP1P2),
             (_, _, _) => Err(AppSW::InsNotSupported),
         }
     }
@@ -233,5 +239,6 @@ fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Resul
         Instruction::DkgNonces { chunk } => handler_dkg_nonces(comm, *chunk, ctx),
         Instruction::DkgGetPublicPackage => handler_dkg_get_public_package(comm),
         Instruction::DkgBackupKeys => handler_dkg_backup_keys(comm),
+        Instruction::DkgRestoreKeys { chunk } => handler_dkg_restore_keys(comm, *chunk, ctx),
     }
 }
