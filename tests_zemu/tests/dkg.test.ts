@@ -47,7 +47,7 @@ describe.each(models)('DKG', function (m) {
         }
     })
 
-    describe.each([{p:2, min:2}])(`${m.name} - participants`, function ({p: participants, min: minSigners}){
+    describe.each([{p:4, min:3},{p:3, min:2},{p:2, min:2}])(`${m.name} - participants`, function ({p: participants, min: minSigners}){
         it("p: " + participants + " - min: " + minSigners, async function(){
             const checkSimRequired = (sims: Zemu[], i:number): {sim: Zemu, created:boolean} => {
                 let created = false;

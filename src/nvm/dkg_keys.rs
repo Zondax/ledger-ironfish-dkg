@@ -19,8 +19,8 @@ const DATA_STARTING_POS: u16 = 10;
 
 // 2 bytes identitiy position
 #[link_section = ".nvm_data"]
-static mut DATA: NVMData<AlignedStorage<[u8; DKG_KEYS_MAX_SIZE]>> =
-    NVMData::new(AlignedStorage::new([0u8; DKG_KEYS_MAX_SIZE]));
+static mut DATA: NVMData<SafeStorage<[u8; DKG_KEYS_MAX_SIZE]>> =
+    NVMData::new(SafeStorage::new([0u8; DKG_KEYS_MAX_SIZE]));
 
 #[derive(Clone, Copy)]
 pub struct DkgKeys;
@@ -34,8 +34,19 @@ impl Default for DkgKeys {
 impl DkgKeys {
     #[inline(never)]
     #[allow(unused)]
-    pub fn get_mut_ref(&mut self) -> &mut AlignedStorage<[u8; DKG_KEYS_MAX_SIZE]> {
+    pub fn get_mut_ref(&mut self) -> &mut SafeStorage<[u8; DKG_KEYS_MAX_SIZE]> {
         unsafe { DATA.get_mut() }
+    }
+
+    #[allow(unused)]
+    #[inline(never)]
+    pub fn is_valid_write(&self) -> Result<(), AppSW> {
+        let buffer = unsafe { DATA.get_mut() };
+        if !buffer.is_valid() {
+            return Err(AppSW::InvalidNVMWrite);
+        }
+
+        Ok(())
     }
 
     #[inline(never)]
@@ -47,17 +58,24 @@ impl DkgKeys {
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn set_element(&self, index: usize, value: u8) {
+    pub fn set_element(&self, index: usize, value: u8) -> Result<(), AppSW> {
+        self.check_write_pos(index)?;
+
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
         updated_data[index] = value;
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
+
+        self.is_valid_write()?;
+        Ok(())
     }
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn set_slice(&self, mut index: usize, value: &[u8]) {
+    pub fn set_slice(&self, mut index: usize, value: &[u8]) -> Result<(), AppSW> {
+        self.check_write_pos(index + value.len())?;
+
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
         for b in value.iter() {
             updated_data[index] = *b;
@@ -66,15 +84,22 @@ impl DkgKeys {
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
+
+        self.is_valid_write()?;
+        Ok(())
     }
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn set_slice_with_len(&self, mut index: usize, value: &[u8]) -> usize {
-        let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
+    pub fn set_slice_with_len(&self, mut index: usize, value: &[u8]) -> Result<usize, AppSW> {
         let len = value.len();
+        self.check_write_pos(index + 2 + len)?;
+
+        let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
+
         updated_data[index] = (len >> 8) as u8;
         index += 1;
+
         updated_data[index] = (len & 0xff) as u8;
         index += 1;
 
@@ -86,7 +111,8 @@ impl DkgKeys {
             DATA.get_mut().update(&updated_data);
         }
 
-        index
+        self.is_valid_write()?;
+        Ok(index)
     }
 
     #[inline(never)]
@@ -98,7 +124,9 @@ impl DkgKeys {
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn set_u16(&self, mut index: usize, value: u16) -> usize {
+    pub fn set_u16(&self, mut index: usize, value: u16) -> Result<usize, AppSW> {
+        self.check_write_pos(index + 2)?;
+
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
         updated_data[index] = (value >> 8) as u8;
         index += 1;
@@ -107,7 +135,9 @@ impl DkgKeys {
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
-        index
+
+        self.is_valid_write()?;
+        Ok(index)
     }
 
     #[inline(never)]
@@ -124,20 +154,20 @@ impl DkgKeys {
         identities: &Vec<Identity>,
         min_signers: u8,
     ) -> Result<(), AppSW> {
-        self.set_u16(0, DATA_STARTING_POS);
+        self.set_u16(0, DATA_STARTING_POS)?;
 
         let mut pos = DATA_STARTING_POS as usize;
-        self.set_u16(pos, (identities.len() * IDENTITY_LEN) as u16);
+        self.set_u16(pos, (identities.len() * IDENTITY_LEN) as u16)?;
         pos += 2;
 
         for i in identities.into_iter() {
             let slice = i.serialize();
-            self.set_slice(pos, slice.as_slice());
+            self.set_slice(pos, slice.as_slice())?;
             pos += IDENTITY_LEN;
         }
 
-        self.set_u16(MIN_SIGNERS_POS, pos as u16);
-        self.set_u16(pos, min_signers as u16);
+        self.set_u16(MIN_SIGNERS_POS, pos as u16)?;
+        self.set_u16(pos, min_signers as u16)?;
 
         Ok(())
     }
@@ -148,19 +178,20 @@ impl DkgKeys {
         key_package: KeyPackage,
         public_key_package: FrostPublicKeyPackage,
         group_secret_key: GroupSecretKey,
-    ) {
+    ) -> Result<(), AppSW> {
         // Read where the previous data end up
         let mut start: usize = self.get_u16(MIN_SIGNERS_POS);
         start += 2;
 
-        self.set_u16(KEY_PACKAGE_POS, start as u16);
-        let mut pos = self.set_slice_with_len(start, key_package.serialize().unwrap().as_slice());
-        self.set_u16(GROUP_KEY_PACKAGE_POS, pos as u16);
-        pos = self.set_slice_with_len(pos, group_secret_key.as_slice());
-        self.set_u16(FROST_PUBLIC_PACKAGE_POS, pos as u16);
-        self.set_slice_with_len(pos, public_key_package.serialize().unwrap().as_slice());
+        self.set_u16(KEY_PACKAGE_POS, start as u16)?;
+        let mut pos =
+            self.set_slice_with_len(start, key_package.serialize().unwrap().as_slice())?;
+        self.set_u16(GROUP_KEY_PACKAGE_POS, pos as u16)?;
+        pos = self.set_slice_with_len(pos, group_secret_key.as_slice())?;
+        self.set_u16(FROST_PUBLIC_PACKAGE_POS, pos as u16)?;
+        self.set_slice_with_len(pos, public_key_package.serialize().unwrap().as_slice())?;
 
-        // TODO check that last pos is not bigger than dkg_keys buffer
+        Ok(())
     }
 
     #[inline(never)]
@@ -250,5 +281,13 @@ impl DkgKeys {
 
         let data = self.get_slice(0, pos);
         Ok(data)
+    }
+
+    fn check_write_pos(&self, index: usize) -> Result<(), AppSW> {
+        if index >= DKG_KEYS_MAX_SIZE {
+            return Err(AppSW::BufferOutOfBounds);
+        }
+
+        Ok(())
     }
 }

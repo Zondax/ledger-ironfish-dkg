@@ -34,6 +34,7 @@ pub enum AppSW {
     InvalidScalar = 0xB018,
     DecryptionFail = 0xB019,
     EncryptionFail = 0xB020,
+    InvalidNVMWrite = 0xB021,
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,
 }
