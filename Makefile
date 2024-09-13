@@ -12,6 +12,9 @@ build:
 setup:
 	cargo ledger setup
 
+.PHONY: format
+format:
+	cargo fmt --all
 
 .PHONY: zemu_install_js_link
 ifeq ($(TESTS_JS_DIR),)
