@@ -15,30 +15,15 @@
  ******************************************************************************* */
 
 import Zemu from '@zondax/zemu'
-import {defaultOptions, models, PATH} from './common'
+import {defaultOptions, identities, models, PATH, restoreKeysTestCases} from './common'
 import IronfishApp, {IronfishKeys} from '@zondax/ledger-ironfish'
-import {
-    isValidPublicAddress,
-    multisig,
-    UnsignedTransaction,
-    verifyTransactions
-} from '@ironfish/rust-nodejs'
-import {
-    Transaction
-} from '@ironfish/sdk'
+import {isValidPublicAddress, multisig, UnsignedTransaction} from '@ironfish/rust-nodejs'
+import {Transaction} from '@ironfish/sdk'
 import {buildTx} from "./utils";
 import aggregateRawSignatureShares = multisig.aggregateRawSignatureShares;
 
 jest.setTimeout(4500000)
 
-const identities  = [
-    {i:0, v: "72510338227d8ee51fa11e048b56ae479a655c5510b906b90d029112a11566bac776c69d4bcd6471ce832100f6dd9a4024bd9580b5cfea11b2c8cdb2be16a46a2117f1d22a47c4ab0804c21ce4d7b33b4527c861edf4fd588fff6d9e31ca08ebdd8abd4bf237e158c43df6f998b6f1421fd59b390522b2ecd3ae0d40c18e5fa304"},
-    {i:1, v: "7232e78e0380a8104680ad7d2a9fc746464ee15ce5288ddef7d3fcd594fe400dfd4593b85e8307ad0b5a33ae3091985a74efda2e5b583f667f806232588ab7824cd7d2e031ca875b1fedf13e8dcd571ba5101e91173c36bbb7c67dba9c900d03e7a3728d4b182cce18f43cc5f36fdc3738cad1e641566d977e025dcef25e12900d"},
-    {i:2, v: "72b1d21580d6905b99af410bb19197bcbbb1f64c663381534de0e4ec969bad4a38779b7f70f21ba296a4a8a47a98bb704666cb1ee5030a501ec42206a45ecaf062e0b6e85ca7b78577b92d89069cd01e97e1f7f1e2674b6adcd8b2bab618a221c8ee5ce37c9cca2ad9ff541f3dfd935d81bdf669cb4a4cac5fd7dba05aabcd7801"},
-    {i:3, v: "72d24c7990826ada6846d662de4a0f74be95d337279522ffe7205e2f4bfd1c4b149b1f45f39dae6f46ebe378cf7073f190d79bde8c81f2f9e9ac8817de8804992cf9d26bcf0b656f34992a8f538cd13142691e35de19116109515aa0d85e17774870fad8c83abe9499d4530137ef0eae22285601775db9f79587155b7a19823c04"},
-    {i:4, v: "720b2b6343ba169e623afe44d7158175a2bd6717cea522e548d54f4b2928602465b1d2cd6d1852ac533a4fd3a610f3ded1c289fb215c84232f5def44a5c5ad1400317ba787935d40e17214f8f563491c5ac7b8d70dd3ab9e9844eb46c734d78ee5071f7d05a18617e938a338a295d1afa509411a8f716d934a83a637f7b4b81d0d"},
-    {i:5, v: "7257d63a116b75136faf89eea94baafdfe5fbfb1ab43bb196dfe209844c2259d5582fe64191677eb38b64a9e182ed0184b219d66cc4c34f43cac72f23608155a0bf183a70c18af4659730d894a139c4ce29e52d4cab85596e75829569e74d94e08470700a4510949ef91a12dde01c6985bb93e0b80641b47ea6dc2c80f5d550f05"}
-]
 
 // ONE_GLOBAL_APP: Use this flag if the whole DKG process will run in only one app (all participants, all rounds). This takes precedence over ONE_APP_PER_PARTICIPANT.
 // ONE_APP_PER_PARTICIPANT: Use this flag if the whole DKG process will run in one app per participant
@@ -155,7 +140,7 @@ describe.each(models)('DKG', function (m) {
                     });
 
                     if(!round2.publicPackage || !round2.secretPackage)
-                        throw new Error("no round 1 found")
+                        throw new Error("no round 2 found")
 
                     round2s.push({
                         publicPackage: round2.publicPackage.toString('hex'),
@@ -197,6 +182,7 @@ describe.each(models)('DKG', function (m) {
                     publicPackages.push(result.publicPackage.toString("hex"));
                 }
 
+                console.log("publicPackages " + JSON.stringify(publicPackages, null, 2));
 
                 for(let i = 0; i < participants; i++){
                     const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
@@ -215,7 +201,7 @@ describe.each(models)('DKG', function (m) {
                     encryptedKeys.push(result.encryptedKeys.toString("hex"));
                 }
 
-                console.log("encryptedKeys " + JSON.stringify(encryptedKeys));
+                console.log("encryptedKeys " + JSON.stringify(encryptedKeys, null, 2));
 
                 // Generate keys from the multisig DKG process just finalized
                 for(let i = 0; i < participants; i++){
@@ -237,6 +223,8 @@ describe.each(models)('DKG', function (m) {
                     expect(isValidPublicAddress(result.publicAddress.toString("hex")))
                     pks.push(result.publicAddress.toString("hex"));
                 }
+
+                console.log("publicAddresses " + JSON.stringify(pks, null, 2));
 
                 // Check that the public address generated on each participant for the multisig account is the same
                 const pksMap = pks.reduce((acc: {[key:string]: boolean}, pk) => {
@@ -272,6 +260,7 @@ describe.each(models)('DKG', function (m) {
                     });
                 }
 
+                console.log("viewKeys " + JSON.stringify(viewKeys, null, 2));
 
                 // Generate view keys from the multisig DKG process just finalized
                 for(let i = 0; i < participants; i++){
@@ -296,6 +285,8 @@ describe.each(models)('DKG', function (m) {
                         nsk: result.nsk.toString("hex")
                     });
                 }
+
+                console.log("proofKeys " + JSON.stringify(proofKeys, null, 2));
 
                 // Craft new tx, to get the tx hash and the public randomness
                 // Pass those values to the following commands
@@ -392,7 +383,53 @@ describe.each(models)('DKG', function (m) {
         })
     })
 
-    describe.skip.each(identities)('identities', function ({i, v}) {
+    describe.each(restoreKeysTestCases)("restore keys", ({index, encrypted, publicAddress, proofKeys, viewKeys, publicPackage}) =>{
+        test(index + "", async () => {
+            for (let e of encrypted) {
+                const sim = new Zemu(m.path)
+                try {
+                    await sim.start({...defaultOptions, model: m.name})
+                    const app = new IronfishApp(sim.getTransport())
+                    let resp: any= await app.dkgRestoreKeys(PATH, e)
+
+                    expect(resp.returnCode.toString(16)).toEqual("9000")
+                    expect(resp.errorMessage).toEqual('No errors')
+
+                    resp = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+
+                    expect(resp.returnCode.toString(16)).toEqual("9000")
+                    expect(resp.errorMessage).toEqual('No errors')
+                    expect(resp.viewKey.toString("hex")).toEqual(viewKeys.viewKey)
+                    expect(resp.ovk.toString("hex")).toEqual(viewKeys.ovk)
+                    expect(resp.ivk.toString("hex")).toEqual(viewKeys.ivk)
+
+                    resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
+
+                    expect(resp.returnCode.toString(16)).toEqual("9000")
+                    expect(resp.errorMessage).toEqual('No errors')
+                    expect(resp.ak.toString("hex")).toEqual(proofKeys.ak)
+                    expect(resp.nsk.toString("hex")).toEqual(proofKeys.nsk)
+
+                    resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
+
+                    expect(resp.returnCode.toString(16)).toEqual("9000")
+                    expect(resp.errorMessage).toEqual('No errors')
+                    expect(resp.publicAddress.toString("hex")).toEqual(publicAddress)
+
+
+                    resp = await app.dkgGetPublicPackage()
+
+                    expect(resp.returnCode.toString(16)).toEqual("9000")
+                    expect(resp.errorMessage).toEqual('No errors')
+                    expect(resp.publicPackage.toString("hex")).toEqual(publicPackage)
+                } finally {
+                    await sim.close()
+                }
+            }
+        })
+    })
+
+    describe.each(identities)('identities', function ({i, v}) {
         test(i + "", async function(){
             const sim = new Zemu(m.path)
             try {
