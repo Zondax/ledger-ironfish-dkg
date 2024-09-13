@@ -24,6 +24,9 @@ use ledger_device_sdk::ui::{
     gadgets::{EventOrPageIndex, MultiPageMenu, Page},
 };
 
+#[cfg(any(target_os = "stax", target_os = "flex"))]
+use ledger_device_sdk::nbgl::{NbglGlyph, NbglHomeAndSettings};
+
 use crate::Instruction;
 
 // use ledger_device_sdk::nvm::*;
@@ -49,7 +52,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     let pages = [
         // The from trait allows to create different styles of pages
         // without having to use the new() function.
-        &Page::from((["Ironfish", "is ready"], &APP_ICON)),
+        &Page::from((["Ironfish DKG", "is ready"], &APP_ICON)),
         &Page::from((["Version", env!("CARGO_PKG_VERSION")], true)),
         &Page::from(("About", &CERTIFICATE)),
         &Page::from(("Quit", &DASHBOARD_X)),
@@ -62,4 +65,24 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
             EventOrPageIndex::Index(_) => (),
         }
     }
+}
+
+#[cfg(any(target_os = "stax", target_os = "flex"))]
+pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
+    // Load glyph from 64x64 4bpp gif file with include_gif macro. Creates an NBGL compatible glyph.
+
+    #[cfg(target_os = "stax")]
+    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
+    #[cfg(target_os = "flex")]
+    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
+
+    // Display the home screen.
+    NbglHomeAndSettings::new()
+        .glyph(&FERRIS)
+        .infos(
+            "Ironfish DKG",
+            env!("CARGO_PKG_VERSION"),
+            env!("CARGO_PKG_AUTHORS"),
+        )
+        .show()
 }

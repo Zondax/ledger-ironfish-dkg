@@ -4,18 +4,19 @@ import { resolve } from 'path'
 
 export const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
-const APP_PATH_S = resolve('../target/nanos/release/ledger-ironfish')
-const APP_PATH_X = resolve('../target/nanox/release/ledger-ironfish')
-const APP_PATH_SP = resolve('../target/nanosplus/release/ledger-ironfish')
-const APP_PATH_ST = resolve('../target/stax/release/ledger-ironfish')
+const APP_PATH_S = resolve('../target/nanos/release/ledger-ironfish-dkg')
+const APP_PATH_X = resolve('../target/nanox/release/ledger-ironfish-dkg')
+const APP_PATH_SP = resolve('../target/nanosplus/release/ledger-ironfish-dkg')
+const APP_PATH_ST = resolve('../target/stax/release/ledger-ironfish-dkg')
+const APP_PATH_FL = resolve('../target/flex/release/ledger-ironfish-dkg')
 
 export const models: IDeviceModel[] = [
-  // TODO investigate why nano s is disabled
-  // On blind signing tests, it fails with "19:59:04.695:seproxyhal: received tag SE_POWER_OFF, exiting" when approving the tx (signing)
-  //{ name: 'nanos', prefix: 'S', path: APP_PATH_S },
- // { name: 'nanox', prefix: 'X', path: APP_PATH_X },
+  // Nano S device is not supported
+  // TODO enable nanox
+  // { name: 'nanox', prefix: 'X', path: APP_PATH_X },
   { name: 'nanosp', prefix: 'SP', path: APP_PATH_SP },
-  //{ name: 'stax', prefix: 'ST', path: APP_PATH_ST },
+  { name: 'stax', prefix: 'ST', path: APP_PATH_ST },
+  { name: 'flex', prefix: 'FL', path: APP_PATH_FL },
 ]
 
 export const defaultOptions = {

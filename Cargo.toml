@@ -1,7 +1,5 @@
 [package]
-name = "ledger-ironfish"
-version = "1.5.0"
-authors = ["yhql", "agrojean-ledger"]
+name = "ledger-ironfish-dkg"
 edition = "2021"
 
 
