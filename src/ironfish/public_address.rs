@@ -1,8 +1,14 @@
+use core::ptr::addr_of_mut;
+
+use crate::crypto::parse_affine_point;
 use crate::ironfish::constants::PUBLIC_KEY_GENERATOR;
 use crate::ironfish::errors::IronfishError;
 use crate::ironfish::sapling::SaplingKey;
 use crate::ironfish::view_keys::IncomingViewKey;
+use crate::FromBytes;
+use arrayref::array_ref;
 use jubjub::AffinePoint;
+use nom::bytes::complete::take;
 
 pub const PUBLIC_ADDRESS_SIZE: usize = 32;
 
@@ -11,6 +17,26 @@ pub const PUBLIC_ADDRESS_SIZE: usize = 32;
 /// the creation of a unique public addresses without revealing the viewing key.
 #[derive(Clone, Copy)]
 pub struct PublicAddress(pub(crate) AffinePoint);
+
+impl<'a> FromBytes<'a> for PublicAddress {
+    #[inline(never)]
+    fn from_bytes_into(
+        input: &'a [u8],
+        out: &mut core::mem::MaybeUninit<Self>,
+    ) -> Result<&'a [u8], nom::Err<crate::parser::ParserError>> {
+        let (rem, raw) = take(PUBLIC_ADDRESS_SIZE)(input)?;
+        let raw = array_ref![raw, 0, PUBLIC_ADDRESS_SIZE];
+        let point = parse_affine_point(raw)?;
+
+        let out = out.as_mut_ptr();
+
+        unsafe {
+            addr_of_mut!((*out).0).write(point);
+        }
+
+        Ok(rem)
+    }
+}
 
 impl PublicAddress {
     /// Initialize a public address from its 32 byte representation.

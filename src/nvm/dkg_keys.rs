@@ -1,4 +1,4 @@
-use crate::utils::zlog_stack;
+use crate::bolos::zlog_stack;
 use crate::AppSW;
 use alloc::vec::Vec;
 use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};

@@ -6,6 +6,10 @@ TESTS_JS_DIR = $(CURDIR)/js
 build:
 	cargo ledger build nanosplus
 
+.PHONY: setup
+setup:
+	cargo ledger setup
+
 
 .PHONY: zemu_install_js_link
 ifeq ($(TESTS_JS_DIR),)
