@@ -93,7 +93,7 @@ impl DkgKeys {
     #[allow(unused)]
     pub fn set_slice_with_len(&self, mut index: usize, value: &[u8]) -> Result<usize, AppSW> {
         let len = value.len();
-        self.check_write_pos(index+2+len)?;
+        self.check_write_pos(index + 2 + len)?;
 
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
 
@@ -125,7 +125,7 @@ impl DkgKeys {
     #[inline(never)]
     #[allow(unused)]
     pub fn set_u16(&self, mut index: usize, value: u16) -> Result<usize, AppSW> {
-        self.check_write_pos(index+2)?;
+        self.check_write_pos(index + 2)?;
 
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
         updated_data[index] = (value >> 8) as u8;
@@ -178,13 +178,14 @@ impl DkgKeys {
         key_package: KeyPackage,
         public_key_package: FrostPublicKeyPackage,
         group_secret_key: GroupSecretKey,
-    ) -> Result<(), AppSW>{
+    ) -> Result<(), AppSW> {
         // Read where the previous data end up
         let mut start: usize = self.get_u16(MIN_SIGNERS_POS);
         start += 2;
 
         self.set_u16(KEY_PACKAGE_POS, start as u16)?;
-        let mut pos = self.set_slice_with_len(start, key_package.serialize().unwrap().as_slice())?;
+        let mut pos =
+            self.set_slice_with_len(start, key_package.serialize().unwrap().as_slice())?;
         self.set_u16(GROUP_KEY_PACKAGE_POS, pos as u16)?;
         pos = self.set_slice_with_len(pos, group_secret_key.as_slice())?;
         self.set_u16(FROST_PUBLIC_PACKAGE_POS, pos as u16)?;
