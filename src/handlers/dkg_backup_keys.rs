@@ -15,12 +15,11 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::chacha20poly::encrypt::encrypt;
+use crate::chacha20poly::key::compute_key;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::zlog_stack;
 use crate::{AppSW, Instruction};
-use alloc::vec;
 use alloc::vec::Vec;
-use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 use ledger_device_sdk::io::{Comm, Event};
 
 const MAX_APDU_SIZE: usize = 253;
@@ -35,30 +34,6 @@ pub fn handler_dkg_backup_keys(comm: &mut Comm) -> Result<(), AppSW> {
     let resp = encrypt(&key, data)?;
 
     send_apdu_chunks(comm, resp)
-}
-
-#[inline(never)]
-fn compute_key() -> [u8; 32] {
-    let path_0: Vec<u32> = vec![
-        (0x80000000 | 0x2c),
-        (0x80000000 | 0x53a),
-        (0x80000000 | 0x0),
-        (0x80000000 | 0x0),
-        (0x80000000 | 0x0),
-    ];
-
-    let mut secret_key_0 = Secret::<64>::new();
-    let mut cc: ChainCode = Default::default();
-
-    // Ignoring 'Result' here because known to be valid
-    let _ = bip32_derive(
-        CurvesId::Ed25519,
-        &path_0,
-        secret_key_0.as_mut(),
-        Some(cc.value.as_mut()),
-    );
-
-    secret_key_0.as_ref()[0..32].try_into().unwrap()
 }
 
 #[inline(never)]
