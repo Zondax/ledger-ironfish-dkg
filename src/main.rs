@@ -21,6 +21,7 @@
 mod parser;
 mod chacha20poly {
     pub mod encrypt;
+    pub mod key;
 }
 
 mod utils;
