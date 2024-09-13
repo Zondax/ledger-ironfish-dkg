@@ -15,19 +15,14 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::accumulator::accumulate_data;
+use crate::chacha20poly::constants::NONCE_LEN;
 use crate::chacha20poly::decrypt::decrypt;
-use crate::chacha20poly::encrypt::encrypt;
 use crate::chacha20poly::key::compute_key;
 use crate::context::TxContext;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::zlog_stack;
-use crate::{AppSW, Instruction};
-use alloc::vec;
-use alloc::vec::Vec;
-use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
-use ledger_device_sdk::io::{Comm, Event};
-
-const MAX_APDU_SIZE: usize = 253;
+use crate::AppSW;
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
 pub fn handler_dkg_restore_keys(
@@ -42,10 +37,17 @@ pub fn handler_dkg_restore_keys(
         return Ok(());
     }
 
-    let data = ctx.buffer.get_slice(0, ctx.buffer.pos)?;
+    if ctx.buffer.pos < NONCE_LEN {
+        return Err(AppSW::InvalidPayload);
+    }
+
+    let split_pos = ctx.buffer.pos - NONCE_LEN;
+    let data = ctx.buffer.get_slice(0, split_pos)?;
+    let nonce = ctx.buffer.get_slice(split_pos, ctx.buffer.pos)?;
+
     let key = compute_key();
 
-    let resp = decrypt(&key, data)?;
+    let resp = decrypt(&key, data, nonce)?;
     DkgKeys.set_slice(0, resp.as_slice());
 
     Ok(())

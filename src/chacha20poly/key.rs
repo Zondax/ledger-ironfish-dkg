@@ -1,9 +1,10 @@
+use crate::chacha20poly::constants::KEY_LEN;
 use alloc::vec;
 use alloc::vec::Vec;
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 
 #[inline(never)]
-pub fn compute_key() -> [u8; 32] {
+pub fn compute_key() -> [u8; KEY_LEN] {
     let path_0: Vec<u32> = vec![
         (0x80000000 | 0x2c),
         (0x80000000 | 0x53a),
@@ -23,5 +24,5 @@ pub fn compute_key() -> [u8; 32] {
         Some(cc.value.as_mut()),
     );
 
-    secret_key_0.as_ref()[0..32].try_into().unwrap()
+    secret_key_0.as_ref()[0..KEY_LEN].try_into().unwrap()
 }

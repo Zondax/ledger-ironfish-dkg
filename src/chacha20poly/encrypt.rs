@@ -1,3 +1,4 @@
+use crate::chacha20poly::constants::{KEY_LEN, NONCE_LEN};
 use crate::AppSW;
 use aead::rand_core::RngCore;
 use alloc::vec::Vec;
@@ -8,7 +9,7 @@ use chacha20poly1305::{
 use ledger_device_sdk::random::LedgerRng;
 
 #[inline(never)]
-pub fn encrypt(key: &[u8; 32], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
+pub fn encrypt(key: &[u8; KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
     let mut rng = LedgerRng {};
     let v1 = rng.next_u64();
     let v2 = rng.next_u64();
@@ -19,7 +20,7 @@ pub fn encrypt(key: &[u8; 32], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
     // Create a ChaCha20Poly1305 instance
     let cipher = ChaCha20Poly1305::new(&key);
 
-    let mut nonce_slice = [0u8; 12];
+    let mut nonce_slice = [0u8; NONCE_LEN];
     nonce_slice[..8].copy_from_slice(&v1.to_be_bytes());
     nonce_slice[8..12].copy_from_slice(&v2.to_be_bytes()[0..4]);
 

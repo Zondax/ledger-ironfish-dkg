@@ -19,6 +19,7 @@
 #![no_main]
 
 mod chacha20poly {
+    pub mod constants;
     pub mod decrypt;
     pub mod encrypt;
     pub mod key;
@@ -171,7 +172,7 @@ impl TryFrom<ApduHeader> for Instruction {
             (23, 0..=2, 0) => Ok(Instruction::DkgNonces { chunk: value.p1 }),
             (24, 0..=2, 0) => Ok(Instruction::DkgGetPublicPackage),
             (25, 0, 0) => Ok(Instruction::DkgBackupKeys),
-            (26, 0..=2, 0) => Ok(Instruction::DkgRestoreKeys),
+            (26, 0..=2, 0) => Ok(Instruction::DkgRestoreKeys { chunk: value.p1 }),
             (3..=4, _, _) => Err(AppSW::WrongP1P2),
             (17..=26, _, _) => Err(AppSW::WrongP1P2),
             (_, _, _) => Err(AppSW::InsNotSupported),
