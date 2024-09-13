@@ -19,8 +19,8 @@ const DATA_STARTING_POS: u16 = 10;
 
 // 2 bytes identitiy position
 #[link_section = ".nvm_data"]
-static mut DATA: NVMData<AlignedStorage<[u8; DKG_KEYS_MAX_SIZE]>> =
-    NVMData::new(AlignedStorage::new([0u8; DKG_KEYS_MAX_SIZE]));
+static mut DATA: NVMData<SafeStorage<[u8; DKG_KEYS_MAX_SIZE]>> =
+    NVMData::new(SafeStorage::new([0u8; DKG_KEYS_MAX_SIZE]));
 
 #[derive(Clone, Copy)]
 pub struct DkgKeys;
@@ -34,8 +34,19 @@ impl Default for DkgKeys {
 impl DkgKeys {
     #[inline(never)]
     #[allow(unused)]
-    pub fn get_mut_ref(&mut self) -> &mut AlignedStorage<[u8; DKG_KEYS_MAX_SIZE]> {
+    pub fn get_mut_ref(&mut self) -> &mut SafeStorage<[u8; DKG_KEYS_MAX_SIZE]> {
         unsafe { DATA.get_mut() }
+    }
+
+    #[allow(unused)]
+    #[inline(never)]
+    pub fn is_valid_write(&self)-> Result<(), AppSW> {
+        let buffer = unsafe { DATA.get_mut() };
+        if !buffer.is_valid(){
+            return Err(AppSW::InvalidNVMWrite)
+        }
+
+        Ok(())
     }
 
     #[inline(never)]
