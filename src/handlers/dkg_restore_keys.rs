@@ -46,5 +46,5 @@ pub fn handler_dkg_restore_keys(
     let key = compute_key();
 
     let resp = decrypt(&key, data, nonce)?;
-    DkgKeys.set_slice(0, resp.as_slice())
+    DkgKeys.restore_keys(resp.as_slice())
 }

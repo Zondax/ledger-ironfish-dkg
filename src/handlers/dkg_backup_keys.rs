@@ -27,7 +27,7 @@ const MAX_APDU_SIZE: usize = 253;
 pub fn handler_dkg_backup_keys(comm: &mut Comm) -> Result<(), AppSW> {
     zlog("start handler_dkg_backup_keys\0");
 
-    let data = DkgKeys.load_all_raw()?;
+    let data = DkgKeys.backup_keys()?;
     let key = compute_key();
 
     let resp = encrypt(&key, data)?;
