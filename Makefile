@@ -17,10 +17,25 @@ format:
 	cargo fmt --all
 
 # To be run on linux only
-# TARGET: nanosplus, stax, flex, nanox
-.PHONY: lint
-lint:
-	cargo clippy --target $(TARGET) -- -Dwarnings
+.PHONY: lint-all
+lint-all: lint-nanosplus lint-flex lint-stax lint-nanox
+
+.PHONY: lint-nanosplus
+lint-nanosplus:
+	cargo clippy --target nanosplus -- -Dwarnings
+
+.PHONY: lint-nanox
+lint-nanox:
+	cargo clippy --target nanox -- -Dwarnings
+
+.PHONY: lint-flex
+lint-flex:
+	cargo clippy --target flex -- -Dwarnings
+
+.PHONY: lint-stax
+lint-stax:
+	cargo clippy --target stax -- -Dwarnings
+
 
 .PHONY: zemu_install_js_link
 ifeq ($(TESTS_JS_DIR),)
