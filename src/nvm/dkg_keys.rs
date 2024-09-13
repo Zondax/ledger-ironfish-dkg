@@ -248,7 +248,7 @@ impl DkgKeys {
         let len = self.get_u16(pos);
         pos += 2 + len;
 
-        let data = self.get_slice(DATA_STARTING_POS as usize, pos);
+        let data = self.get_slice(0, pos);
         Ok(data)
     }
 }
