@@ -11,6 +11,8 @@ mod dkg_round_2;
 mod dkg_round_3;
 mod dkg_sign;
 mod get_version;
+mod dkg_backup_keys;
+mod dkg_restore_keys;
 
 use dkg_commitments::handler_dkg_commitments;
 use dkg_get_identity::handler_dkg_get_identity;
@@ -22,6 +24,8 @@ use dkg_round_2::handler_dkg_round_2;
 use dkg_round_3::handler_dkg_round_3;
 use dkg_sign::handler_dkg_sign;
 use get_version::handler_get_version;
+use dkg_backup_keys::handler_dkg_backup_keys;
+use dkg_restore_keys::handler_dkg_restore_keys;
 
 pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Result<(), AppSW> {
     match ins {
@@ -39,5 +43,7 @@ pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> R
         Instruction::DkgGetKeys { key_type } => handler_dkg_get_keys(comm, key_type),
         Instruction::DkgNonces { chunk } => handler_dkg_nonces(comm, *chunk, ctx),
         Instruction::DkgGetPublicPackage => handler_dkg_get_public_package(comm),
+        Instruction::DkgBackupKeys => handler_dkg_backup_keys(comm),
+        Instruction::DkgRestoreKeys { chunk } => handler_dkg_restore_keys(comm, *chunk, ctx),
     }
 }

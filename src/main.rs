@@ -19,13 +19,6 @@
 #![no_main]
 
 mod parser;
-mod chacha20poly {
-    pub mod constants;
-    pub mod decrypt;
-    pub mod encrypt;
-    pub mod key;
-}
-
 mod utils;
 mod app_ui {
     pub mod menu;
@@ -60,7 +53,7 @@ mod nvm {
 pub mod accumulator;
 mod context;
 
-mod crypto;
+pub mod crypto;
 use crypto::{ConstantKey, Epk};
 
 use crate::handlers::handle_apdu;

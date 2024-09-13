@@ -14,19 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use crate::chacha20poly::encrypt::encrypt;
-use crate::chacha20poly::key::compute_key;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::utils::zlog_stack;
 use crate::{AppSW, Instruction};
 use alloc::vec::Vec;
 use ledger_device_sdk::io::{Comm, Event};
+use crate::bolos::{zlog, zlog_stack};
+use crate::crypto::chacha20poly::{compute_key, encrypt};
 
 const MAX_APDU_SIZE: usize = 253;
 
 #[inline(never)]
 pub fn handler_dkg_backup_keys(comm: &mut Comm) -> Result<(), AppSW> {
-    zlog_stack("start handler_dkg_backup_keys\0");
+    zlog("start handler_dkg_backup_keys\0");
 
     let data = DkgKeys.load_all_raw()?;
     let key = compute_key();

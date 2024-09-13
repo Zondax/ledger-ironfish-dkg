@@ -32,6 +32,8 @@ pub enum AppSW {
     InvalidPublicPackage = 0xB016,
     InvalidGroupSecretKey = 0xB017,
     InvalidScalar = 0xB018,
+    DecryptionFail = 0xB019,
+    EncryptionFail = 0xB020,
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,
 }

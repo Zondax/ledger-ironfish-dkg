@@ -14,6 +14,8 @@ pub enum Instruction {
     DkgSign { chunk: u8 },
     DkgGetKeys { key_type: u8 },
     DkgNonces { chunk: u8 },
+    DkgBackupKeys,
+    DkgRestoreKeys { chunk: u8 },
 }
 
 impl TryFrom<ApduHeader> for Instruction {
@@ -43,8 +45,10 @@ impl TryFrom<ApduHeader> for Instruction {
             (22, 0, 0..=2) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
             (23, 0..=2, 0) => Ok(Instruction::DkgNonces { chunk: value.p1 }),
             (24, 0..=2, 0) => Ok(Instruction::DkgGetPublicPackage),
+            (25, 0, 0) => Ok(Instruction::DkgBackupKeys),
+            (26, 0..=2, 0) => Ok(Instruction::DkgRestoreKeys { chunk: value.p1 }),
             (3..=4, _, _) => Err(AppSW::WrongP1P2),
-            (17..=22, _, _) => Err(AppSW::WrongP1P2),
+            (17..=26, _, _) => Err(AppSW::WrongP1P2),
             (_, _, _) => Err(AppSW::InsNotSupported),
         }
     }
