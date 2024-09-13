@@ -1,0 +1,52 @@
+/*****************************************************************************
+ *   Ledger App Ironfish Rust.
+ *   (c) 2023 Ledger SAS.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *****************************************************************************/
+use crate::accumulator::accumulate_data;
+use crate::chacha20poly::decrypt::decrypt;
+use crate::chacha20poly::encrypt::encrypt;
+use crate::chacha20poly::key::compute_key;
+use crate::context::TxContext;
+use crate::nvm::dkg_keys::DkgKeys;
+use crate::utils::zlog_stack;
+use crate::{AppSW, Instruction};
+use alloc::vec;
+use alloc::vec::Vec;
+use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
+use ledger_device_sdk::io::{Comm, Event};
+
+const MAX_APDU_SIZE: usize = 253;
+
+#[inline(never)]
+pub fn handler_dkg_restore_keys(
+    comm: &mut Comm,
+    chunk: u8,
+    ctx: &mut TxContext,
+) -> Result<(), AppSW> {
+    zlog_stack("start handler_dkg_restore_keys\0");
+
+    accumulate_data(comm, chunk, ctx)?;
+    if !ctx.done {
+        return Ok(());
+    }
+
+    let data = ctx.buffer.get_slice(0, ctx.buffer.pos)?;
+    let key = compute_key();
+
+    let resp = decrypt(&key, data)?;
+    DkgKeys.set_slice(0, resp.as_slice());
+
+    Ok(())
+}
