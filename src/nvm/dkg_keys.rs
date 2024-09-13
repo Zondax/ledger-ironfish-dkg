@@ -23,11 +23,11 @@ const DATA_STARTING_POS: u16 = 12;
 enum DkgKeyStatus {
     Idle,
     Initiated,
-    Completed
+    Completed,
 }
 
-enum DkgKeyVersion{
-    V1 = 1
+enum DkgKeyVersion {
+    V1 = 1,
 }
 
 #[link_section = ".nvm_data"]
@@ -194,29 +194,27 @@ impl DkgKeys {
         self.update_keys_status(DkgKeyStatus::Initiated, DkgKeyVersion::V1)
     }
 
-
     #[inline(never)]
     pub fn update_keys_status(
         &self,
         status: DkgKeyStatus,
-        version: DkgKeyVersion
+        version: DkgKeyVersion,
     ) -> Result<(), AppSW> {
         zlog_stack("start update_keys_status\0");
 
         match version {
-           DkgKeyVersion::V1 => self.set_element(DKG_VERSION, 1)
+            DkgKeyVersion::V1 => self.set_element(DKG_VERSION, 1),
         }?;
 
         match status {
             DkgKeyStatus::Idle => self.set_element(DKG_STATUS, 0),
             DkgKeyStatus::Initiated => self.set_element(DKG_STATUS, 1),
-            DkgKeyStatus::Completed => self.set_element(DKG_STATUS, 2)
+            DkgKeyStatus::Completed => self.set_element(DKG_STATUS, 2),
         }
     }
 
     #[inline(never)]
-    pub fn get_keys_status(&self
-    ) -> Result<DkgKeyStatus, AppSW> {
+    pub fn get_keys_status(&self) -> Result<DkgKeyStatus, AppSW> {
         zlog_stack("start get_keys_status\0");
 
         let status = self.get_element(DKG_STATUS);
@@ -224,7 +222,7 @@ impl DkgKeys {
             0 => Ok(DkgKeyStatus::Idle),
             1 => Ok(DkgKeyStatus::Initiated),
             2 => Ok(DkgKeyStatus::Completed),
-            _ => Err(AppSW::InvalidDkgStatus)
+            _ => Err(AppSW::InvalidDkgStatus),
         }
     }
 
@@ -401,7 +399,7 @@ impl DkgKeys {
     pub fn restore_keys(&self, data: &[u8]) -> Result<(), AppSW> {
         zlog_stack("start restore_keys\0");
 
-        if data[1] != 1{
+        if data[1] != 1 {
             return Err(AppSW::InvalidDkgKeysVersion);
         }
 
