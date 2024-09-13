@@ -28,7 +28,6 @@ use ironfish_frost::nonces::deterministic_signing_nonces;
 use ironfish_frost::participant::Identity;
 use ironfish_frost::signing_commitment;
 use ledger_device_sdk::io::{Comm, Event};
-use serde::Serialize;
 
 const MAX_APDU_SIZE: usize = 253;
 const IDENTITY_LEN: usize = 129;

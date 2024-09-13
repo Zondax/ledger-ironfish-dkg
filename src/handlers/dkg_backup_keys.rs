@@ -51,7 +51,7 @@ fn send_apdu_chunks(comm: &mut Comm, data_vec: Vec<u8>) -> Result<(), AppSW> {
             zlog_stack("another send_apdu_chunks\0");
             comm.reply_ok();
             match comm.next_event() {
-                Event::Command(Instruction::DkgCommitments { chunk: 0 }) => {}
+                Event::Command(Instruction::DkgBackupKeys) => {}
                 _ => {}
             }
         }
