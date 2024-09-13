@@ -1,14 +1,14 @@
-use alloc::vec::Vec;
+use crate::bolos::zlog_stack;
+use crate::AppSW;
+use aead::rand_core::RngCore;
 use alloc::vec;
+use alloc::vec::Vec;
 use chacha20poly1305::{
     aead::{Aead, KeyInit},
     ChaCha20Poly1305, Key, Nonce,
 };
-use aead::rand_core::RngCore;
-use ledger_device_sdk::random::LedgerRng;
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
-use crate::AppSW;
-use crate::bolos::zlog_stack;
+use ledger_device_sdk::random::LedgerRng;
 
 pub const NONCE_LEN: usize = 12;
 pub const KEY_LEN: usize = 32;

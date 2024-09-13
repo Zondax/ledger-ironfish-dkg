@@ -1,31 +1,31 @@
 use crate::{context::TxContext, AppSW, Instruction};
 use ledger_device_sdk::io::{ApduHeader, Comm, Event, Reply, StatusWords};
 
+mod dkg_backup_keys;
 mod dkg_commitments;
 mod dkg_get_identity;
 mod dkg_get_keys;
 mod dkg_get_public_package;
 mod dkg_nonces;
+mod dkg_restore_keys;
 mod dkg_round_1;
 mod dkg_round_2;
 mod dkg_round_3;
 mod dkg_sign;
 mod get_version;
-mod dkg_backup_keys;
-mod dkg_restore_keys;
 
+use dkg_backup_keys::handler_dkg_backup_keys;
 use dkg_commitments::handler_dkg_commitments;
 use dkg_get_identity::handler_dkg_get_identity;
 use dkg_get_keys::handler_dkg_get_keys;
 use dkg_get_public_package::handler_dkg_get_public_package;
 use dkg_nonces::handler_dkg_nonces;
+use dkg_restore_keys::handler_dkg_restore_keys;
 use dkg_round_1::handler_dkg_round_1;
 use dkg_round_2::handler_dkg_round_2;
 use dkg_round_3::handler_dkg_round_3;
 use dkg_sign::handler_dkg_sign;
 use get_version::handler_get_version;
-use dkg_backup_keys::handler_dkg_backup_keys;
-use dkg_restore_keys::handler_dkg_restore_keys;
 
 pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Result<(), AppSW> {
     match ins {

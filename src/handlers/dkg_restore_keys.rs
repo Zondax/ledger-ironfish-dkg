@@ -15,12 +15,12 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::accumulator::accumulate_data;
+use crate::bolos::zlog_stack;
 use crate::context::TxContext;
+use crate::crypto::chacha20poly::{compute_key, decrypt, NONCE_LEN};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use ledger_device_sdk::io::Comm;
-use crate::bolos::zlog_stack;
-use crate::crypto::chacha20poly::{compute_key, decrypt, NONCE_LEN};
 
 #[inline(never)]
 pub fn handler_dkg_restore_keys(

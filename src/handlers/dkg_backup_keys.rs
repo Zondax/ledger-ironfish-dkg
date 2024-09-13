@@ -14,12 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
+use crate::bolos::{zlog, zlog_stack};
+use crate::crypto::chacha20poly::{compute_key, encrypt};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::{AppSW, Instruction};
 use alloc::vec::Vec;
 use ledger_device_sdk::io::{Comm, Event};
-use crate::bolos::{zlog, zlog_stack};
-use crate::crypto::chacha20poly::{compute_key, encrypt};
 
 const MAX_APDU_SIZE: usize = 253;
 
