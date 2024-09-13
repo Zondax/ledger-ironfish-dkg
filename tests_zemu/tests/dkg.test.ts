@@ -17,7 +17,7 @@
 import Zemu from '@zondax/zemu'
 import {defaultOptions, identities, models, PATH, restoreKeysTestCases} from './common'
 import IronfishApp, {IronfishKeys} from '@zondax/ledger-ironfish'
-import {isValidPublicAddress, multisig, UnsignedTransaction} from '@ironfish/rust-nodejs'
+import {isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions} from '@ironfish/rust-nodejs'
 import {Transaction} from '@ironfish/sdk'
 import {buildTx} from "./utils";
 import aggregateRawSignatureShares = multisig.aggregateRawSignatureShares;
@@ -34,7 +34,7 @@ const ONE_APP_PER_PARTICIPANT = 1;
 // Reference taken from https://github.com/iron-fish/ironfish/pull/5324/files
 
 describe.each(models)('DKG', function (m) {
-    it.skip(`${m.name} - can start and stop container`, async function () {
+    it(`${m.name} - can start and stop container`, async function () {
         const sim = new Zemu(m.path)
         try {
             await sim.start({ ...defaultOptions, model: m.name  })
@@ -383,7 +383,7 @@ describe.each(models)('DKG', function (m) {
         })
     })
 
-    describe.each(restoreKeysTestCases)("restore keys", ({index, encrypted, publicAddress, proofKeys, viewKeys, publicPackage}) =>{
+    describe.each(restoreKeysTestCases)(`${m.name} - restore keys`, ({index, encrypted, publicAddress, proofKeys, viewKeys, publicPackage}) =>{
         test(index + "", async () => {
             for (let e of encrypted) {
                 const sim = new Zemu(m.path)
@@ -429,7 +429,7 @@ describe.each(models)('DKG', function (m) {
         })
     })
 
-    describe.each(identities)('identities', function ({i, v}) {
+    describe.each(identities)(`${m.name} - generate identities`, function ({i, v}) {
         test(i + "", async function(){
             const sim = new Zemu(m.path)
             try {
