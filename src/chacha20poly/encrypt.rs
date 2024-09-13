@@ -7,6 +7,7 @@ use chacha20poly1305::{
 };
 use ledger_device_sdk::random::LedgerRng;
 
+#[inline(never)]
 pub fn encrypt(key: &[u8; 32], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
     let mut rng = LedgerRng {};
     let v1 = rng.next_u64();
