@@ -1,3 +1,4 @@
+pub mod chacha20poly;
 mod encryption_keys;
 mod epk;
 mod key;

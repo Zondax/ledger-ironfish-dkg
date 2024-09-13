@@ -239,4 +239,16 @@ impl DkgKeys {
 
         Ok(identities)
     }
+
+    #[inline(never)]
+    pub fn load_all_raw(&self) -> Result<&[u8], AppSW> {
+        zlog_stack("start load_all_raw\0");
+
+        let mut pos = self.get_u16(FROST_PUBLIC_PACKAGE_POS);
+        let len = self.get_u16(pos);
+        pos += 2 + len;
+
+        let data = self.get_slice(0, pos);
+        Ok(data)
+    }
 }

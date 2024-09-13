@@ -14,47 +14,43 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-
-use crate::bolos::zlog_stack;
-use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
+use crate::bolos::{zlog, zlog_stack};
+use crate::crypto::chacha20poly::{compute_key, encrypt};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::{AppSW, Instruction};
 use alloc::vec::Vec;
-use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
-use ironfish_frost::dkg::round3::PublicKeyPackage;
-use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
 use ledger_device_sdk::io::{Comm, Event};
 
 const MAX_APDU_SIZE: usize = 253;
 
 #[inline(never)]
-pub fn handler_dkg_get_public_package(comm: &mut Comm) -> Result<(), AppSW> {
-    zlog_stack("start handler_dkg_get_public_package\0");
+pub fn handler_dkg_backup_keys(comm: &mut Comm) -> Result<(), AppSW> {
+    zlog("start handler_dkg_backup_keys\0");
 
-    let identities = DkgKeys.load_identities()?;
-    let min_signers = DkgKeys.load_min_signers()?;
-    let frost_public_key_package = DkgKeys.load_frost_public_key_package()?;
+    let data = DkgKeys.load_all_raw()?;
+    let key = compute_key();
 
-    let p = PublicKeyPackage::from_frost(frost_public_key_package, identities, min_signers as u16);
+    let resp = encrypt(&key, data)?;
 
-    let resp = p.serialize();
-
-    send_apdu_chunks(comm, resp.as_slice())
+    send_apdu_chunks(comm, resp)
 }
 
 #[inline(never)]
-fn send_apdu_chunks(comm: &mut Comm, data: &[u8]) -> Result<(), AppSW> {
+fn send_apdu_chunks(comm: &mut Comm, data_vec: Vec<u8>) -> Result<(), AppSW> {
     zlog_stack("start send_apdu_chunks\0");
 
+    let data = data_vec.as_slice();
     let total_chunks = (data.len() + MAX_APDU_SIZE - 1) / MAX_APDU_SIZE;
 
     for (i, chunk) in data.chunks(MAX_APDU_SIZE).enumerate() {
+        zlog_stack("iter send_apdu_chunks\0");
         comm.append(chunk);
 
         if i < total_chunks - 1 {
+            zlog_stack("another send_apdu_chunks\0");
             comm.reply_ok();
             match comm.next_event() {
-                Event::Command(Instruction::DkgGetPublicPackage) => {}
+                Event::Command(Instruction::DkgBackupKeys) => {}
                 _ => {}
             }
         }
