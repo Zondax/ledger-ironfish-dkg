@@ -5,6 +5,9 @@ TESTS_JS_DIR = $(CURDIR)/js
 .PHONY: build
 build:
 	cargo ledger build nanosplus
+	cargo ledger build nanox
+	cargo ledger build stax
+	cargo ledger build flex
 
 .PHONY: setup
 setup:

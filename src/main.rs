@@ -109,9 +109,6 @@ extern "C" fn sample_main() {
                     sw
                 }
             };
-
-            #[cfg(any(target_os = "stax", target_os = "flex"))]
-            show_status_if_needed(&ins, &tx_ctx, &_status);
         }
     }
 }
