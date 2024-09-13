@@ -55,9 +55,7 @@ pub fn handler_dkg_round_3(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
         compute_dkg_round_3_min(&min_tx).map_err(|_| AppSW::DkgRound3Fail)?;
     drop(min_tx);
 
-    DkgKeys.save_keys(key_package, public_key_package, group_secret_key);
-
-    Ok(())
+    DkgKeys.save_keys(key_package, public_key_package, group_secret_key)
 }
 
 #[inline(never)]
