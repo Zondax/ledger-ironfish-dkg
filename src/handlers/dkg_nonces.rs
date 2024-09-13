@@ -22,11 +22,9 @@ use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::zlog_stack;
 use crate::{AppSW, Instruction};
 use alloc::vec::Vec;
-use ironfish_frost::frost::keys::KeyPackage;
 use ironfish_frost::nonces::deterministic_signing_nonces;
 use ironfish_frost::participant::Identity;
 use ledger_device_sdk::io::{Comm, Event};
-use serde::Serialize;
 
 const MAX_APDU_SIZE: usize = 253;
 const IDENTITY_LEN: usize = 129;
