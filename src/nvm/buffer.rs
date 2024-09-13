@@ -33,10 +33,10 @@ impl Buffer {
 
     #[allow(unused)]
     #[inline(never)]
-    pub fn is_valid_write(&self)-> Result<(), AppSW> {
+    pub fn is_valid_write(&self) -> Result<(), AppSW> {
         let buffer = unsafe { DATA.get_mut() };
-        if !buffer.is_valid(){
-            return Err(AppSW::InvalidNVMWrite)
+        if !buffer.is_valid() {
+            return Err(AppSW::InvalidNVMWrite);
         }
 
         Ok(())
