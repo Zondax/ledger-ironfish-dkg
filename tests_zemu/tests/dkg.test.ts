@@ -14,19 +14,20 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import Zemu from '@zondax/zemu'
+import Zemu, {isTouchDevice, DEFAULT_START_OPTIONS} from '@zondax/zemu'
 import {defaultOptions, identities, models, PATH, restoreKeysTestCases} from './common'
 import IronfishApp, {IronfishKeys} from '@zondax/ledger-ironfish'
 import {isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions} from '@ironfish/rust-nodejs'
 import {Transaction} from '@ironfish/sdk'
 import {buildTx} from "./utils";
 import aggregateRawSignatureShares = multisig.aggregateRawSignatureShares;
+import { TModel } from '@zondax/zemu/dist/types'
 
 jest.setTimeout(4500000)
 
 // Not sure about the start text for flex and stax, so we go with what it always work, which is the app name.
 // That is always displayed on the main menu
-const startText = "Ironfish DKG";
+const startTextFn = (model:TModel )=> isTouchDevice(model) ? "Ironfish DKG" : DEFAULT_START_OPTIONS.startText;
 
 // ONE_GLOBAL_APP: Use this flag if the whole DKG process will run in only one app (all participants, all rounds). This takes precedence over ONE_APP_PER_PARTICIPANT.
 // ONE_APP_PER_PARTICIPANT: Use this flag if the whole DKG process will run in one app per participant
@@ -40,7 +41,7 @@ describe.each(models)('DKG', function (m) {
     it(`${m.name} - can start and stop container`, async function () {
         const sim = new Zemu(m.path)
         try {
-            await sim.start({ ...defaultOptions, model: m.name, startText  })
+            await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
         } finally {
             await sim.close()
         }
@@ -69,7 +70,7 @@ describe.each(models)('DKG', function (m) {
                 const {sim, created} = checkSimRequired(rcvSims, i)
 
                 try {
-                    if(created) await sim.start({...defaultOptions, model: m.name, startText})
+                    if(created) await sim.start({...defaultOptions, model: m.name, startText: startTextFn(m.name)})
                     const app = new IronfishApp(sim.getTransport())
                     return await fn(app)
                 } finally {
@@ -83,7 +84,7 @@ describe.each(models)('DKG', function (m) {
             else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
 
             for (let i = 0; i < globalSims.length; i++)
-                await globalSims[i].start({...defaultOptions, model: m.name, startText})
+                await globalSims[i].start({...defaultOptions, model: m.name, startText: startTextFn(m.name)})
 
             let identities: any[] = [];
             let round1s: any[] = [];
@@ -391,7 +392,7 @@ describe.each(models)('DKG', function (m) {
             for (let e of encrypted) {
                 const sim = new Zemu(m.path)
                 try {
-                    await sim.start({...defaultOptions, model: m.name, startText})
+                    await sim.start({...defaultOptions, model: m.name, startText: startTextFn(m.name)})
                     const app = new IronfishApp(sim.getTransport())
                     let resp: any= await app.dkgRestoreKeys(PATH, e)
 
@@ -436,7 +437,7 @@ describe.each(models)('DKG', function (m) {
         test(i + "", async function(){
             const sim = new Zemu(m.path)
             try {
-                await sim.start({ ...defaultOptions, model: m.name, startText })
+                await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
                 const app = new IronfishApp(sim.getTransport())
                 const respIdentity = await app.dkgGetIdentity(i)
 
