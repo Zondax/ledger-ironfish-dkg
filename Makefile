@@ -16,6 +16,12 @@ setup:
 format:
 	cargo fmt --all
 
+# To be run on linux only
+# TARGET: nanosplus, stax, flex, nanox
+.PHONY: lint
+lint:
+	cargo clippy --target $(TARGET) -- -Dwarnings
+
 .PHONY: zemu_install_js_link
 ifeq ($(TESTS_JS_DIR),)
 zemu_install_js_link:
