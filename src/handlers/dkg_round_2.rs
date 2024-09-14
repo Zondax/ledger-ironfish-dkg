@@ -16,6 +16,7 @@
  *****************************************************************************/
 
 use crate::accumulator::accumulate_data;
+use crate::app_ui::run_action::ui_run_action;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
@@ -28,7 +29,6 @@ use ironfish_frost::dkg::round1::PublicPackage;
 use ironfish_frost::dkg::round2::CombinedPublicPackage;
 use ledger_device_sdk::io::Comm;
 use ledger_device_sdk::random::LedgerRng;
-use crate::app_ui::generic::ui_run_action;
 
 #[inline(never)]
 pub fn handler_dkg_round_2(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
@@ -44,7 +44,7 @@ pub fn handler_dkg_round_2(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
     let (round_1_secret_package, current_pos) =
         parse_round_1_secret_package(&ctx.buffer, current_pos)?;
 
-    if !ui_run_action(&["Run DKG Round 2?"]){
+    if !ui_run_action(&["Run DKG Round 2?"])? {
         return Err(AppSW::Deny);
     }
 

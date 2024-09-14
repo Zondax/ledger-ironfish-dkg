@@ -16,6 +16,7 @@
  *****************************************************************************/
 
 use crate::accumulator::accumulate_data;
+use crate::app_ui::run_action::ui_run_action;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
@@ -29,7 +30,6 @@ use ironfish_frost::error::IronfishFrostError;
 use ironfish_frost::frost::keys::KeyPackage;
 use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
 use ledger_device_sdk::io::Comm;
-use crate::app_ui::generic::ui_run_action;
 
 pub struct MinTx {
     identity_index: u8,
@@ -52,7 +52,7 @@ pub fn handler_dkg_round_3(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
     // Try to deserialize the transaction
     let min_tx = parse_tx_min(&ctx.buffer)?;
 
-    if !ui_run_action(&["Run DKG Round 3?"]){
+    if !ui_run_action(&["Run DKG Round 3?"])? {
         return Err(AppSW::Deny);
     }
 

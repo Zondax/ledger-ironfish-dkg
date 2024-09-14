@@ -32,7 +32,7 @@ use include_gif::include_gif;
 pub fn ui_run_action<'a>(review_message: &'a [&'a str]) -> Result<bool, AppSW> {
     #[cfg(not(any(target_os = "stax", target_os = "flex")))]
     {
-        let my_field:[Field;0] = [];
+        let my_field: [Field; 0] = [];
 
         let my_review = MultiFieldReview::new(
             &my_field,
@@ -56,11 +56,6 @@ pub fn ui_run_action<'a>(review_message: &'a [&'a str]) -> Result<bool, AppSW> {
 
         Ok(NbglChoice::new()
             .glyph(&FERRIS)
-            .show(
-                review_message,
-                "",
-                "Approve",
-                "Reject"
-            ))
+            .show(review_message[0], "", "Approve", "Reject"))
     }
 }
