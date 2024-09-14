@@ -112,7 +112,6 @@ describe.each(models)('DKG', function (m) {
       let round1s: any[] = []
       let round2s: any[] = []
       let commitments: any[] = []
-      let nonces: any[] = []
       let publicPackages: any[] = []
       let encryptedKeys: any[] = []
       let pks: any[] = []
@@ -351,24 +350,6 @@ describe.each(models)('DKG', function (m) {
           commitments.push(result.commitments.toString('hex'))
         }
 
-        for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
-            let result = await app.dkgGetNonces(identities, unsignedTx.hash().toString('hex'))
-
-            expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(result.errorMessage).toEqual('No errors')
-            expect(result.nonces).toBeTruthy()
-
-            return result
-          })
-
-          if (!result.nonces) throw new Error('no nonces found')
-
-          nonces.push(result.nonces.toString('hex'))
-        }
-
-        console.log(nonces.map(c => c.toString('hex')))
-
         const signingPackageHex = unsignedTx.signingPackageFromRaw(identities, commitments)
         const signingPackage = new multisig.SigningPackage(Buffer.from(signingPackageHex, 'hex'))
 
@@ -377,7 +358,7 @@ describe.each(models)('DKG', function (m) {
             let result = await app.dkgSign(
               unsignedTx.publicKeyRandomness(),
               signingPackage.frostSigningPackage().toString('hex'),
-              nonces[i].toString('hex'),
+              unsignedTx.hash().toString('hex'),
             )
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
