@@ -73,4 +73,4 @@ zemu_install: zemu_install_ironfish_link zemu_install_js_link
 
 .PHONY: zemu_test
 zemu_test:
-	cd $(TESTS_ZEMU_DIR) && yarn test -- --maxConcurrency 1
+	cd $(TESTS_ZEMU_DIR) && yarn test
