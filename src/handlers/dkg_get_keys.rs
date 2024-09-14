@@ -22,7 +22,6 @@ use crate::{AppSW};
 use alloc::vec::Vec;
 use ledger_device_sdk::io::{Comm};
 use crate::context::TxContext;
-use crate::utils::response::save_result;
 
 
 #[inline(never)]
@@ -44,8 +43,7 @@ pub fn handler_dkg_get_keys(comm: &mut Comm, key_type: &u8,
     let resp = get_requested_keys(&account_keys, key_type)?;
     drop(account_keys);
 
-    let total_chunks = save_result(ctx, resp.as_slice())?;
-    comm.append(&total_chunks);
+    comm.append(resp.as_slice().as_ref());
     Ok(())
 }
 
