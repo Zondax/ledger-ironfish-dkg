@@ -15,19 +15,19 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::accumulator::accumulate_data;
-use ironfish_frost::frost::keys::KeyPackage;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
+use crate::ironfish::constants::TX_HASH_LEN;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
 use crate::AppSW;
+use ironfish_frost::frost::keys::KeyPackage;
 use ironfish_frost::frost::round1::SigningNonces;
 use ironfish_frost::frost::round2;
-use ironfish_frost::{frost::Randomizer, frost::SigningPackage};
 use ironfish_frost::nonces::deterministic_signing_nonces;
+use ironfish_frost::{frost::Randomizer, frost::SigningPackage};
 use ledger_device_sdk::io::Comm;
-use crate::ironfish::constants::TX_HASH_LEN;
 
 #[inline(never)]
 pub fn handler_dkg_sign(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
@@ -86,8 +86,12 @@ fn parse_tx(buffer: &Buffer) -> Result<(SigningPackage, Randomizer, &[u8]), AppS
 }
 
 #[inline(never)]
-fn generate_nonces(key_package:&KeyPackage, tx_hash:&[u8] ) -> Result<SigningNonces, AppSW> {
+fn generate_nonces(key_package: &KeyPackage, tx_hash: &[u8]) -> Result<SigningNonces, AppSW> {
     let identities = DkgKeys.load_identities()?;
 
-   Ok(deterministic_signing_nonces(key_package.signing_share(), tx_hash, &identities))
+    Ok(deterministic_signing_nonces(
+        key_package.signing_share(),
+        tx_hash,
+        &identities,
+    ))
 }

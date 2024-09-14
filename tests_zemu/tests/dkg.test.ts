@@ -336,7 +336,7 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
-            let result = await app.dkgGetCommitments(identities, unsignedTx.hash().toString('hex'))
+            let result = await app.dkgGetCommitments(unsignedTx.hash().toString('hex'))
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
             expect(result.errorMessage).toEqual('No errors')
