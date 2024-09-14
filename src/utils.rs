@@ -1,4 +1,6 @@
 mod bip32;
+pub mod response;
+
 pub use bip32::Bip32Path;
 use core::cmp;
 
