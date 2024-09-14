@@ -1,4 +1,4 @@
-use crate::nvm::buffer::Buffer;
+use crate::nvm::buffer::{Buffer, BufferMode};
 
 pub struct TxContext {
     pub buffer: Buffer,
@@ -15,9 +15,13 @@ impl TxContext {
         }
     }
 
-    // Implement reset for TxInfo
-    pub fn reset(&mut self) {
-        self.buffer.reset();
+    pub fn reset_to_receive(&mut self) {
+        self.buffer.reset(BufferMode::Receive);
+        self.done = false;
+    }
+
+    pub fn reset_to_result(&mut self) {
+        self.buffer.reset(BufferMode::Result);
         self.done = false;
     }
 }

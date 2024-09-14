@@ -14,7 +14,7 @@ pub fn accumulate_data(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Resul
     // First chunk, try to parse the path
     if chunk == 0 {
         // Reset transaction context
-        ctx.reset();
+        ctx.reset_to_receive();
         return Ok(());
         // Next chunks, append data to raw_tx and return or parse
         // the transaction if it is the last chunk.

@@ -108,7 +108,8 @@ extern "C" fn sample_main() {
                     AppSW::Ok
                 }
                 Err(sw) => {
-                    tx_ctx.reset();
+                    // On any error we return, we reset the buffer to receive mode
+                    tx_ctx.reset_to_receive();
                     comm.reply(sw);
                     sw
                 }
