@@ -55,6 +55,7 @@ pub mod accumulator;
 mod context;
 
 pub mod crypto;
+
 use crypto::{ConstantKey, Epk};
 
 use crate::handlers::handle_apdu;
