@@ -16,19 +16,19 @@
  *****************************************************************************/
 
 use crate::bolos::zlog_stack;
+use crate::context::TxContext;
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW, Instruction};
+use crate::AppSW;
 use alloc::vec::Vec;
-use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
-use ironfish_frost::dkg::round3::PublicKeyPackage;
-use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
-use ledger_device_sdk::io::{Comm, Event};
-
-const MAX_APDU_SIZE: usize = 253;
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
-pub fn handler_dkg_get_keys(comm: &mut Comm, key_type: &u8) -> Result<(), AppSW> {
+pub fn handler_dkg_get_keys(
+    comm: &mut Comm,
+    key_type: &u8,
+    ctx: &mut TxContext,
+) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 
     let group_secret_key = DkgKeys.load_group_secret_key()?;
@@ -45,7 +45,8 @@ pub fn handler_dkg_get_keys(comm: &mut Comm, key_type: &u8) -> Result<(), AppSW>
     let resp = get_requested_keys(&account_keys, key_type)?;
     drop(account_keys);
 
-    send_apdu_chunks(comm, resp.as_slice())
+    comm.append(resp.as_slice().as_ref());
+    Ok(())
 }
 
 #[inline(never)]
@@ -80,25 +81,4 @@ fn get_requested_keys(account_keys: &MultisigAccountKeys, key_type: &u8) -> Resu
         }
         _ => Err(AppSW::InvalidKeyType),
     }
-}
-
-#[inline(never)]
-fn send_apdu_chunks(comm: &mut Comm, data: &[u8]) -> Result<(), AppSW> {
-    zlog_stack("start send_apdu_chunks\0");
-
-    let total_chunks = (data.len() + MAX_APDU_SIZE - 1) / MAX_APDU_SIZE;
-
-    for (i, chunk) in data.chunks(MAX_APDU_SIZE).enumerate() {
-        comm.append(chunk);
-
-        if i < total_chunks - 1 {
-            comm.reply_ok();
-            match comm.next_event() {
-                Event::Command(Instruction::DkgGetKeys { key_type: 0 }) => {}
-                _ => {}
-            }
-        }
-    }
-
-    Ok(())
 }

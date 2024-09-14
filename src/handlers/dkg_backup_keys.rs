@@ -15,16 +15,15 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::bolos::{zlog, zlog_stack};
+use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, encrypt};
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW, Instruction};
-use alloc::vec::Vec;
-use ledger_device_sdk::io::{Comm, Event};
-
-const MAX_APDU_SIZE: usize = 253;
+use crate::utils::response::save_result;
+use crate::AppSW;
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
-pub fn handler_dkg_backup_keys(comm: &mut Comm) -> Result<(), AppSW> {
+pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {
     zlog("start handler_dkg_backup_keys\0");
 
     let data = DkgKeys.backup_keys()?;
@@ -32,29 +31,8 @@ pub fn handler_dkg_backup_keys(comm: &mut Comm) -> Result<(), AppSW> {
 
     let resp = encrypt(&key, data)?;
 
-    send_apdu_chunks(comm, resp)
-}
-
-#[inline(never)]
-fn send_apdu_chunks(comm: &mut Comm, data_vec: Vec<u8>) -> Result<(), AppSW> {
-    zlog_stack("start send_apdu_chunks\0");
-
-    let data = data_vec.as_slice();
-    let total_chunks = (data.len() + MAX_APDU_SIZE - 1) / MAX_APDU_SIZE;
-
-    for (i, chunk) in data.chunks(MAX_APDU_SIZE).enumerate() {
-        zlog_stack("iter send_apdu_chunks\0");
-        comm.append(chunk);
-
-        if i < total_chunks - 1 {
-            zlog_stack("another send_apdu_chunks\0");
-            comm.reply_ok();
-            match comm.next_event() {
-                Event::Command(Instruction::DkgBackupKeys) => {}
-                _ => {}
-            }
-        }
-    }
+    let total_chunks = save_result(ctx, resp.as_slice())?;
+    comm.append(&total_chunks);
 
     Ok(())
 }

@@ -20,15 +20,12 @@ use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW, Instruction};
-use alloc::vec::Vec;
-use ironfish_frost::frost::keys::KeyPackage;
+use crate::utils::response::save_result;
+use crate::AppSW;
 use ironfish_frost::frost::round1::SigningNonces;
 use ironfish_frost::frost::round2;
 use ironfish_frost::{frost::Randomizer, frost::SigningPackage};
-use ledger_device_sdk::io::{Comm, Event};
-
-const MAX_APDU_SIZE: usize = 253;
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
 pub fn handler_dkg_sign(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
@@ -46,9 +43,11 @@ pub fn handler_dkg_sign(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Resu
     let signature = round2::sign(&frost_signing_package, &nonces, &key_package, randomizer);
 
     zlog_stack("unwrap sig result\0");
-    let sig = signature.unwrap().serialize();
+    let resp = signature.unwrap().serialize();
 
-    send_apdu_chunks(comm, sig)
+    let total_chunks = save_result(ctx, resp.as_slice())?;
+    comm.append(&total_chunks);
+    Ok(())
 }
 
 #[inline(never)]
@@ -84,26 +83,4 @@ fn parse_tx(buffer: &Buffer) -> Result<(SigningPackage, SigningNonces, Randomize
     }
 
     Ok((frost_signing_package, nonces, randomizer))
-}
-
-#[inline(never)]
-fn send_apdu_chunks(comm: &mut Comm, data_vec: Vec<u8>) -> Result<(), AppSW> {
-    zlog_stack("start send_apdu_chunks\0");
-
-    let data = data_vec.as_slice();
-    let total_chunks = (data.len() + MAX_APDU_SIZE - 1) / MAX_APDU_SIZE;
-
-    for (i, chunk) in data.chunks(MAX_APDU_SIZE).enumerate() {
-        comm.append(chunk);
-
-        if i < total_chunks - 1 {
-            comm.reply_ok();
-            match comm.next_event() {
-                Event::Command(Instruction::DkgSign { chunk: 0 }) => {}
-                _ => {}
-            }
-        }
-    }
-
-    Ok(())
 }

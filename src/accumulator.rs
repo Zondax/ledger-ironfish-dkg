@@ -26,7 +26,6 @@ pub fn accumulate_data(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Resul
 
     // Append data to raw_tx
     ctx.buffer.set_slice(ctx.buffer.pos, data)?;
-    ctx.buffer.pos += data.len();
 
     // If we expect more chunks, return
     if chunk == 1 {

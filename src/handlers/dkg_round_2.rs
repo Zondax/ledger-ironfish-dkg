@@ -20,18 +20,14 @@ use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
 use crate::nvm::buffer::Buffer;
-use crate::{AppSW, Instruction};
+use crate::utils::response::save_result;
+use crate::AppSW;
 use alloc::vec::Vec;
 use ironfish_frost::dkg;
 use ironfish_frost::dkg::round1::PublicPackage;
 use ironfish_frost::dkg::round2::CombinedPublicPackage;
-use ironfish_frost::error::IronfishFrostError;
-use ironfish_frost::participant::Secret;
-use ledger_device_sdk::io::{Comm, Event};
+use ledger_device_sdk::io::Comm;
 use ledger_device_sdk::random::LedgerRng;
-use serde_json_core::to_string;
-
-const MAX_APDU_SIZE: usize = 253;
 
 #[inline(never)]
 pub fn handler_dkg_round_2(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
@@ -53,11 +49,13 @@ pub fn handler_dkg_round_2(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
         round_1_secret_package,
     )?;
 
-    let response = generate_response(&mut round2_secret_package_vec, &round2_public_package);
+    let resp = generate_response(&mut round2_secret_package_vec, &round2_public_package);
     drop(round2_secret_package_vec);
     drop(round2_public_package);
 
-    send_apdu_chunks(comm, &response)
+    let total_chunks = save_result(ctx, resp.as_slice())?;
+    comm.append(&total_chunks);
+    Ok(())
 }
 
 #[inline(never)]
@@ -149,24 +147,4 @@ fn generate_response(
     resp.append(&mut round2_public_package_vec);
 
     resp
-}
-
-#[inline(never)]
-fn send_apdu_chunks(comm: &mut Comm, data_vec: &Vec<u8>) -> Result<(), AppSW> {
-    let data = data_vec.as_slice();
-    let total_chunks = (data.len() + MAX_APDU_SIZE - 1) / MAX_APDU_SIZE;
-
-    for (i, chunk) in data.chunks(MAX_APDU_SIZE).enumerate() {
-        comm.append(chunk);
-
-        if i < total_chunks - 1 {
-            comm.reply_ok();
-            match comm.next_event() {
-                Event::Command(Instruction::DkgRound2 { chunk: 0 }) => {}
-                _ => {}
-            }
-        }
-    }
-
-    Ok(())
 }

@@ -15,28 +15,23 @@
  *  limitations under the License.
  *****************************************************************************/
 
-use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::nvm::dkg_keys::DkgKeys;
-use crate::utils::response::save_result;
 use crate::AppSW;
-use ironfish_frost::dkg::round3::PublicKeyPackage;
 use ledger_device_sdk::io::Comm;
 
+const MAX_APDU_SIZE: usize = 253;
+
 #[inline(never)]
-pub fn handler_dkg_get_public_package(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {
-    zlog_stack("start handler_dkg_get_pub_pack\0");
+pub fn handler_get_result(comm: &mut Comm, ctx: &mut TxContext, page: u8) -> Result<(), AppSW> {
+    let start_page_pos: usize = page as usize * MAX_APDU_SIZE;
+    let mut end_page_pos: usize = start_page_pos + MAX_APDU_SIZE;
 
-    let identities = DkgKeys.load_identities()?;
-    let min_signers = DkgKeys.load_min_signers()?;
-    let frost_public_key_package = DkgKeys.load_frost_public_key_package()?;
+    if ctx.buffer.pos < end_page_pos {
+        end_page_pos = ctx.buffer.pos;
+    }
 
-    let p = PublicKeyPackage::from_frost(frost_public_key_package, identities, min_signers as u16);
-
-    let resp = p.serialize();
-
-    let total_chunks = save_result(ctx, resp.as_slice())?;
-    comm.append(&total_chunks);
+    let data_to_send = ctx.buffer.get_slice(start_page_pos, end_page_pos)?;
+    comm.append(data_to_send);
 
     Ok(())
 }

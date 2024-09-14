@@ -74,7 +74,7 @@ impl Buffer {
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn set_slice(&self, mut index: usize, value: &[u8]) -> Result<(), AppSW> {
+    pub fn set_slice(&mut self, mut index: usize, value: &[u8]) -> Result<(), AppSW> {
         let mut updated_data: [u8; BUFFER_SIZE] = unsafe { *DATA.get_mut().get_ref() };
         for b in value.iter() {
             self.check_write_pos(index)?;
@@ -85,8 +85,9 @@ impl Buffer {
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
-
         self.is_valid_write()?;
+
+        self.pos += value.len();
         Ok(())
     }
 
