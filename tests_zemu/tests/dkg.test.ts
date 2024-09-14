@@ -14,7 +14,7 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import Zemu, { DEFAULT_START_OPTIONS, isTouchDevice } from '@zondax/zemu'
+import Zemu, { ButtonKind, DEFAULT_START_OPTIONS, isTouchDevice } from '@zondax/zemu'
 import { defaultOptions, identities, models, restoreKeysTestCases } from './common'
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions } from '@ironfish/rust-nodejs'
@@ -48,7 +48,7 @@ describe.each(models)('DKG', function (m) {
   })
 
   describe.each([
-    { p: 4, min: 3 },
+    { p: 4, min: 2 },
     { p: 3, min: 2 },
     { p: 2, min: 2 },
   ])(`${m.name} - participants`, function ({ p: participants, min: minSigners }) {
@@ -70,13 +70,25 @@ describe.each(models)('DKG', function (m) {
         return { sim, created }
       }
 
-      const runMethod = async (rcvSims: Zemu[], i: number, fn: (app: IronfishApp) => Promise<any>): Promise<any> => {
+      const runMethod = async (rcvSims: Zemu[], i: number, fn: (sim: Zemu, app: IronfishApp) => Promise<any>): Promise<any> => {
         const { sim, created } = checkSimRequired(rcvSims, i)
 
         try {
-          if (created) await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+          if (created)
+            await sim.start({
+              ...defaultOptions,
+              model: m.name,
+              startText: startTextFn(m.name),
+              approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+              approveAction: ButtonKind.ApproveTapButton,
+            })
           const app = new IronfishApp(sim.getTransport())
-          return await fn(app)
+          const resp = await fn(sim, app)
+
+          // Clean events from previous commands as each sim lives for many commands (DKG generation + signing)
+          await sim.deleteEvents()
+
+          return resp
         } finally {
           if (created) await sim.close()
         }
@@ -88,7 +100,13 @@ describe.each(models)('DKG', function (m) {
       else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
 
       for (let i = 0; i < globalSims.length; i++)
-        await globalSims[i].start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+        await globalSims[i].start({
+          ...defaultOptions,
+          model: m.name,
+          startText: startTextFn(m.name),
+          approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+          approveAction: ButtonKind.ApproveTapButton,
+        })
 
       let identities: any[] = []
       let round1s: any[] = []
@@ -104,8 +122,14 @@ describe.each(models)('DKG', function (m) {
 
       try {
         for (let i = 0; i < participants; i++) {
-          const identity = await runMethod(globalSims, i, async (app: IronfishApp) => {
-            const identity = await app.dkgGetIdentity(i)
+          const identity = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            const identityReq = app.dkgGetIdentity(i)
+
+            // Wait until we are not in the main menu
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-identity`)
+
+            const identity = await identityReq
 
             expect(i + ' ' + identity.returnCode.toString(16)).toEqual(i + ' ' + '9000')
             expect(identity.errorMessage).toEqual('No errors')
@@ -119,8 +143,13 @@ describe.each(models)('DKG', function (m) {
         }
 
         for (let i = 0; i < participants; i++) {
-          const round1 = await runMethod(globalSims, i, async (app: IronfishApp) => {
-            const round1 = await app.dkgRound1(i, identities, minSigners)
+          const round1 = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            const round1Req = app.dkgRound1(i, identities, minSigners)
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-round1`)
+
+            const round1 = await round1Req
 
             expect(i + ' ' + round1.returnCode.toString(16)).toEqual(i + ' ' + '9000')
             expect(round1.errorMessage).toEqual('No errors')
@@ -137,12 +166,17 @@ describe.each(models)('DKG', function (m) {
         }
 
         for (let i = 0; i < participants; i++) {
-          const round2 = await runMethod(globalSims, i, async (app: IronfishApp) => {
-            const round2 = await app.dkgRound2(
+          const round2 = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            const round2Req = app.dkgRound2(
               i,
               round1s.map(r => r.publicPackage),
               round1s[i].secretPackage,
             )
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-round2`)
+
+            const round2 = await round2Req
 
             expect(i + ' ' + round2.returnCode.toString(16)).toEqual(i + ' ' + '9000')
             expect(round2.errorMessage).toEqual('No errors')
@@ -159,13 +193,18 @@ describe.each(models)('DKG', function (m) {
         }
 
         for (let i = 0; i < participants; i++) {
-          await runMethod(globalSims, i, async (app: IronfishApp) => {
-            let round3 = await app.dkgRound3(
+          await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            let round3Req = app.dkgRound3(
               i,
               round1s.map(r => r.publicPackage),
               round2s.filter((_, pos) => i != pos).map(r => r.publicPackage),
               round2s[i].secretPackage,
             )
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-round3`)
+
+            const round3 = await round3Req
 
             expect(i + ' ' + round3.returnCode.toString(16)).toEqual(i + ' ' + '9000')
             expect(round3.errorMessage).toEqual('No errors')
@@ -175,7 +214,7 @@ describe.each(models)('DKG', function (m) {
         }
 
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
+          const result = await runMethod(globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgGetPublicPackage()
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
@@ -193,8 +232,13 @@ describe.each(models)('DKG', function (m) {
         console.log('publicPackages ' + JSON.stringify(publicPackages, null, 2))
 
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
-            let result = await app.dkgBackupKeys()
+          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            let resultReq = app.dkgBackupKeys()
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-backup`)
+
+            const result = await resultReq
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
             expect(result.errorMessage).toEqual('No errors')
@@ -212,7 +256,7 @@ describe.each(models)('DKG', function (m) {
 
         // Generate keys from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
+          const result = await runMethod(globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
@@ -240,7 +284,7 @@ describe.each(models)('DKG', function (m) {
 
         // Generate view keys from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
+          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
@@ -265,7 +309,7 @@ describe.each(models)('DKG', function (m) {
 
         // Generate view keys from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
+          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
@@ -292,7 +336,7 @@ describe.each(models)('DKG', function (m) {
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
+          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgGetCommitments(identities, unsignedTx.hash().toString('hex'))
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
@@ -308,7 +352,7 @@ describe.each(models)('DKG', function (m) {
         }
 
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
+          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgGetNonces(identities, unsignedTx.hash().toString('hex'))
 
             expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
@@ -329,7 +373,7 @@ describe.each(models)('DKG', function (m) {
         const signingPackage = new multisig.SigningPackage(Buffer.from(signingPackageHex, 'hex'))
 
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (app: IronfishApp) => {
+          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgSign(
               unsignedTx.publicKeyRandomness(),
               signingPackage.frostSigningPackage().toString('hex'),
@@ -374,9 +418,20 @@ describe.each(models)('DKG', function (m) {
         for (let e of encrypted) {
           const sim = new Zemu(m.path)
           try {
-            await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+            await sim.start({
+              ...defaultOptions,
+              model: m.name,
+              startText: startTextFn(m.name),
+              approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+              approveAction: ButtonKind.ApproveTapButton,
+            })
             const app = new IronfishApp(sim.getTransport())
-            let resp: any = await app.dkgRestoreKeys(e)
+            let respReq: any = app.dkgRestoreKeys(e)
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-restore-keys`)
+
+            let resp = await respReq
 
             expect(resp.returnCode.toString(16)).toEqual('9000')
             expect(resp.errorMessage).toEqual('No errors')
@@ -418,7 +473,13 @@ describe.each(models)('DKG', function (m) {
   test(`${m.name} - attempt to retrieve viewKeys when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
-      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
       const app = new IronfishApp(sim.getTransport())
 
       let resp: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
@@ -431,7 +492,13 @@ describe.each(models)('DKG', function (m) {
   test(`${m.name} - attempt to retrieve proof keys when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
-      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
       const app = new IronfishApp(sim.getTransport())
 
       let resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
@@ -444,7 +511,13 @@ describe.each(models)('DKG', function (m) {
   test(`${m.name} - attempt to retrieve public address when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
-      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
       const app = new IronfishApp(sim.getTransport())
 
       let resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
@@ -457,7 +530,13 @@ describe.each(models)('DKG', function (m) {
   test(`${m.name} - attempt to retrieve public package when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
-      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
       const app = new IronfishApp(sim.getTransport())
 
       let resp = await app.dkgGetPublicPackage()
@@ -470,7 +549,13 @@ describe.each(models)('DKG', function (m) {
   test(`${m.name} - attempt to backup keys when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
-      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
       const app = new IronfishApp(sim.getTransport())
 
       let resp = await app.dkgBackupKeys()
@@ -500,13 +585,24 @@ describe.each(models)('DKG', function (m) {
     test(i + '', async function () {
       const sim = new Zemu(m.path)
       try {
-        await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+        await sim.start({
+          ...defaultOptions,
+          model: m.name,
+          startText: startTextFn(m.name),
+          approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+          approveAction: ButtonKind.ApproveTapButton,
+        })
         const app = new IronfishApp(sim.getTransport())
-        const respIdentity = await app.dkgGetIdentity(i)
+        const identityReq = app.dkgGetIdentity(i)
 
-        expect(respIdentity.returnCode.toString(16)).toEqual('9000')
-        expect(respIdentity.errorMessage).toEqual('No errors')
-        expect(respIdentity.identity?.toString('hex')).toEqual(v)
+        await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+        await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-identity-${i}`)
+
+        let identity = await identityReq
+
+        expect(identity.returnCode.toString(16)).toEqual('9000')
+        expect(identity.errorMessage).toEqual('No errors')
+        expect(identity.identity?.toString('hex')).toEqual(v)
       } finally {
         await sim.close()
       }
