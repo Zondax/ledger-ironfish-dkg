@@ -22,6 +22,7 @@ mod parser;
 mod utils;
 mod app_ui {
     pub mod menu;
+    pub mod generic;
 }
 mod ironfish {
     pub mod constants;

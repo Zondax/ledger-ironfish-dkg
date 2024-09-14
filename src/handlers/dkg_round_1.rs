@@ -28,6 +28,7 @@ use ironfish_frost::dkg;
 use ironfish_frost::participant::{Identity, Secret};
 use ledger_device_sdk::io::Comm;
 use ledger_device_sdk::random::LedgerRng;
+use crate::app_ui::generic::ui_run_action;
 
 const IDENTITY_LEN: usize = 129;
 
@@ -47,6 +48,11 @@ pub fn handler_dkg_round_1(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
     }
 
     let mut tx: Tx = parse_tx(&ctx.buffer)?;
+
+    if !ui_run_action(&["Run DKG Round 1?"]){
+        return Err(AppSW::Deny);
+    }
+
     let dkg_secret = compute_dkg_secret(tx.identity_index);
 
     let resp = compute_dkg_round_1(comm, &dkg_secret, &mut tx)?;

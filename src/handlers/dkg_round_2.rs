@@ -28,6 +28,7 @@ use ironfish_frost::dkg::round1::PublicPackage;
 use ironfish_frost::dkg::round2::CombinedPublicPackage;
 use ledger_device_sdk::io::Comm;
 use ledger_device_sdk::random::LedgerRng;
+use crate::app_ui::generic::ui_run_action;
 
 #[inline(never)]
 pub fn handler_dkg_round_2(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
@@ -42,6 +43,10 @@ pub fn handler_dkg_round_2(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
     let (round_1_public_packages, current_pos) = parse_round_1_public_packages(&ctx.buffer, 1)?;
     let (round_1_secret_package, current_pos) =
         parse_round_1_secret_package(&ctx.buffer, current_pos)?;
+
+    if !ui_run_action(&["Run DKG Round 2?"]){
+        return Err(AppSW::Deny);
+    }
 
     let (mut round2_secret_package_vec, round2_public_package) = compute_dkg_round_2(
         identity_index,

@@ -29,6 +29,7 @@ use ironfish_frost::error::IronfishFrostError;
 use ironfish_frost::frost::keys::KeyPackage;
 use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
 use ledger_device_sdk::io::Comm;
+use crate::app_ui::generic::ui_run_action;
 
 pub struct MinTx {
     identity_index: u8,
@@ -50,6 +51,10 @@ pub fn handler_dkg_round_3(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
 
     // Try to deserialize the transaction
     let min_tx = parse_tx_min(&ctx.buffer)?;
+
+    if !ui_run_action(&["Run DKG Round 3?"]){
+        return Err(AppSW::Deny);
+    }
 
     let (key_package, public_key_package, group_secret_key) =
         compute_dkg_round_3_min(&min_tx).map_err(|_| AppSW::DkgRound3Fail)?;
