@@ -16,7 +16,6 @@
  *****************************************************************************/
 
 use crate::AppSW;
-use alloc::format;
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
@@ -25,7 +24,7 @@ use ledger_device_sdk::ui::{
 };
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
-use ledger_device_sdk::nbgl::{NbglAddressReview, NbglGlyph};
+use ledger_device_sdk::nbgl::{NbglChoice, NbglGlyph};
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use include_gif::include_gif;
@@ -50,12 +49,18 @@ pub fn ui_run_action<'a>(review_message: &'a [&'a str]) -> Result<bool, AppSW> {
 
     #[cfg(any(target_os = "stax", target_os = "flex"))]
     {
-        // Load glyph from 64x64 4bpp gif file with include_gif macro. Creates an NBGL compatible glyph.
-        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("crab_64x64.gif", NBGL));
-        // Display the address confirmation screen.
-        Ok(NbglAddressReview::new()
+        #[cfg(target_os = "stax")]
+        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
+        #[cfg(target_os = "flex")]
+        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
+
+        Ok(NbglChoice::new()
             .glyph(&FERRIS)
-            .verify_str("Verify CRAB address")
-            .show(&addr_hex))
+            .show(
+                review_message,
+                "",
+                "Approve",
+                "Reject"
+            ))
     }
 }
