@@ -56,7 +56,7 @@ pub fn handler_dkg_round_1(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
 
     let resp = compute_dkg_round_1(comm, &dkg_secret, &mut tx)?;
 
-    DkgKeys.save_round_1_data(&tx.identities, tx.min_signers)?;
+    DkgKeys.save_round_1_data(&tx.identities, tx.min_signers, tx.identity_index)?;
 
     let total_chunks = save_result(ctx, resp.as_slice())?;
     comm.append(&total_chunks);
