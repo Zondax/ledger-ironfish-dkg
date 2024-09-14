@@ -21,15 +21,13 @@ use crate::context::TxContext;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
-use crate::{AppSW, Instruction};
+use crate::{AppSW};
 use alloc::vec::Vec;
 use ironfish_frost::frost::round1::SigningCommitments;
 use ironfish_frost::nonces::deterministic_signing_nonces;
 use ironfish_frost::participant::Identity;
-use ledger_device_sdk::io::{Comm, Event};
-
-const IDENTITY_LEN: usize = 129;
-const TX_HASH_LEN: usize = 32;
+use ledger_device_sdk::io::{Comm};
+use crate::ironfish::constants::{IDENTITY_LEN, TX_HASH_LEN};
 
 #[inline(never)]
 pub fn handler_dkg_commitments(

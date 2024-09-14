@@ -29,8 +29,7 @@ use ironfish_frost::dkg;
 use ironfish_frost::participant::{Identity, Secret};
 use ledger_device_sdk::io::Comm;
 use ledger_device_sdk::random::LedgerRng;
-
-const IDENTITY_LEN: usize = 129;
+use crate::ironfish::constants::IDENTITY_LEN;
 
 pub struct Tx {
     identity_index: u8,
