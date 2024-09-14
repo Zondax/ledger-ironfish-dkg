@@ -5,6 +5,12 @@ use ledger_device_sdk::NVMData;
 // This is necessary to store the object in NVM and not in RAM
 pub const BUFFER_SIZE: usize = 4000;
 
+#[derive(Clone, Copy)]
+pub enum BufferMode{
+    Receive,
+    Result
+}
+
 #[link_section = ".nvm_data"]
 static mut DATA: NVMData<SafeStorage<[u8; BUFFER_SIZE]>> =
     NVMData::new(SafeStorage::new([0u8; BUFFER_SIZE]));
@@ -12,11 +18,12 @@ static mut DATA: NVMData<SafeStorage<[u8; BUFFER_SIZE]>> =
 #[derive(Clone, Copy)]
 pub struct Buffer {
     pub(crate) pos: usize,
+    pub(crate) mode: BufferMode
 }
 
 impl Default for Buffer {
     fn default() -> Self {
-        Buffer { pos: 0 }
+        Buffer { pos: 0, mode: BufferMode::Receive }
     }
 }
 
@@ -27,8 +34,9 @@ impl Buffer {
     }
 
     #[allow(unused)]
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, mode: BufferMode) {
         self.pos = 0;
+        self.mode = mode;
     }
 
     #[allow(unused)]

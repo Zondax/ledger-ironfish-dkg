@@ -470,6 +470,35 @@ describe.each(models)('DKG', function (m) {
     }
   })
 
+  // TODO implement a way to send the command, and but no get the response
+  /*
+  test(`${m.name} - attempt to retrieve result after another command`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
+      const app = new IronfishApp(sim.getTransport())
+
+      let respReq = app.dkgBackupKeys()
+
+      await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+      await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-d`)
+
+      const resp = await respReq
+
+      expect(resp.returnCode.toString(16)).toEqual('9000')
+      expect(resp.errorMessage).toEqual('No errors')
+    } finally {
+      await sim.close()
+    }
+  })
+  */
+
   test(`${m.name} - attempt to retrieve proof keys when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
