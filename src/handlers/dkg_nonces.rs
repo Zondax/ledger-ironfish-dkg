@@ -20,13 +20,13 @@ use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW, Instruction};
+use crate::{AppSW};
 use alloc::vec::Vec;
 use ironfish_frost::nonces::deterministic_signing_nonces;
 use ironfish_frost::participant::Identity;
-use ledger_device_sdk::io::{Comm, Event};
+use ledger_device_sdk::io::{Comm};
+use crate::utils::response::save_result;
 
-const MAX_APDU_SIZE: usize = 253;
 const IDENTITY_LEN: usize = 129;
 const TX_HASH_LEN: usize = 32;
 
@@ -44,9 +44,11 @@ pub fn handler_dkg_nonces(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Re
 
     let nonces = deterministic_signing_nonces(key_package.signing_share(), tx_hash, &identities);
 
-    let ser = nonces.serialize().unwrap();
+    let resp = nonces.serialize().unwrap();
 
-    send_apdu_chunks(comm, ser)
+    let total_chunks = save_result(ctx, resp.as_slice())?;
+    comm.append(&total_chunks);
+    Ok(())
 }
 
 #[inline(never)]
@@ -74,28 +76,4 @@ fn parse_tx(buffer: &Buffer) -> Result<(Vec<Identity>, &[u8]), AppSW> {
     }
 
     Ok((identities, tx_hash))
-}
-
-#[inline(never)]
-fn send_apdu_chunks(comm: &mut Comm, data_vec: Vec<u8>) -> Result<(), AppSW> {
-    zlog_stack("start send_apdu_chunks\0");
-
-    let data = data_vec.as_slice();
-    let total_chunks = (data.len() + MAX_APDU_SIZE - 1) / MAX_APDU_SIZE;
-
-    for (i, chunk) in data.chunks(MAX_APDU_SIZE).enumerate() {
-        zlog_stack("iter send_apdu_chunks\0");
-        comm.append(chunk);
-
-        if i < total_chunks - 1 {
-            zlog_stack("another send_apdu_chunks\0");
-            comm.reply_ok();
-            match comm.next_event() {
-                Event::Command(Instruction::DkgNonces { chunk: 0 }) => {}
-                _ => {}
-            }
-        }
-    }
-
-    Ok(())
 }
