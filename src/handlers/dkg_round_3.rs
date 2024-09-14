@@ -16,6 +16,7 @@
  *****************************************************************************/
 
 use crate::accumulator::accumulate_data;
+use crate::app_ui::run_action::ui_run_action;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
@@ -50,6 +51,10 @@ pub fn handler_dkg_round_3(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
 
     // Try to deserialize the transaction
     let min_tx = parse_tx_min(&ctx.buffer)?;
+
+    if !ui_run_action(&["Run DKG Round 3?"])? {
+        return Err(AppSW::Deny);
+    }
 
     let (key_package, public_key_package, group_secret_key) =
         compute_dkg_round_3_min(&min_tx).map_err(|_| AppSW::DkgRound3Fail)?;

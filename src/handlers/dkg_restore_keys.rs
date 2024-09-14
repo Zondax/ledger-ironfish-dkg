@@ -15,6 +15,7 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::accumulator::accumulate_data;
+use crate::app_ui::run_action::ui_run_action;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, decrypt, NONCE_LEN};
@@ -46,5 +47,10 @@ pub fn handler_dkg_restore_keys(
     let key = compute_key();
 
     let resp = decrypt(&key, data, nonce)?;
+
+    if !ui_run_action(&["Restore DKG Keys?"])? {
+        return Err(AppSW::Deny);
+    }
+
     DkgKeys.restore_keys(resp.as_slice())
 }

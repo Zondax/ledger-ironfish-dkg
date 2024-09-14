@@ -14,6 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
+use crate::app_ui::run_action::ui_run_action;
 use crate::bolos::{zlog, zlog_stack};
 use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, encrypt};
@@ -30,6 +31,10 @@ pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(
     let key = compute_key();
 
     let resp = encrypt(&key, data)?;
+
+    if !ui_run_action(&["Backup DKG Keys?"])? {
+        return Err(AppSW::Deny);
+    }
 
     let total_chunks = save_result(ctx, resp.as_slice())?;
     comm.append(&total_chunks);
