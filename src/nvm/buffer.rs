@@ -6,9 +6,9 @@ use ledger_device_sdk::NVMData;
 pub const BUFFER_SIZE: usize = 4000;
 
 #[derive(Clone, Copy)]
-pub enum BufferMode{
+pub enum BufferMode {
     Receive,
-    Result
+    Result,
 }
 
 #[link_section = ".nvm_data"]
@@ -18,12 +18,15 @@ static mut DATA: NVMData<SafeStorage<[u8; BUFFER_SIZE]>> =
 #[derive(Clone, Copy)]
 pub struct Buffer {
     pub(crate) pos: usize,
-    pub(crate) mode: BufferMode
+    pub(crate) mode: BufferMode,
 }
 
 impl Default for Buffer {
     fn default() -> Self {
-        Buffer { pos: 0, mode: BufferMode::Receive }
+        Buffer {
+            pos: 0,
+            mode: BufferMode::Receive,
+        }
     }
 }
 

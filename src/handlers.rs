@@ -14,6 +14,7 @@ mod dkg_sign;
 mod get_result;
 mod get_version;
 
+use crate::nvm::buffer::BufferMode;
 use dkg_backup_keys::handler_dkg_backup_keys;
 use dkg_commitments::handler_dkg_commitments;
 use dkg_get_identity::handler_dkg_get_identity;
@@ -26,16 +27,14 @@ use dkg_round_3::handler_dkg_round_3;
 use dkg_sign::handler_dkg_sign;
 use get_result::handler_get_result;
 use get_version::handler_get_version;
-use crate::nvm::buffer::BufferMode;
 
 pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Result<(), AppSW> {
-
     // If the buffer contains a result from a command, and we receive anything else than GetResult command
     // reset the buffer to receive mode.
     match ins {
-        Instruction::GetResult { chunk: _chunk } => {},
+        Instruction::GetResult { chunk: _chunk } => {}
         (_) => {
-            if let BufferMode::Result = ctx.buffer.mode{
+            if let BufferMode::Result = ctx.buffer.mode {
                 ctx.reset_to_receive();
             }
         }
