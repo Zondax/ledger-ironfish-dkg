@@ -15,6 +15,7 @@
  *  limitations under the License.
  *****************************************************************************/
 
+use crate::app_ui::run_action::ui_run_action;
 use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;
@@ -38,6 +39,10 @@ pub fn handler_dkg_get_identity(comm: &mut Comm) -> Result<(), AppSW> {
 
     let secret = compute_dkg_secret(data[0]);
     let identity = secret.to_identity();
+
+    if !ui_run_action(&["Get DKG Identity?"])? {
+        return Err(AppSW::Deny);
+    }
 
     comm.append(identity.serialize().as_ref());
 
