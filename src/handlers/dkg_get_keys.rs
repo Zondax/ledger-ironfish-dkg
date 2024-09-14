@@ -16,17 +16,19 @@
  *****************************************************************************/
 
 use crate::bolos::zlog_stack;
+use crate::context::TxContext;
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW};
+use crate::AppSW;
 use alloc::vec::Vec;
-use ledger_device_sdk::io::{Comm};
-use crate::context::TxContext;
-
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
-pub fn handler_dkg_get_keys(comm: &mut Comm, key_type: &u8,
-                            ctx: &mut TxContext) -> Result<(), AppSW> {
+pub fn handler_dkg_get_keys(
+    comm: &mut Comm,
+    key_type: &u8,
+    ctx: &mut TxContext,
+) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 
     let group_secret_key = DkgKeys.load_group_secret_key()?;

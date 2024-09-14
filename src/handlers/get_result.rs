@@ -15,18 +15,18 @@
  *  limitations under the License.
  *****************************************************************************/
 
+use crate::context::TxContext;
 use crate::AppSW;
 use ledger_device_sdk::io::Comm;
-use crate::context::TxContext;
 
 const MAX_APDU_SIZE: usize = 253;
 
 #[inline(never)]
 pub fn handler_get_result(comm: &mut Comm, ctx: &mut TxContext, page: u8) -> Result<(), AppSW> {
-    let start_page_pos:usize = page as usize * MAX_APDU_SIZE;
-    let mut end_page_pos:usize = start_page_pos + MAX_APDU_SIZE;
+    let start_page_pos: usize = page as usize * MAX_APDU_SIZE;
+    let mut end_page_pos: usize = start_page_pos + MAX_APDU_SIZE;
 
-    if ctx.buffer.pos < end_page_pos{
+    if ctx.buffer.pos < end_page_pos {
         end_page_pos = ctx.buffer.pos;
     }
 

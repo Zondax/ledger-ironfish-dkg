@@ -20,13 +20,12 @@ use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW};
+use crate::utils::response::save_result;
+use crate::AppSW;
 use ironfish_frost::frost::round1::SigningNonces;
 use ironfish_frost::frost::round2;
 use ironfish_frost::{frost::Randomizer, frost::SigningPackage};
-use ledger_device_sdk::io::{Comm};
-use crate::utils::response::save_result;
-
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
 pub fn handler_dkg_sign(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {

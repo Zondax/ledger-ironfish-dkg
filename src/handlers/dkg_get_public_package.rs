@@ -16,13 +16,12 @@
  *****************************************************************************/
 
 use crate::bolos::zlog_stack;
-use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW};
-use ironfish_frost::dkg::round3::PublicKeyPackage;
-use ledger_device_sdk::io::{Comm};
 use crate::context::TxContext;
+use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
-
+use crate::AppSW;
+use ironfish_frost::dkg::round3::PublicKeyPackage;
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
 pub fn handler_dkg_get_public_package(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {

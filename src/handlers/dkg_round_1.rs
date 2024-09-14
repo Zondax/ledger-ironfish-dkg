@@ -21,13 +21,13 @@ use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW};
+use crate::utils::response::save_result;
+use crate::AppSW;
 use alloc::vec::Vec;
 use ironfish_frost::dkg;
 use ironfish_frost::participant::{Identity, Secret};
-use ledger_device_sdk::io::{Comm};
+use ledger_device_sdk::io::Comm;
 use ledger_device_sdk::random::LedgerRng;
-use crate::utils::response::save_result;
 
 const IDENTITY_LEN: usize = 129;
 

@@ -20,12 +20,12 @@ use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::{AppSW};
+use crate::utils::response::save_result;
+use crate::AppSW;
 use alloc::vec::Vec;
 use ironfish_frost::nonces::deterministic_signing_nonces;
 use ironfish_frost::participant::Identity;
-use ledger_device_sdk::io::{Comm};
-use crate::utils::response::save_result;
+use ledger_device_sdk::io::Comm;
 
 const IDENTITY_LEN: usize = 129;
 const TX_HASH_LEN: usize = 32;
