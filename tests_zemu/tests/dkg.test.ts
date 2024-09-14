@@ -14,14 +14,14 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import Zemu, { isTouchDevice, DEFAULT_START_OPTIONS } from '@zondax/zemu'
+import Zemu, { DEFAULT_START_OPTIONS, isTouchDevice } from '@zondax/zemu'
 import { defaultOptions, identities, models, restoreKeysTestCases } from './common'
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions } from '@ironfish/rust-nodejs'
 import { Transaction } from '@ironfish/sdk'
 import { buildTx } from './utils'
-import aggregateRawSignatureShares = multisig.aggregateRawSignatureShares
 import { TModel } from '@zondax/zemu/dist/types'
+import aggregateRawSignatureShares = multisig.aggregateRawSignatureShares
 
 jest.setTimeout(4500000)
 
@@ -414,6 +414,87 @@ describe.each(models)('DKG', function (m) {
       })
     },
   )
+
+  test(`${m.name} - attempt to retrieve viewKeys when no keys are present`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      const app = new IronfishApp(sim.getTransport())
+
+      let resp: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+      expect(resp.returnCode.toString(16)).toEqual('b022')
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test(`${m.name} - attempt to retrieve proof keys when no keys are present`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      const app = new IronfishApp(sim.getTransport())
+
+      let resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
+      expect(resp.returnCode.toString(16)).toEqual('b022')
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test(`${m.name} - attempt to retrieve public address when no keys are present`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      const app = new IronfishApp(sim.getTransport())
+
+      let resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
+      expect(resp.returnCode.toString(16)).toEqual('b022')
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test(`${m.name} - attempt to retrieve public package when no keys are present`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      const app = new IronfishApp(sim.getTransport())
+
+      let resp = await app.dkgGetPublicPackage()
+      expect(resp.returnCode.toString(16)).toEqual('b022')
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test(`${m.name} - attempt to backup keys when no keys are present`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      const app = new IronfishApp(sim.getTransport())
+
+      let resp = await app.dkgBackupKeys()
+      expect(resp.returnCode.toString(16)).toEqual('b022')
+    } finally {
+      await sim.close()
+    }
+  })
+
+  // TODO complete me
+  /*
+  test(`${m.name} - attempt to run round3 when no round1 was executed`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      const app = new IronfishApp(sim.getTransport())
+      let resp: any = await app.dkgRound3()
+
+      expect(resp.returnCode.toString(16)).toEqual('b022')
+    } finally {
+      await sim.close()
+    }
+  })
+  */
 
   describe.each(identities)(`${m.name} - generate identities`, function ({ i, v }) {
     test(i + '', async function () {

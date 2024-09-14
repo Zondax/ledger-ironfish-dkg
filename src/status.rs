@@ -35,6 +35,8 @@ pub enum AppSW {
     DecryptionFail = 0xB019,
     EncryptionFail = 0xB020,
     InvalidNVMWrite = 0xB021,
+    InvalidDkgStatus = 0xB022,
+    InvalidDkgKeysVersion = 0xB023,
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,
 }

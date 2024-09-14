@@ -10,14 +10,26 @@ use ledger_device_sdk::NVMData;
 
 // This is necessary to store the object in NVM and not in RAM
 pub const DKG_KEYS_MAX_SIZE: usize = 3000;
-const IDENTITIES_POS: usize = 0;
-const MIN_SIGNERS_POS: usize = 2;
-const KEY_PACKAGE_POS: usize = 4;
-const GROUP_KEY_PACKAGE_POS: usize = 6;
-const FROST_PUBLIC_PACKAGE_POS: usize = 8;
-const DATA_STARTING_POS: u16 = 10;
 
-// 2 bytes identitiy position
+const DKG_STATUS: usize = 0;
+const DKG_VERSION: usize = 1;
+const IDENTITIES_POS: usize = 2;
+const MIN_SIGNERS_POS: usize = 4;
+const KEY_PACKAGE_POS: usize = 6;
+const GROUP_KEY_PACKAGE_POS: usize = 8;
+const FROST_PUBLIC_PACKAGE_POS: usize = 10;
+const DATA_STARTING_POS: u16 = 12;
+
+enum DkgKeyStatus {
+    Idle,
+    Initiated,
+    Completed,
+}
+
+enum DkgKeyVersion {
+    V1 = 1,
+}
+
 #[link_section = ".nvm_data"]
 static mut DATA: NVMData<SafeStorage<[u8; DKG_KEYS_MAX_SIZE]>> =
     NVMData::new(SafeStorage::new([0u8; DKG_KEYS_MAX_SIZE]));
@@ -148,13 +160,23 @@ impl DkgKeys {
         ((buffer_ref[start_pos] as u16) << 8 | buffer_ref[start_pos + 1] as u16) as usize
     }
 
+    fn check_write_pos(&self, index: usize) -> Result<(), AppSW> {
+        if index >= DKG_KEYS_MAX_SIZE {
+            return Err(AppSW::BufferOutOfBounds);
+        }
+
+        Ok(())
+    }
+
     #[inline(never)]
     pub fn save_round_1_data(
         &self,
         identities: &Vec<Identity>,
         min_signers: u8,
     ) -> Result<(), AppSW> {
-        self.set_u16(0, DATA_STARTING_POS)?;
+        zlog_stack("start save_round_1_data\0");
+
+        self.set_u16(IDENTITIES_POS, DATA_STARTING_POS)?;
 
         let mut pos = DATA_STARTING_POS as usize;
         self.set_u16(pos, (identities.len() * IDENTITY_LEN) as u16)?;
@@ -169,7 +191,39 @@ impl DkgKeys {
         self.set_u16(MIN_SIGNERS_POS, pos as u16)?;
         self.set_u16(pos, min_signers as u16)?;
 
-        Ok(())
+        self.update_keys_status(DkgKeyStatus::Initiated, DkgKeyVersion::V1)
+    }
+
+    #[inline(never)]
+    pub fn update_keys_status(
+        &self,
+        status: DkgKeyStatus,
+        version: DkgKeyVersion,
+    ) -> Result<(), AppSW> {
+        zlog_stack("start update_keys_status\0");
+
+        match version {
+            DkgKeyVersion::V1 => self.set_element(DKG_VERSION, 1),
+        }?;
+
+        match status {
+            DkgKeyStatus::Idle => self.set_element(DKG_STATUS, 0),
+            DkgKeyStatus::Initiated => self.set_element(DKG_STATUS, 1),
+            DkgKeyStatus::Completed => self.set_element(DKG_STATUS, 2),
+        }
+    }
+
+    #[inline(never)]
+    pub fn get_keys_status(&self) -> Result<DkgKeyStatus, AppSW> {
+        zlog_stack("start get_keys_status\0");
+
+        let status = self.get_element(DKG_STATUS);
+        match status {
+            0 => Ok(DkgKeyStatus::Idle),
+            1 => Ok(DkgKeyStatus::Initiated),
+            2 => Ok(DkgKeyStatus::Completed),
+            _ => Err(AppSW::InvalidDkgStatus),
+        }
     }
 
     #[inline(never)]
@@ -179,6 +233,16 @@ impl DkgKeys {
         public_key_package: FrostPublicKeyPackage,
         group_secret_key: GroupSecretKey,
     ) -> Result<(), AppSW> {
+        zlog_stack("start save_keys\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Initiated => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
         // Read where the previous data end up
         let mut start: usize = self.get_u16(MIN_SIGNERS_POS);
         start += 2;
@@ -191,12 +255,20 @@ impl DkgKeys {
         self.set_u16(FROST_PUBLIC_PACKAGE_POS, pos as u16)?;
         self.set_slice_with_len(pos, public_key_package.serialize().unwrap().as_slice())?;
 
-        Ok(())
+        self.update_keys_status(DkgKeyStatus::Completed, DkgKeyVersion::V1)
     }
 
     #[inline(never)]
     pub fn load_group_secret_key(&self) -> Result<GroupSecretKey, AppSW> {
         zlog_stack("start load_group_secret_key\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
 
         let mut start = self.get_u16(GROUP_KEY_PACKAGE_POS);
         let len = self.get_u16(start);
@@ -213,6 +285,14 @@ impl DkgKeys {
     pub fn load_frost_public_key_package(&self) -> Result<FrostPublicKeyPackage, AppSW> {
         zlog_stack("start load_frost_public_key_package\0");
 
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
         let mut start = self.get_u16(FROST_PUBLIC_PACKAGE_POS);
         let len = self.get_u16(start);
         start += 2;
@@ -228,6 +308,14 @@ impl DkgKeys {
     pub fn load_key_package(&self) -> Result<KeyPackage, AppSW> {
         zlog_stack("start load_key_package\0");
 
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
         let mut start = self.get_u16(KEY_PACKAGE_POS);
         let len = self.get_u16(start);
         start += 2;
@@ -242,6 +330,14 @@ impl DkgKeys {
     pub fn load_min_signers(&self) -> Result<usize, AppSW> {
         zlog_stack("start load_min_signers\0");
 
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
         let start = self.get_u16(MIN_SIGNERS_POS);
         Ok(self.get_u16(start))
     }
@@ -249,6 +345,14 @@ impl DkgKeys {
     #[inline(never)]
     pub fn load_identities(&self) -> Result<Vec<Identity>, AppSW> {
         zlog_stack("start load_identities\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
 
         let mut start = self.get_u16(IDENTITIES_POS);
         let len = self.get_u16(start);
@@ -272,8 +376,16 @@ impl DkgKeys {
     }
 
     #[inline(never)]
-    pub fn load_all_raw(&self) -> Result<&[u8], AppSW> {
-        zlog_stack("start load_all_raw\0");
+    pub fn backup_keys(&self) -> Result<&[u8], AppSW> {
+        zlog_stack("start backup_keys\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
 
         let mut pos = self.get_u16(FROST_PUBLIC_PACKAGE_POS);
         let len = self.get_u16(pos);
@@ -283,11 +395,14 @@ impl DkgKeys {
         Ok(data)
     }
 
-    fn check_write_pos(&self, index: usize) -> Result<(), AppSW> {
-        if index >= DKG_KEYS_MAX_SIZE {
-            return Err(AppSW::BufferOutOfBounds);
+    #[inline(never)]
+    pub fn restore_keys(&self, data: &[u8]) -> Result<(), AppSW> {
+        zlog_stack("start restore_keys\0");
+
+        if data[1] != 1 {
+            return Err(AppSW::InvalidDkgKeysVersion);
         }
 
-        Ok(())
+        self.set_slice(0, data)
     }
 }
