@@ -182,7 +182,7 @@ impl DkgKeys {
         &self,
         identities: &Vec<Identity>,
         min_signers: u8,
-        identity_index: u8
+        identity_index: u8,
     ) -> Result<(), AppSW> {
         zlog_stack("start save_round_1_data\0");
 
@@ -254,12 +254,12 @@ impl DkgKeys {
         }
 
         // Read where the previous data end up
-        let mut start: usize = self.get_u16(IDENTITIES_POS);
-        start += 2;
+        let identities_pos: usize = self.get_u16(IDENTITIES_POS);
+        let identities_len: usize = self.get_u16(identities_pos);
+        let mut pos = identities_pos + 2 + identities_len;
 
-        self.set_u16(KEY_PACKAGE_POS, start as u16)?;
-        let mut pos =
-            self.set_slice_with_len(start, key_package.serialize().unwrap().as_slice())?;
+        self.set_u16(KEY_PACKAGE_POS, pos as u16)?;
+        pos = self.set_slice_with_len(pos, key_package.serialize().unwrap().as_slice())?;
         self.set_u16(GROUP_KEY_PACKAGE_POS, pos as u16)?;
         pos = self.set_slice_with_len(pos, group_secret_key.as_slice())?;
         self.set_u16(FROST_PUBLIC_PACKAGE_POS, pos as u16)?;
