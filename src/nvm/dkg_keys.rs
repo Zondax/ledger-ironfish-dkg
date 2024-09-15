@@ -11,14 +11,23 @@ use ledger_device_sdk::NVMData;
 // This is necessary to store the object in NVM and not in RAM
 pub const DKG_KEYS_MAX_SIZE: usize = 3000;
 
+// Fix positions with u8 values
 const DKG_STATUS: usize = 0;
 const DKG_VERSION: usize = 1;
-const IDENTITIES_POS: usize = 2;
-const MIN_SIGNERS_POS: usize = 4;
-const KEY_PACKAGE_POS: usize = 6;
-const GROUP_KEY_PACKAGE_POS: usize = 8;
-const FROST_PUBLIC_PACKAGE_POS: usize = 10;
-const DATA_STARTING_POS: u16 = 12;
+const MIN_SIGNERS_POS: usize = 2;
+const IDENTITY_INDEX_POS: usize = 3;
+
+// Leave some bytes free for future u8 we want to save something new... positions from 0 to 9
+
+// Positions (u16) to indicate where these entities are located in the buffer
+// On each entity, the first 2 bytes are the length of it, followed by its data
+const IDENTITIES_POS: usize = 10;
+const KEY_PACKAGE_POS: usize = 12;
+const GROUP_KEY_PACKAGE_POS: usize = 14;
+const FROST_PUBLIC_PACKAGE_POS: usize = 16;
+
+// Again, leave some bytes free for future entities (u16) we want to save something new... positions from 10 to 24 (7 entities, as 2 bytes per each)
+const DATA_STARTING_POS: u16 = 24;
 
 enum DkgKeyStatus {
     Idle,
@@ -173,6 +182,7 @@ impl DkgKeys {
         &self,
         identities: &Vec<Identity>,
         min_signers: u8,
+        identity_index: u8,
     ) -> Result<(), AppSW> {
         zlog_stack("start save_round_1_data\0");
 
@@ -188,8 +198,8 @@ impl DkgKeys {
             pos += IDENTITY_LEN;
         }
 
-        self.set_u16(MIN_SIGNERS_POS, pos as u16)?;
-        self.set_u16(pos, min_signers as u16)?;
+        self.set_element(MIN_SIGNERS_POS, min_signers)?;
+        self.set_element(IDENTITY_INDEX_POS, identity_index)?;
 
         self.update_keys_status(DkgKeyStatus::Initiated, DkgKeyVersion::V1)
     }
@@ -244,12 +254,12 @@ impl DkgKeys {
         }
 
         // Read where the previous data end up
-        let mut start: usize = self.get_u16(MIN_SIGNERS_POS);
-        start += 2;
+        let identities_pos: usize = self.get_u16(IDENTITIES_POS);
+        let identities_len: usize = self.get_u16(identities_pos);
+        let mut pos = identities_pos + 2 + identities_len;
 
-        self.set_u16(KEY_PACKAGE_POS, start as u16)?;
-        let mut pos =
-            self.set_slice_with_len(start, key_package.serialize().unwrap().as_slice())?;
+        self.set_u16(KEY_PACKAGE_POS, pos as u16)?;
+        pos = self.set_slice_with_len(pos, key_package.serialize().unwrap().as_slice())?;
         self.set_u16(GROUP_KEY_PACKAGE_POS, pos as u16)?;
         pos = self.set_slice_with_len(pos, group_secret_key.as_slice())?;
         self.set_u16(FROST_PUBLIC_PACKAGE_POS, pos as u16)?;
@@ -338,8 +348,24 @@ impl DkgKeys {
             }
         }
 
-        let start = self.get_u16(MIN_SIGNERS_POS);
-        Ok(self.get_u16(start))
+        let min_signers = self.get_element(MIN_SIGNERS_POS);
+        Ok(min_signers as usize)
+    }
+
+    #[inline(never)]
+    pub fn load_identity_index(&self) -> Result<usize, AppSW> {
+        zlog_stack("start load_identity_index\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
+        let identity_index = self.get_element(IDENTITY_INDEX_POS);
+        Ok(identity_index as usize)
     }
 
     #[inline(never)]
