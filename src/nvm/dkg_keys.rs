@@ -112,29 +112,49 @@ impl DkgKeys {
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn set_slice_with_len(&self, mut index: usize, value: &[u8]) -> Result<usize, AppSW> {
+    pub fn set_slice_with_len(&self, index: usize, value: &[u8]) -> Result<usize, AppSW> {
         let len = value.len();
-        self.check_write_pos(index + 2 + len)?;
+        let total_len = 2 + len; // 2 bytes for length + actual data length
+        self.check_write_pos(index + total_len)?;
 
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
 
-        updated_data[index] = (len >> 8) as u8;
-        index += 1;
+        // Write length as big-endian u16
+        updated_data[index..index + 2].copy_from_slice(&(len as u16).to_be_bytes());
 
-        updated_data[index] = (len & 0xff) as u8;
-        index += 1;
+        // Write the actual data
+        updated_data[index + 2..index + total_len].copy_from_slice(value);
 
-        for b in value.iter() {
-            updated_data[index] = *b;
-            index += 1;
-        }
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
-
         self.is_valid_write()?;
-        Ok(index)
+
+        Ok(index + total_len)
     }
+    // pub fn set_slice_with_len(&self, mut index: usize, value: &[u8]) -> Result<usize, AppSW> {
+    //     let len = value.len();
+    //     self.check_write_pos(index + 2 + len)?;
+    //
+    //     let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
+    //
+    //     updated_data[index] = (len >> 8) as u8;
+    //     index += 1;
+    //
+    //     updated_data[index] = (len & 0xff) as u8;
+    //     index += 1;
+    //
+    //     for b in value.iter() {
+    //         updated_data[index] = *b;
+    //         index += 1;
+    //     }
+    //     unsafe {
+    //         DATA.get_mut().update(&updated_data);
+    //     }
+    //
+    //     self.is_valid_write()?;
+    //     Ok(index)
+    // }
 
     #[inline(never)]
     #[allow(unused)]
