@@ -1,3 +1,4 @@
+use core::fmt::{self, Display, Formatter};
 use core::ptr::addr_of_mut;
 
 use arrayref::array_ref;
@@ -13,6 +14,18 @@ use crate::parser::constants::ASSET_ID_LENGTH;
 /// to notes and value commitments to be a bit cleaner
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct AssetIdentifier([u8; ASSET_ID_LENGTH]);
+
+impl AssetIdentifier {
+    pub fn as_bytes(&self) -> &[u8; ASSET_ID_LENGTH] {
+        &self.0
+    }
+}
+
+impl Display for AssetIdentifier {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", hex::encode(&self.0))
+    }
+}
 
 impl<'a> FromBytes<'a> for AssetIdentifier {
     #[inline(never)]

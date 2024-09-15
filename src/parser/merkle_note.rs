@@ -2,7 +2,7 @@ use core::ptr::addr_of_mut;
 use group::{
     cofactor::{CofactorCurve, CofactorCurveAffine, CofactorGroup},
     prime::PrimeGroup,
-    Curve, Group, GroupEncoding,
+    Curve, Group,
 };
 
 use crate::{

@@ -1,8 +1,7 @@
 use ff::PrimeField;
-use group::GroupEncoding;
 
 use blake2b_simd::Params as Blake2b;
-use jubjub::{AffinePoint, ExtendedPoint, Scalar, SubgroupPoint};
+use jubjub::{AffinePoint, Scalar};
 
 use crate::{
     ironfish::{constants::SHARED_KEY_PERSONALIZATION, view_keys::OutgoingViewKey},

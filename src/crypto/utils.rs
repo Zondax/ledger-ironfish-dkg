@@ -1,8 +1,8 @@
 use chacha20poly1305::{ChaCha20Poly1305, Key, KeyInit, Nonce};
 use core::convert::TryFrom;
 use ff::PrimeField;
+use group::cofactor::CofactorGroup;
 use group::Group;
-use group::{cofactor::CofactorGroup, GroupEncoding};
 use jubjub::{AffinePoint, ExtendedPoint, Fq, Fr, Scalar};
 use nom::bytes::complete::take;
 

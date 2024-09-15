@@ -1,3 +1,4 @@
+use core::fmt::{self, Display, Formatter};
 use core::ptr::addr_of_mut;
 
 use crate::crypto::parse_affine_point;
@@ -6,6 +7,7 @@ use crate::ironfish::errors::IronfishError;
 use crate::ironfish::sapling::SaplingKey;
 use crate::ironfish::view_keys::IncomingViewKey;
 use crate::FromBytes;
+use alloc::string::String;
 use arrayref::array_ref;
 use jubjub::AffinePoint;
 use nom::bytes::complete::take;
@@ -61,5 +63,15 @@ impl PublicAddress {
     /// Retrieve the public address in byte form.
     pub fn public_address(&self) -> [u8; PUBLIC_ADDRESS_SIZE] {
         self.0.to_bytes()
+    }
+}
+
+// This is used for formatting the pub address
+// during UI
+impl Display for PublicAddress {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        // Reference implementation just compute hex
+        // representation of 32-byte addresses
+        write!(f, "{}", hex::encode(self.public_address()))
     }
 }

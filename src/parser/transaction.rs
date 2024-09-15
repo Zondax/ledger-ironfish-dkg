@@ -1,11 +1,20 @@
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
 
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
+
 use nom::{
     bytes::complete::take,
     number::complete::{le_i64, le_u32, le_u64, le_u8},
 };
 
-use crate::parser::constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN};
+use crate::{
+    ironfish::{errors::IronfishError, multisig::MultisigAccountKeys, view_keys::OutgoingViewKey},
+    parser::constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
+};
 
 mod burns;
 mod mints;
@@ -144,6 +153,59 @@ impl<'a> Transaction<'a> {
 
     pub fn num_burns(&self) -> usize {
         self.burns.iter().count()
+    }
+
+    pub fn outputs_iter(&self) -> impl Iterator<Item = Output<'a>> {
+        self.outputs.iter()
+    }
+
+    pub fn review_fields(
+        &self,
+        ovk: &OutgoingViewKey,
+    ) -> Result<Vec<(String, String)>, IronfishError> {
+        let mut fields = Vec::new();
+
+        // Add transaction version
+        fields.push((
+            "Tx Version".to_string(),
+            self.tx_version.as_str().to_string(),
+        ));
+
+        // Now populate with outputDescrition::Note
+        // for each note we render:
+        // - Address Owner?
+        // - Asset_id
+        // - Amount
+        for (i, output) in self.outputs.iter().enumerate() {
+            let output_number = i + 1;
+
+            // Safe to unwrap because MerkleNote was also parsed in outputs from_bytes impl
+            let merkle_note = output.note().unwrap();
+            // now get the encrypted Note
+            let note = merkle_note.decrypt_note_for_spender(ovk)?;
+
+            fields.push((
+                format!("Owner {}", output_number),
+                format!("{}", note.owner),
+            ));
+            fields.push((
+                format!("Amount {}", output_number),
+                format!("{}", note.value),
+            ));
+
+            fields.push((
+                format!("AssetID {}", output_number),
+                format!("{}", note.asset_id),
+            ));
+        }
+
+        // Add fee
+        fields.push(("Fee".to_string(), format!("{}", self.fee)));
+
+        // Add expiration
+        fields.push(("Expiration".to_string(), format!("{}", self.expiration)));
+
+        Ok(fields)
     }
 }
 
