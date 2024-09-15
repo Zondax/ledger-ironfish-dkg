@@ -80,10 +80,13 @@ impl DkgKeys {
     #[inline(never)]
     #[allow(unused)]
     pub fn set_element(&self, index: usize, value: u8) -> Result<(), AppSW> {
-        self.check_write_pos(index)?;
-
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
-        updated_data[index] = value;
+
+        updated_data
+            .get_mut(index)
+            .map(|v| *v = value)
+            .ok_or(AppSW::BufferOutOfBounds)?;
+
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
@@ -94,18 +97,17 @@ impl DkgKeys {
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn set_slice(&self, mut index: usize, value: &[u8]) -> Result<(), AppSW> {
-        self.check_write_pos(index + value.len())?;
+    pub fn set_slice(&self, index: usize, value: &[u8]) -> Result<(), AppSW> {
+        let end_index = index + value.len();
+        self.check_write_pos(end_index - 1)?; // Check only the last position
 
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
-        for b in value.iter() {
-            updated_data[index] = *b;
-            index += 1;
-        }
+
+        updated_data[index..end_index].copy_from_slice(value);
+
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
-
         self.is_valid_write()?;
         Ok(())
     }
@@ -132,29 +134,6 @@ impl DkgKeys {
 
         Ok(index + total_len)
     }
-    // pub fn set_slice_with_len(&self, mut index: usize, value: &[u8]) -> Result<usize, AppSW> {
-    //     let len = value.len();
-    //     self.check_write_pos(index + 2 + len)?;
-    //
-    //     let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
-    //
-    //     updated_data[index] = (len >> 8) as u8;
-    //     index += 1;
-    //
-    //     updated_data[index] = (len & 0xff) as u8;
-    //     index += 1;
-    //
-    //     for b in value.iter() {
-    //         updated_data[index] = *b;
-    //         index += 1;
-    //     }
-    //     unsafe {
-    //         DATA.get_mut().update(&updated_data);
-    //     }
-    //
-    //     self.is_valid_write()?;
-    //     Ok(index)
-    // }
 
     #[inline(never)]
     #[allow(unused)]
@@ -164,21 +143,20 @@ impl DkgKeys {
     }
 
     #[inline(never)]
-    #[allow(unused)]
-    pub fn set_u16(&self, mut index: usize, value: u16) -> Result<usize, AppSW> {
-        self.check_write_pos(index + 2)?;
+    pub fn set_u16(&self, index: usize, value: u16) -> Result<usize, AppSW> {
+        self.check_write_pos(index + 1)?; // Check only the last position
 
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
-        updated_data[index] = (value >> 8) as u8;
-        index += 1;
-        updated_data[index] = (value & 0xff) as u8;
-        index += 1;
+
+        // Convert u16 to big-endian bytes and copy them
+        updated_data[index..index + 2].copy_from_slice(&value.to_be_bytes());
+
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
 
         self.is_valid_write()?;
-        Ok(index)
+        Ok(index + 2)
     }
 
     #[inline(never)]
