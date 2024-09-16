@@ -1,5 +1,9 @@
 use jubjub::{AffineNielsPoint, AffinePoint, Fq};
 
+pub const TX_HASH_LEN: usize = 32;
+
+pub const IDENTITY_LEN: usize = 129;
+
 pub const SPENDING_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_unchecked(
     Fq::from_raw([
         0x47bf_4692_0a95_a753,
@@ -49,3 +53,5 @@ pub const PUBLIC_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_uncheck
 .to_niels();
 /// BLAKE2s Personalization for CRH^ivk = BLAKE2s(ak | nk)
 pub const CRH_IVK_PERSONALIZATION: &[u8; 8] = b"Zcashivk";
+
+pub const SHARED_KEY_PERSONALIZATION: &[u8; 16] = b"Iron Fish Keyenc";

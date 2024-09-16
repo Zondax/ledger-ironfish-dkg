@@ -1,27 +1,37 @@
 [package]
-name = "ledger-ironfish"
-version = "1.5.0"
-authors = ["yhql", "agrojean-ledger"]
+name = "ledger-ironfish-dkg"
 edition = "2021"
 
+
 [dependencies]
-ledger_device_sdk = { git="https://github.com/Zondax/ledger-device-rust-sdk", rev = "4fab5c832de179b2e38be10e7acd2cc70565404a" }
+ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "c9045e0a14934dbdf4feb1188c2a33742c18ae93" }
 # ledger_device_sdk = { version="1.14.0" }
 include_gif = "1.2.0"
-serde = {version="1.0.192", default_features = false, features = ["derive"]}
-serde-json-core = { git = "https://github.com/rust-embedded-community/serde-json-core"}
-hex = { version = "0.4.3", default-features = false, features = ["serde", "alloc"] }
+serde = { version = "1.0.192", default_features = false, features = ["derive"] }
+serde-json-core = { git = "https://github.com/rust-embedded-community/serde-json-core" }
+hex = { version = "0.4.3", default-features = false, features = [
+    "serde",
+    "alloc",
+] }
 numtoa = "0.2.4"
 jubjub = { version = "0.10.0", default-features = false }
 blake2b_simd = { version = "1.0.0", default-features = false }
 blake2s_simd = { version = "1.0.0", default-features = false }
 ff = "0.12.0"
 group = "0.12.0"
+chacha20poly1305 = "0.10.1"
 
-ironfish-frost = { git = "https://github.com/Zondax/ironfish-frost.git", rev = "ac50614438fc4857e0cc244d1ec1b45a527be819", default-features = false, features = ["dkg", "signing"]}
+ironfish-frost = { git = "https://github.com/Zondax/ironfish-frost.git", rev = "ded5722919ddfce3cfcd88fc8e7c24f2116a9a6a", default-features = false, features = [
+    "dkg",
+    "signing",
+] }
 #ironfish-frost = { path = "../ironfish-frost", default-features = false, features = ["dkg", "signing"]}
 
 getrandom = { version = "0.2", features = ["custom"] }
+nom = { version = "7.1.3", default-features = false }
+educe = { version = "0.6.0" }
+arrayref = { version = "0.3.8", default-features = false }
+aead = "0.5.2"
 
 [profile.release]
 # changed from z (default on template) to s in order to reduce stack size

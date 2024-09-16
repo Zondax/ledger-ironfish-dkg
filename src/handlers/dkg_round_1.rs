@@ -16,20 +16,20 @@
  *****************************************************************************/
 
 use crate::accumulator::accumulate_data;
+use crate::app_ui::run_action::ui_run_action;
+use crate::bolos::{zlog, zlog_stack};
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
+use crate::ironfish::constants::IDENTITY_LEN;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::utils::{zlog, zlog_stack};
-use crate::{AppSW, Instruction};
+use crate::utils::response::save_result;
+use crate::AppSW;
 use alloc::vec::Vec;
 use ironfish_frost::dkg;
 use ironfish_frost::participant::{Identity, Secret};
-use ledger_device_sdk::io::{Comm, Event};
+use ledger_device_sdk::io::Comm;
 use ledger_device_sdk::random::LedgerRng;
-
-const MAX_APDU_SIZE: usize = 253;
-const IDENTITY_LEN: usize = 129;
 
 pub struct Tx {
     identity_index: u8,
@@ -47,11 +47,20 @@ pub fn handler_dkg_round_1(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
     }
 
     let mut tx: Tx = parse_tx(&ctx.buffer)?;
+
+    if !ui_run_action(&["Run DKG Round 1?"])? {
+        return Err(AppSW::Deny);
+    }
+
     let dkg_secret = compute_dkg_secret(tx.identity_index);
 
-    compute_dkg_round_1(comm, &dkg_secret, &mut tx)?;
+    let resp = compute_dkg_round_1(comm, &dkg_secret, &mut tx)?;
 
-    DkgKeys.save_round_1_data(&tx.identities, tx.min_signers)
+    DkgKeys.save_round_1_data(&tx.identities, tx.min_signers, tx.identity_index)?;
+
+    let total_chunks = save_result(ctx, resp.as_slice())?;
+    comm.append(&total_chunks);
+    Ok(())
 }
 
 fn parse_tx(buffer: &Buffer) -> Result<Tx, AppSW> {
@@ -86,7 +95,7 @@ fn parse_tx(buffer: &Buffer) -> Result<Tx, AppSW> {
     })
 }
 
-fn compute_dkg_round_1(comm: &mut Comm, secret: &Secret, tx: &mut Tx) -> Result<(), AppSW> {
+fn compute_dkg_round_1(comm: &mut Comm, secret: &Secret, tx: &mut Tx) -> Result<Vec<u8>, AppSW> {
     zlog("start compute_dkg_round_1\n\0");
 
     let mut rng = LedgerRng {};
@@ -121,25 +130,5 @@ fn compute_dkg_round_1(comm: &mut Comm, secret: &Secret, tx: &mut Tx) -> Result<
     );
     resp.append(&mut round1_public_package_vec);
 
-    send_apdu_chunks(comm, resp.as_slice())?;
-
-    Ok(())
-}
-
-fn send_apdu_chunks(comm: &mut Comm, data: &[u8]) -> Result<(), AppSW> {
-    let total_chunks = (data.len() + MAX_APDU_SIZE - 1) / MAX_APDU_SIZE;
-
-    for (i, chunk) in data.chunks(MAX_APDU_SIZE).enumerate() {
-        comm.append(chunk);
-
-        if i < total_chunks - 1 {
-            comm.reply_ok();
-            match comm.next_event() {
-                Event::Command(Instruction::DkgRound1 { chunk: 0 }) => {}
-                _ => {}
-            }
-        }
-    }
-
-    Ok(())
+    Ok(resp)
 }

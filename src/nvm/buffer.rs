@@ -1,22 +1,33 @@
 use crate::AppSW;
 use ledger_device_sdk::nvm::*;
 use ledger_device_sdk::NVMData;
+use nom::number::complete::be_u16;
 
 // This is necessary to store the object in NVM and not in RAM
-pub const BUFFER_SIZE: usize = 5000;
+pub const BUFFER_SIZE: usize = 4000;
+
+#[derive(Clone, Copy)]
+pub enum BufferMode {
+    Receive,
+    Result,
+}
 
 #[link_section = ".nvm_data"]
-static mut DATA: NVMData<AlignedStorage<[u8; BUFFER_SIZE]>> =
-    NVMData::new(AlignedStorage::new([0u8; BUFFER_SIZE]));
+static mut DATA: NVMData<SafeStorage<[u8; BUFFER_SIZE]>> =
+    NVMData::new(SafeStorage::new([0u8; BUFFER_SIZE]));
 
 #[derive(Clone, Copy)]
 pub struct Buffer {
     pub(crate) pos: usize,
+    pub(crate) mode: BufferMode,
 }
 
 impl Default for Buffer {
     fn default() -> Self {
-        Buffer { pos: 0 }
+        Buffer {
+            pos: 0,
+            mode: BufferMode::Receive,
+        }
     }
 }
 
@@ -27,51 +38,73 @@ impl Buffer {
     }
 
     #[allow(unused)]
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, mode: BufferMode) {
         self.pos = 0;
+        self.mode = mode;
+    }
+
+    #[allow(unused)]
+    #[inline(never)]
+    pub fn is_valid_write(&self) -> Result<(), AppSW> {
+        let buffer = unsafe { DATA.get_mut() };
+        if !buffer.is_valid() {
+            return Err(AppSW::InvalidNVMWrite);
+        }
+
+        Ok(())
     }
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn get_mut_ref(&mut self) -> &mut AlignedStorage<[u8; BUFFER_SIZE]> {
+    pub fn get_mut_ref(&mut self) -> &mut SafeStorage<[u8; BUFFER_SIZE]> {
         unsafe { DATA.get_mut() }
     }
 
     #[inline(never)]
     #[allow(unused)]
     pub fn get_element(&self, index: usize) -> Result<u8, AppSW> {
-        self.check_read_pos(index)?;
-
         let buffer = unsafe { DATA.get_mut() };
-        Ok(buffer.get_ref()[index])
+        buffer
+            .get_ref()
+            .get(index)
+            .ok_or(AppSW::BufferOutOfBounds)
+            .copied()
     }
 
     #[inline(never)]
     #[allow(unused)]
     pub fn set_element(&self, index: usize, value: u8) -> Result<(), AppSW> {
-        self.check_write_pos(index)?;
-
         let mut updated_data: [u8; BUFFER_SIZE] = unsafe { *DATA.get_mut().get_ref() };
-        updated_data[index] = value;
+
+        updated_data
+            .get_mut(index)
+            .map(|v| *v = value)
+            .ok_or(AppSW::BufferOutOfBounds)?;
+
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
+
+        self.is_valid_write()?;
         Ok(())
     }
 
     #[inline(never)]
     #[allow(unused)]
-    pub fn set_slice(&self, mut index: usize, value: &[u8]) -> Result<(), AppSW> {
-        let mut updated_data: [u8; BUFFER_SIZE] = unsafe { *DATA.get_mut().get_ref() };
-        for b in value.iter() {
-            self.check_write_pos(index)?;
+    pub fn set_slice(&mut self, index: usize, value: &[u8]) -> Result<(), AppSW> {
+        let end_index = index + value.len();
+        self.check_write_pos(end_index - 1)?;
 
-            updated_data[index] = *b;
-            index += 1;
-        }
+        let mut updated_data: [u8; BUFFER_SIZE] = unsafe { *DATA.get_mut().get_ref() };
+
+        // Copy the entire slice at once
+        updated_data[index..end_index].copy_from_slice(value);
+
         unsafe {
             DATA.get_mut().update(&updated_data);
         }
+        self.is_valid_write()?;
+        self.pos += value.len();
         Ok(())
     }
 
@@ -90,10 +123,13 @@ impl Buffer {
         let buffer = unsafe { DATA.get_mut() };
         let buffer_ref = buffer.get_ref();
 
-        self.check_read_pos(start_pos)?;
+        // Check we are within the read section of the internal buffer
         self.check_read_pos(start_pos + 1)?;
 
-        Ok(((buffer_ref[start_pos] as u16) << 8 | buffer_ref[start_pos + 1] as u16) as usize)
+        let input = &buffer_ref[start_pos..];
+        let (_, value) = be_u16(input)?;
+
+        Ok(value as usize)
     }
 
     fn check_read_pos(&self, index: usize) -> Result<(), AppSW> {

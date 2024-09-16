@@ -1,6 +1,6 @@
+use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::nvm::buffer::{Buffer, BUFFER_SIZE};
-use crate::utils::zlog_stack;
+use crate::nvm::buffer::BUFFER_SIZE;
 use crate::AppSW;
 use ledger_device_sdk::io::Comm;
 
@@ -14,7 +14,7 @@ pub fn accumulate_data(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Resul
     // First chunk, try to parse the path
     if chunk == 0 {
         // Reset transaction context
-        ctx.reset();
+        ctx.reset_to_receive();
         return Ok(());
         // Next chunks, append data to raw_tx and return or parse
         // the transaction if it is the last chunk.
@@ -26,7 +26,6 @@ pub fn accumulate_data(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Resul
 
     // Append data to raw_tx
     ctx.buffer.set_slice(ctx.buffer.pos, data)?;
-    ctx.buffer.pos += data.len();
 
     // If we expect more chunks, return
     if chunk == 1 {

@@ -5,6 +5,36 @@ TESTS_JS_DIR = $(CURDIR)/js
 .PHONY: build
 build:
 	cargo ledger build nanosplus
+	cargo ledger build stax
+	cargo ledger build flex
+
+.PHONY: setup
+setup:
+	cargo ledger setup
+
+.PHONY: format
+format:
+	cargo fmt --all
+
+# To be run on linux only
+.PHONY: lint-all
+lint-all: lint-nanosplus lint-flex lint-stax lint-nanox
+
+.PHONY: lint-nanosplus
+lint-nanosplus:
+	cargo clippy --target nanosplus -- -Dwarnings
+
+.PHONY: lint-nanox
+lint-nanox:
+	cargo clippy --target nanox -- -Dwarnings
+
+.PHONY: lint-flex
+lint-flex:
+	cargo clippy --target flex -- -Dwarnings
+
+.PHONY: lint-stax
+lint-stax:
+	cargo clippy --target stax -- -Dwarnings
 
 
 .PHONY: zemu_install_js_link
@@ -30,11 +60,9 @@ endif
 zemu_install_ironfish_link:
 	cd ironfish && yarn unlink || true
 	cd $(TESTS_ZEMU_DIR) && yarn unlink @ironfish/rust-nodejs || true
-	cd $(TESTS_JS_DIR) && yarn unlink @ironfish/rust-nodejs || true
 	# Now build and link
 	cd ironfish && yarn install && cd ironfish-rust-nodejs && yarn link || true
 	cd $(TESTS_ZEMU_DIR) && yarn link @ironfish/rust-nodejs || true
-	cd $(TESTS_JS_DIR) && yarn link @ironfish/rust-nodejs || true
 .PHONY: zemu_install
 zemu_install: zemu_install_ironfish_link zemu_install_js_link
 	# and now install everything
