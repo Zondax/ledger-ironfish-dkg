@@ -193,13 +193,18 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
-            const { participants, round1PublicPkgs, round2PublicPkgs, gskBytes } = minimizeRound3Inputs(
+            const {
+              participants: ids,
+              round1PublicPkgs,
+              round2PublicPkgs,
+              gskBytes,
+            } = minimizeRound3Inputs(
               i,
               round1s.map(r => r.publicPackage),
               round2s.filter((_, pos) => i != pos).map(r => r.publicPackage),
             )
 
-            let round3Req = app.dkgRound3Min(i, participants, round1PublicPkgs, round2PublicPkgs, round2s[i].secretPackage, gskBytes)
+            let round3Req = app.dkgRound3Min(i, ids, round1PublicPkgs, round2PublicPkgs, round2s[i].secretPackage, gskBytes)
 
             await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
             await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-round3`)
