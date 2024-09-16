@@ -123,7 +123,9 @@ impl Buffer {
         let buffer = unsafe { DATA.get_mut() };
         let buffer_ref = buffer.get_ref();
 
+        // Check we are within the read section of the internal buffer
         self.check_read_pos(start_pos)?;
+        self.check_read_pos(start_pos + 1)?;
 
         let input = &buffer_ref[start_pos..];
         let (_, value) = be_u16(input)?;

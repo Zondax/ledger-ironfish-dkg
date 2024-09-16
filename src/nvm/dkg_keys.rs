@@ -116,7 +116,8 @@ impl DkgKeys {
     #[allow(unused)]
     pub fn set_slice_with_len(&self, index: usize, value: &[u8]) -> Result<usize, AppSW> {
         let len = value.len();
-        let total_len = 2 + len; // 2 bytes for length + actual data length
+        // -1 to offset correctly the length and pos
+        let total_len = 2 + len - 1; // 2 bytes for length + actual data length
         self.check_write_pos(index + total_len)?;
 
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
