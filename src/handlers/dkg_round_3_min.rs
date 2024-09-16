@@ -41,7 +41,11 @@ pub struct MinTx {
 }
 
 #[inline(never)]
-pub fn handler_dkg_round_3(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
+pub fn handler_dkg_round_3_min(
+    comm: &mut Comm,
+    chunk: u8,
+    ctx: &mut TxContext,
+) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_round_3\0");
 
     accumulate_data(comm, chunk, ctx)?;
