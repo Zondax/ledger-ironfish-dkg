@@ -21,7 +21,7 @@ ff = "0.12.0"
 group = "0.12.0"
 chacha20poly1305 = "0.10.1"
 
-ironfish-frost = { git = "https://github.com/Zondax/ironfish-frost.git", rev = "ac50614438fc4857e0cc244d1ec1b45a527be819", default-features = false, features = [
+ironfish-frost = { git = "https://github.com/Zondax/ironfish-frost.git", rev = "ded5722919ddfce3cfcd88fc8e7c24f2116a9a6a", default-features = false, features = [
     "dkg",
     "signing",
 ] }

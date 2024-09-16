@@ -819,7 +819,7 @@ dependencies = [
 [[package]]
 name = "ironfish-frost"
 version = "0.1.0"
-source = "git+https://github.com/Zondax/ironfish-frost.git?rev=ac50614438fc4857e0cc244d1ec1b45a527be819#ac50614438fc4857e0cc244d1ec1b45a527be819"
+source = "git+https://github.com/Zondax/ironfish-frost.git?rev=ded5722919ddfce3cfcd88fc8e7c24f2116a9a6a#ded5722919ddfce3cfcd88fc8e7c24f2116a9a6a"
 dependencies = [
  "blake3",
  "chacha20",
@@ -1209,7 +1209,7 @@ dependencies = [
 [[package]]
 name = "reddsa"
 version = "0.5.1"
-source = "git+https://github.com/ZcashFoundation/reddsa.git?rev=9ac52c5c60e454b0032d78a22c05fb79aae1d51e#9ac52c5c60e454b0032d78a22c05fb79aae1d51e"
+source = "git+https://github.com/ZcashFoundation/reddsa.git?rev=ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead#ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead"
 dependencies = [
  "blake2b_simd",
  "byteorder",
