@@ -19,7 +19,7 @@ import { defaultOptions, identities, models, restoreKeysTestCases } from './comm
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions } from '@ironfish/rust-nodejs'
 import { Transaction } from '@ironfish/sdk'
-import { buildTx } from './utils'
+import { buildTx, minimizeRound3Inputs } from './utils'
 import { TModel } from '@zondax/zemu/dist/types'
 import aggregateRawSignatureShares = multisig.aggregateRawSignatureShares
 
@@ -193,12 +193,13 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
-            let round3Req = app.dkgRound3(
+            const { participants, round1PublicPkgs, round2PublicPkgs, gskBytes } = minimizeRound3Inputs(
               i,
               round1s.map(r => r.publicPackage),
               round2s.filter((_, pos) => i != pos).map(r => r.publicPackage),
-              round2s[i].secretPackage,
             )
+
+            let round3Req = app.dkgRound3Min(i, participants, round1PublicPkgs, round2PublicPkgs, round2s[i].secretPackage, gskBytes)
 
             await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
             await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-round3`)
