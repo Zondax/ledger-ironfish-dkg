@@ -1,10 +1,11 @@
 pub mod chacha20poly;
 mod encryption_keys;
 mod epk;
-mod key;
+mod keys;
+mod ovk;
 mod utils;
 
 pub use encryption_keys::*;
 pub use epk::Epk;
-pub use key::ConstantKey;
+pub use keys::ConstantKey;
 pub use utils::*;
