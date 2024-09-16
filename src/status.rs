@@ -1,4 +1,5 @@
 use ledger_device_sdk::io::{Reply, StatusWords};
+use nom::error::ErrorKind;
 
 use crate::{ironfish::errors::IronfishError, parser::ParserError};
 
@@ -86,5 +87,44 @@ impl From<ParserError> for AppSW {
 impl From<AppSW> for Reply {
     fn from(sw: AppSW) -> Reply {
         Reply(sw as u16)
+    }
+}
+
+impl From<ErrorKind> for AppSW {
+    fn from(err: ErrorKind) -> Self {
+        match err {
+            ErrorKind::Eof => AppSW::BufferOutOfBounds,
+            ErrorKind::TooLarge => AppSW::BufferOutOfBounds,
+            ErrorKind::Tag => AppSW::TxParsingFail,
+            _ => AppSW::Deny,
+        }
+    }
+}
+
+impl<I> nom::error::ParseError<I> for AppSW {
+    fn from_error_kind(_input: I, kind: ErrorKind) -> Self {
+        Self::from(kind)
+    }
+
+    // We don't have enough memory resources to use here an array with the last
+    // N errors to be used as a backtrace, so that, we just propagate here the latest
+    // reported error
+    fn append(_input: I, _kind: ErrorKind, other: Self) -> Self {
+        other
+    }
+}
+impl From<AppSW> for nom::Err<AppSW> {
+    fn from(error: AppSW) -> Self {
+        nom::Err::Error(error)
+    }
+}
+
+impl From<nom::Err<Self>> for AppSW {
+    fn from(e: nom::Err<Self>) -> Self {
+        match e {
+            nom::Err::Error(e) => e,
+            nom::Err::Failure(e) => e,
+            nom::Err::Incomplete(_) => Self::BufferOutOfBounds,
+        }
     }
 }
