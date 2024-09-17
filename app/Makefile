@@ -90,22 +90,29 @@ include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 .PHONY: buildS
 buildS:
 	APPVERSION=$(APPVERSION) cargo ledger build nanos
+	FOLDER=nanos make post-build
 
 .PHONY: buildX
 buildX:
 	APPVERSION=$(APPVERSION) cargo ledger build nanox
+	FOLDER=nanox make post-build
 
 .PHONY: buildS2
 buildS2:
 	APPVERSION=$(APPVERSION) cargo ledger build nanosplus
+	FOLDER=nanosplus make post-build
 
 .PHONY: buildST
 buildST:
 	APPVERSION=$(APPVERSION) cargo ledger build stax
+	FOLDER=stax make post-build
+
 
 .PHONY: buildFL
 buildFL:
 	APPVERSION=$(APPVERSION) cargo ledger build flex
+	FOLDER=flex make post-build
+
 
 .PHONY: clean_output
 clean_output:
@@ -146,3 +153,11 @@ lint-flex:
 .PHONY: lint-stax
 lint-stax:
 	APPVERSION=$(APPVERSION) cargo clippy --target stax -- -Dwarnings
+
+
+.PHONY: post-build
+post-build:
+	cp target/$(FOLDER)/release/ledger-ironfish-dkg bin/app.elf
+	cp target/$(FOLDER)/release/ledger-ironfish-dkg.hex bin/app.hex
+	cp target/$(FOLDER)/release/ledger-ironfish-dkg.apdu bin/app.apdu
+	make create-install-script
