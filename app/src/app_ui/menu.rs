@@ -32,36 +32,30 @@ use crate::Instruction;
 // use ledger_device_sdk::nvm::*;
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
-fn ui_about_menu(comm: &mut Comm) -> Event<Instruction> {
-    let pages = [
-        &Page::from((["Ironfish", "Zondax AG"], true)),
-        &Page::from(("Back", &BACK)),
-    ];
-    loop {
-        match MultiPageMenu::new(comm, &pages).show() {
-            EventOrPageIndex::Event(e) => return e,
-            EventOrPageIndex::Index(1) => return ui_menu_main(comm),
-            EventOrPageIndex::Index(_) => (),
-        }
-    }
-}
-
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
 pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     const APP_ICON: Glyph = Glyph::from_include(include_gif!("nanox_icon.gif"));
-    let pages = [
-        // The from trait allows to create different styles of pages
-        // without having to use the new() function.
-        &Page::from((["Ironfish DKG", "is ready"], &APP_ICON)),
-        &Page::from((["Version", env!("APPVERSION")], true)),
-        &Page::from(("About", &CERTIFICATE)),
+
+    let mut first_page_label: [&str; 2];
+
+    if env!("PRODUCTION_BUILD") == "0" {
+        first_page_label = ["Ironfish DKG DEMO", "DO NOT USE"];
+    } else {
+        first_page_label = ["Ironfish DKG", "Ready"];
+    }
+
+    let pages =
+    [
+        &Page::from((first_page_label, &APP_ICON)),
+        &Page::from((["Ironfish DKG", env!("APPVERSION")], false)),
+        &Page::from((["Developed by", "Zondax.ch"], false)),
+        &Page::from((["License", "Apache 2.0"], false)),
         &Page::from(("Quit", &DASHBOARD_X)),
     ];
+
     loop {
         match MultiPageMenu::new(comm, &pages).show() {
             EventOrPageIndex::Event(e) => return e,
-            EventOrPageIndex::Index(2) => return ui_about_menu(comm),
-            EventOrPageIndex::Index(3) => ledger_device_sdk::exit_app(0),
+            EventOrPageIndex::Index(2) => ledger_device_sdk::exit_app(0),
             EventOrPageIndex::Index(_) => (),
         }
     }
@@ -82,7 +76,7 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
         .infos(
             "Ironfish DKG",
             env!("APPVERSION"),
-            env!("CARGO_PKG_AUTHORS"),
+            env!("Zondax AG"),
         )
         .show()
 }
