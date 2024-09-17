@@ -20,7 +20,7 @@ use ledger_device_sdk::io;
 
 #[inline(never)]
 pub fn handler_get_version(comm: &mut io::Comm) -> Result<(), AppSW> {
-    if let Some((major, minor, patch)) = parse_version_string(env!("CARGO_PKG_VERSION")) {
+    if let Some((major, minor, patch)) = parse_version_string(env!("APPVERSION")) {
         comm.append(&[major, minor, patch]);
         Ok(())
     } else {

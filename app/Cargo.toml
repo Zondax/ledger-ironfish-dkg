@@ -47,7 +47,7 @@ default = ["pending_review_screen"]
 pending_review_screen = []
 
 [package.metadata.ledger]
-curve = ["secp256k1"]
+curve = ["ed25519"]
 flags = "0"
 path = ["44'/1338'"]
 name = "Ironfish"

@@ -53,7 +53,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
         // The from trait allows to create different styles of pages
         // without having to use the new() function.
         &Page::from((["Ironfish DKG", "is ready"], &APP_ICON)),
-        &Page::from((["Version", env!("CARGO_PKG_VERSION")], true)),
+        &Page::from((["Version", env!("APPVERSION")], true)),
         &Page::from(("About", &CERTIFICATE)),
         &Page::from(("Quit", &DASHBOARD_X)),
     ];
@@ -81,7 +81,7 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
         .glyph(&FERRIS)
         .infos(
             "Ironfish DKG",
-            env!("CARGO_PKG_VERSION"),
+            env!("APPVERSION"),
             env!("CARGO_PKG_AUTHORS"),
         )
         .show()

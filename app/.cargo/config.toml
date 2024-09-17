@@ -4,7 +4,6 @@ runner = "speculos -a=1 --model=nanosp"
 [env]
 HEAP_SIZE = "16300"
 CARGO_PKG_AUTHORS="Zondax AG"
-CARGO_PKG_VERSION="0.1.0"
 
 [unstable]
 build-std = ["core", "alloc"]
