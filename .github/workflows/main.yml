@@ -55,7 +55,7 @@ jobs:
       - name: Build app
         run: |
           export PATH=/home/runner/.local/bin:$PATH
-          make build
+          make all
       - name: Install zemu deps
         run: make zemu_install
       - name: Run tests
