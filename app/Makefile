@@ -40,9 +40,6 @@ else
     $(info ************ HAVE_SWAP  = [DISABLED])
 endif
 
-# Add the PRODUCTION_BUILD definition to the compiler flags
-DEFINES += PRODUCTION_BUILD=$(PRODUCTION_BUILD)
-
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.app_testing
 
 ifndef COIN
@@ -92,23 +89,23 @@ include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
 .PHONY: buildS
 buildS:
-	cargo ledger build nanos
+	APPVERSION=$(APPVERSION) cargo ledger build nanos
 
 .PHONY: buildX
 buildX:
-	cargo ledger build nanox
+	APPVERSION=$(APPVERSION) cargo ledger build nanox
 
 .PHONY: buildS2
 buildS2:
-	cargo ledger build nanosplus
+	APPVERSION=$(APPVERSION) cargo ledger build nanosplus
 
 .PHONY: buildST
 buildST:
-	cargo ledger build stax
+	APPVERSION=$(APPVERSION) cargo ledger build stax
 
 .PHONY: buildFL
 buildFL:
-	cargo ledger build flex
+	APPVERSION=$(APPVERSION) cargo ledger build flex
 
 .PHONY: clean_output
 clean_output:
@@ -117,7 +114,7 @@ clean_output:
 
 .PHONY: clean_build
 clean_build:
-	unset TARGET_NAME && echo $(TARGET_NAME) && cargo clean
+	cargo clean
 
 .PHONY: clean
 clean: clean_output clean_build
@@ -136,16 +133,16 @@ format:
 
 .PHONY: lint-nanosplus
 lint-nanosplus:
-	cargo clippy --target nanosplus -- -Dwarnings
+	APPVERSION=$(APPVERSION) cargo clippy --target nanosplus -- -Dwarnings
 
 .PHONY: lint-nanox
 lint-nanox:
-	cargo clippy --target nanox -- -Dwarnings
+	APPVERSION=$(APPVERSION) cargo clippy --target nanox -- -Dwarnings
 
 .PHONY: lint-flex
 lint-flex:
-	cargo clippy --target flex -- -Dwarnings
+	APPVERSION=$(APPVERSION) cargo clippy --target flex -- -Dwarnings
 
 .PHONY: lint-stax
 lint-stax:
-	cargo clippy --target stax -- -Dwarnings
+	APPVERSION=$(APPVERSION) cargo clippy --target stax -- -Dwarnings
