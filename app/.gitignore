@@ -28,6 +28,11 @@ build/
 tmp
 .DS_Store
 
-bin/*
-pkg/*
-output/*
+bin/*.elf
+bin/*.apdu
+bin/*.hex
+
+pkg/*.sh
+output/*.elf
+output/*.apdu
+output/*.hex
