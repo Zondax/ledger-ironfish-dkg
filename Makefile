@@ -1,3 +1,7 @@
+TESTS_JS_PACKAGE = "@zondax/ledger-ironfish"
+TESTS_JS_DIR = $(CURDIR)/js
+
+
 ifeq ($(BOLOS_SDK),)
 # In this case, there is not predefined SDK and we run dockerized
 # When not using the SDK, we override and build the XL complete app
