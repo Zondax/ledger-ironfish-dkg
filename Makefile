@@ -30,3 +30,11 @@ zemu_install_ironfish_link:
 zemu_install: zemu_install_ironfish_link zemu_install_js_link
 	# and now install everything
 	cd $(TESTS_ZEMU_DIR) && yarn install
+
+# Copy files quickly from a source to a folder with a regular expresions
+# In some cases, when something change in the screens for some command, it changes for each participant.
+# This makes it hard and tedious to update each participant snapshots (one per test run).
+# This allows to quickly update the other images from the first run
+.PHONY: copy-files
+copy-files:
+	find . -type d -name "*sp-*" -exec cp ../snapshots-tmp/sp-dkg-p2-m2-0-identity/00003.png {} \;
