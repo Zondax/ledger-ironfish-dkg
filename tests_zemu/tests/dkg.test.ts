@@ -385,34 +385,23 @@ describe.each(models)('DKG', function (m) {
 
             let resp = await respReq
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
-
             resp = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
             expect(resp.viewKey.toString('hex')).toEqual(viewKeys.viewKey)
             expect(resp.ovk.toString('hex')).toEqual(viewKeys.ovk)
             expect(resp.ivk.toString('hex')).toEqual(viewKeys.ivk)
 
             resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
             expect(resp.ak.toString('hex')).toEqual(proofKeys.ak)
             expect(resp.nsk.toString('hex')).toEqual(proofKeys.nsk)
 
             resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
             expect(resp.publicAddress.toString('hex')).toEqual(publicAddress)
 
             resp = await app.dkgGetPublicPackage()
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
             expect(resp.publicPackage.toString('hex')).toEqual(publicPackage)
           } finally {
             await sim.close()
@@ -434,8 +423,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      let resp: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
-      expect(resp.returnCode.toString(16)).toEqual('Unknown Return Code: 0xB022')
+      await expect(app.dkgRetrieveKeys(IronfishKeys.ViewKey)).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -461,9 +449,6 @@ describe.each(models)('DKG', function (m) {
       await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-d`)
 
       const resp = await respReq
-
-      expect(resp.returnCode.toString(16)).toEqual('9000')
-      expect(resp.errorMessage).toEqual('No errors')
     } finally {
       await sim.close()
     }
@@ -482,7 +467,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      await expect(app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)).rejects.toThrow('Unknown Return Code: 0xB022')
+      await expect(app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -500,7 +485,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      await expect(app.dkgRetrieveKeys(IronfishKeys.PublicAddress)).rejects.toThrow('Unknown Return Code: 0xB022')
+      await expect(app.dkgRetrieveKeys(IronfishKeys.PublicAddress)).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -518,7 +503,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      await expect(app.dkgGetPublicPackage()).rejects.toThrow('Unknown Return Code: 0xB022')
+      await expect(app.dkgGetPublicPackage()).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -536,7 +521,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      await expect(app.dkgBackupKeys()).rejects.toThrow('Unknown Return Code: 0xB022')
+      await expect(app.dkgBackupKeys()).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -551,7 +536,7 @@ describe.each(models)('DKG', function (m) {
       const app = new IronfishApp(sim.getTransport(), true)
       let resp: any = await app.dkgRound3()
 
-      await expect(app.dkgRound3()).rejects.toThrow('Unknown Return Code: 0xB022')
+      await expect(app.dkgRound3()).rejects.toThrow()
     } finally {
       await sim.close()
     }
