@@ -21,7 +21,7 @@ MY_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.installer_script
 
 # Set the default value for PRODUCTION_BUILD to 0 if not already defined
-PRODUCTION_BUILD ?= 0
+PRODUCTION_BUILD ?= 1
 
 $(info ************ TARGET_NAME  = [$(TARGET_NAME)])
 
