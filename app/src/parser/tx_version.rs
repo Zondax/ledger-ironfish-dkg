@@ -1,5 +1,6 @@
 use super::ParserError;
 
+#[repr(u8)]
 #[derive(Copy, PartialEq, Clone)]
 #[cfg_attr(test, derive(Debug))]
 pub enum TransactionVersion {

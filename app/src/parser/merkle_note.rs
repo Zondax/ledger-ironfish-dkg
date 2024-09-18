@@ -6,6 +6,7 @@ use group::{
 };
 
 use crate::{
+    bolos::zlog_stack,
     crypto::{calculate_key_for_encryption_keys, parse_affine_point, read_fr, read_scalar},
     ironfish::{
         errors::IronfishError,
@@ -26,6 +27,15 @@ use jubjub::{ExtendedPoint, Scalar, SubgroupPoint};
 use nom::bytes::complete::take;
 
 use super::{Note, ENCRYPTED_SHARED_KEY_SIZE};
+
+const MERKE_NOTE: &str = "605a3f9d31f10e6a68c5685b6121c7f69fb1aa4f64fd7d7ed30ec5cf2b1af681afe
+a24c3ade7b7a740e05586575e2e15f827b5d1cafe62e15268896f37f848631f9acf55162ec1f8e11f666dc0d809b1
+3bd8ed9ff06534c5edd3a57c73dd9bd58e1ed05c4b4311adbca1acc322166951f97a2128bb0b5c7ec0fe848b48fad
+77d1f4b94cb4a699cfe74f9323c6e8cc3da0c48d88f767aec3b029d5ca1c738f260e909eb3d1f28c7481e7fc4357c
+5b4ffe7140bf0196674ff4f843bb2b3ee1acdc46893cdd196f7cd280ed4c1c7a43dd9c2da5e7359112b8c50681045
+70bc62305bebd8b728401c3e01549bd282cf60dc7e2fa690e7aa29e9f92340b6f3908ceb30291f1ff5103e913c9ef
+a4341bc78d48dbe2ac880668ab4083ad199a19b86f5cdb46a1577a63b832247136eb7f2fa470646cc24c75fbbbb1e
+467b7b399995ea04d123532a2ab3951";
 
 #[derive(Clone, Debug)]
 pub struct MerkleNote<'a> {
@@ -58,24 +68,37 @@ pub struct MerkleNote<'a> {
     /// the note directly using their incoming viewing key.
     pub(crate) note_encryption_keys: &'a [u8; NOTE_ENCRYPTION_KEY_SIZE],
 }
+
+// let value_commitment = read_point(&mut reader)?;
+// let note_commitment = read_scalar(&mut reader)?;
+// let ephemeral_public_key = read_point(&mut reader)?;
+//
+// let mut encrypted_note = [0; ENCRYPTED_NOTE_SIZE + aead::MAC_SIZE];
+// reader.read_exact(&mut encrypted_note[..])?;
+// let mut note_encryption_keys = [0; NOTE_ENCRYPTION_KEY_SIZE];
+// reader.read_exact(&mut note_encryption_keys[..])?;
 impl<'a> FromBytes<'a> for MerkleNote<'a> {
     #[inline(never)]
     fn from_bytes_into(
         input: &'a [u8],
         out: &mut core::mem::MaybeUninit<Self>,
     ) -> Result<&'a [u8], nom::Err<ParserError>> {
+        zlog_stack("MerkleNote::from_bytes_into\n");
         let (rem, affine) = take(AFFINE_POINT_SIZE)(input)?;
         let affine = affine
             .try_into()
             .map_err(|_| ParserError::ValueOutOfRange)?;
         let value_commitment = parse_affine_point(affine)?;
+        zlog_stack("MerkleNote::value_commitment\n");
 
-        let (rem, raw_scalar) = take(3232usize)(rem)?;
+        let (rem, raw_scalar) = take(32usize)(rem)?;
         let raw_scalar = array_ref!(raw_scalar, 0, 32);
+        zlog_stack("raw_scalar\n");
 
         let note_commitment = Scalar::from_bytes(raw_scalar)
             .into_option()
             .ok_or(ParserError::UnexpectedValue)?;
+        zlog_stack("MerkleNote::note_commitment\n");
 
         // parsing ephemeral pubkey which is a SubgroupPoint
         let (rem, raw_scalar) = take(32usize)(rem)?;
@@ -86,14 +109,17 @@ impl<'a> FromBytes<'a> for MerkleNote<'a> {
         // to compute it from bytes, ironfish uses a custom version of the jubjub
         // crate that is incompatible with our target.
         let ephemeral_public_key = parse_affine_point(raw_scalar)?;
+        zlog_stack("MerkleNote::ephemeral_public_key\n");
 
         // encrypted_note
         let (rem, raw_note) = take(ENCRYPTED_NOTE_SIZE + MAC_SIZE)(rem)?;
         let encrypted_note = array_ref!(raw_note, 0, ENCRYPTED_NOTE_SIZE + MAC_SIZE);
+        zlog_stack("MerkleNote::encrypted_note\n");
 
         // note_encryption_keys
         let (rem, encryption_keys) = take(NOTE_ENCRYPTION_KEY_SIZE)(rem)?;
         let note_encryption_keys = array_ref!(encryption_keys, 0, NOTE_ENCRYPTION_KEY_SIZE);
+        zlog_stack("MerkleNote::note_encryption_keys\n");
 
         let out = out.as_mut_ptr();
 
@@ -104,6 +130,7 @@ impl<'a> FromBytes<'a> for MerkleNote<'a> {
             addr_of_mut!((*out).encrypted_note).write(encrypted_note);
             addr_of_mut!((*out).note_encryption_keys).write(note_encryption_keys);
         }
+        zlog_stack("MerkleNote::from_bytes_into ok\n");
         Ok(rem)
     }
 }

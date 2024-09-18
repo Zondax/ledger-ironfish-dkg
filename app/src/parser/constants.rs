@@ -7,6 +7,13 @@ use jubjub::{AffineNielsPoint, AffinePoint, Fq};
 //
 
 pub const PUBLIC_ADDRESS_SIZE: usize = 32;
+// 32-bytes public_key randomness
+// 192-byes proof
+// 32-bytes value_commitment
+// 32-bytes root hash
+// 4-bytes tree_size
+// 32-bytes nullifier
+// 64-bytes authorize signatures
 pub const SPEND_LEN: usize = 32 + 192 + 32 + 32 + 4 + 32 + 64;
 // 192-bytes proof + 328-bytes Merkle Note
 pub const OUTPUT_LEN: usize = 192 + 328;
@@ -48,3 +55,6 @@ pub const PRF_NF_PERSONALIZATION: &[u8; 8] = b"ironf_nf";
 
 /// BLAKE2s personalization for the value commitment generator for the value
 pub const VALUE_COMMITMENT_GENERATOR_PERSONALIZATION: &[u8; 8] = b"ironf_cv";
+
+pub const TX_HASH_LEN: usize = 32;
+pub const SIGNATURE_HASH_PERSONALIZATION: &[u8; 8] = b"IFsighsh";
