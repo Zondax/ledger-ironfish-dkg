@@ -13,7 +13,6 @@
 //!
 
 use blake2b_simd::Params as Blake2b;
-// use alloc::vec::Vec;
 use jubjub::AffinePoint;
 
 use crate::ironfish::public_address::PublicAddress;

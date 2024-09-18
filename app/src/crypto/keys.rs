@@ -17,11 +17,13 @@
 
 use crate::bolos::zlog_stack;
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
+#[cfg(feature = "ledger")]
 use crate::{nvm::dkg_keys::DkgKeys, AppSW};
 use alloc::vec::Vec;
 use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
 use ironfish_frost::dkg::round3::PublicKeyPackage;
 use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
+#[cfg(feature = "ledger")]
 use ledger_device_sdk::io::{Comm, Event};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -31,6 +33,7 @@ pub enum ConstantKey {
     PublicKeyGenerator,
 }
 
+#[cfg(feature = "ledger")]
 pub(crate) fn get_dkg_keys() -> Result<MultisigAccountKeys, AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 

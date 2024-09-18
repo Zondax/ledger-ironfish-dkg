@@ -18,59 +18,19 @@
 #![no_std]
 #![no_main]
 
-mod parser;
-mod utils;
-mod app_ui {
-    pub mod menu;
-    pub mod run_action;
-}
-mod ironfish {
-    pub mod constants;
-    pub mod errors;
-    pub mod multisig;
-    pub mod public_address;
-    pub mod sapling;
-    pub mod view_keys;
-}
-
-mod instructions;
-pub use instructions::Instruction;
-mod status;
-pub use status::AppSW;
-
-pub use parser::{
-    Burn, FromBytes, Mint, ObjectList, Output, Spend, Transaction, TransactionVersion,
-};
-
-mod bolos;
-mod handlers;
-pub(crate) use bolos::{app_canary, zlog, zlog_stack};
-
-mod nvm {
-    pub mod buffer;
-    pub mod dkg_keys;
-}
-
-pub mod accumulator;
-mod context;
-
-pub mod crypto;
-
-use crypto::{ConstantKey, Epk};
-
-use crate::handlers::handle_apdu;
-use app_ui::menu::ui_menu_main;
-
 use ledger_device_sdk::io::{ApduHeader, Comm, Event, Reply, StatusWords};
+use ledger_ironfish_dkg::{context::TxContext, AppSW};
 
-ledger_device_sdk::set_panic!(ledger_device_sdk::exiting_panic);
+use ledger_ironfish_dkg::ledger::*;
 
-// Required for using String, Vec, format!...
-extern crate alloc;
+#[cfg(feature = "pending_review_screen")]
+#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+use ledger_device_sdk::ui::gadgets::display_pending_review;
 
-use crate::context::TxContext;
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::{init_comm, NbglReviewStatus, StatusType};
+
+ledger_device_sdk::set_panic!(ledger_device_sdk::exiting_panic);
 
 const APP_CLA: u8 = 0x63;
 
