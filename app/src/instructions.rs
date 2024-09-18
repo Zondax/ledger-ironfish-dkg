@@ -4,7 +4,6 @@ use ledger_device_sdk::io::ApduHeader;
 /// Possible input commands received through APDUs.
 pub enum Instruction {
     GetVersion,
-    GetAppName,
     DkgGetIdentity,
     DkgGetPublicPackage,
     DkgRound1 { chunk: u8 },
@@ -35,7 +34,6 @@ impl TryFrom<ApduHeader> for Instruction {
     fn try_from(value: ApduHeader) -> Result<Self, Self::Error> {
         match (value.ins, value.p1, value.p2) {
             (3, 0, 0) => Ok(Instruction::GetVersion),
-            (4, 0, 0) => Ok(Instruction::GetAppName),
             (16, 0, 0) => Ok(Instruction::DkgGetIdentity),
             (17, 0..=2, 0) => Ok(Instruction::DkgRound1 { chunk: value.p1 }),
             (18, 0..=2, 0) => Ok(Instruction::DkgRound2 { chunk: value.p1 }),
