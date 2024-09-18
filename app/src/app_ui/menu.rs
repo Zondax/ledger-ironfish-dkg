@@ -43,8 +43,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
         first_page_label = ["Ironfish DKG", "Ready"];
     }
 
-    let pages =
-    [
+    let pages = [
         &Page::from((first_page_label, &APP_ICON)),
         &Page::from((["Ironfish DKG", env!("APPVERSION_STR")], true, true)),
         &Page::from((["Developed by", "Zondax.ch"], true, true)),
@@ -80,10 +79,6 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     // Display the home screen.
     NbglHomeAndSettings::new()
         .glyph(&FERRIS)
-        .infos(
-            name,
-            env!("APPVERSION_STR"),
-            "Zondax AG",
-        )
+        .infos(name, env!("APPVERSION_STR"), "Zondax AG")
         .show()
 }
