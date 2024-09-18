@@ -4,7 +4,7 @@ edition = "2021"
 
 
 [dependencies]
-ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "c9045e0a14934dbdf4feb1188c2a33742c18ae93" }
+ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "89c2a12106b52a0fae8fbfde3eaab857378f962a" }
 # ledger_device_sdk = { version="1.14.0" }
 include_gif = "1.2.0"
 serde = { version = "1.0.192", default_features = false, features = ["derive"] }

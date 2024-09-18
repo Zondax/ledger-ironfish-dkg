@@ -20,7 +20,7 @@ use ledger_device_sdk::io::{Comm, Event};
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
-    bitmaps::{Glyph, BACK, CERTIFICATE, DASHBOARD_X},
+    bitmaps::{Glyph, BACK, CERTIFICATE, DASHBOARD},
     gadgets::{EventOrPageIndex, MultiPageMenu, Page},
 };
 
@@ -46,16 +46,16 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     let pages =
     [
         &Page::from((first_page_label, &APP_ICON)),
-        &Page::from((["Ironfish DKG", env!("APPVERSION")], false)),
-        &Page::from((["Developed by", "Zondax.ch"], false)),
-        &Page::from((["License", "Apache 2.0"], false)),
-        &Page::from(("Quit", &DASHBOARD_X)),
+        &Page::from((["Ironfish DKG", env!("APPVERSION_STR")], true, true)),
+        &Page::from((["Developed by", "Zondax.ch"], true, true)),
+        &Page::from((["License", "Apache 2.0"], true, true)),
+        &Page::from(("Quit", &DASHBOARD)),
     ];
 
     loop {
         match MultiPageMenu::new(comm, &pages).show() {
             EventOrPageIndex::Event(e) => return e,
-            EventOrPageIndex::Index(2) => ledger_device_sdk::exit_app(0),
+            EventOrPageIndex::Index(4) => ledger_device_sdk::exit_app(0),
             EventOrPageIndex::Index(_) => (),
         }
     }
@@ -70,13 +70,20 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     #[cfg(target_os = "flex")]
     const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
 
+    let name: &str;
+    if env!("PRODUCTION_BUILD") == "0" {
+        name = "Ironfish DKG DEMO";
+    } else {
+        name = "Ironfish DKG";
+    }
+
     // Display the home screen.
     NbglHomeAndSettings::new()
         .glyph(&FERRIS)
         .infos(
-            "Ironfish DKG",
-            env!("APPVERSION"),
-            env!("Zondax AG"),
+            name,
+            env!("APPVERSION_STR"),
+            "Zondax AG",
         )
         .show()
 }
