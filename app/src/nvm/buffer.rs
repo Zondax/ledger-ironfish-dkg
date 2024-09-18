@@ -133,6 +133,11 @@ impl Buffer {
         Ok(value as usize)
     }
 
+    pub fn get_full_buffer(&self) -> &[u8] {
+        let buffer = unsafe { DATA.get_mut() };
+        buffer.get_ref().as_slice()
+    }
+
     fn check_read_pos(&self, index: usize) -> Result<(), AppSW> {
         if index >= self.pos {
             return Err(AppSW::BufferOutOfBounds);
