@@ -16,6 +16,7 @@ pub enum Instruction {
     DkgBackupKeys,
     DkgRestoreKeys { chunk: u8 },
     GetResult { chunk: u8 },
+    ReviewTx { chunk: u8 },
 }
 
 #[cfg(feature = "ledger")]
@@ -49,6 +50,7 @@ impl TryFrom<ApduHeader> for Instruction {
             (27, 0..=255, 0) => Ok(Instruction::GetResult { chunk: value.p1 }),
             (3..=4, _, _) => Err(AppSW::WrongP1P2),
             (17..=26, _, _) => Err(AppSW::WrongP1P2),
+            (0x1c, 0..=2, 0) => Ok(Instruction::ReviewTx { chunk: value.p1 }),
             (_, _, _) => Err(AppSW::InsNotSupported),
         }
     }
