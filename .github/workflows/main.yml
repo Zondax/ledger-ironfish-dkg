@@ -29,7 +29,7 @@ jobs:
           components: rust-src
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -50,11 +50,12 @@ jobs:
         run: |
           export PATH=/home/runner/.local/bin:$PATH
           make all
+      - name: Run rust tests
+        run: make rust_tests
       - name: Install zemu deps
         run: make zemu_install
       - name: Run tests
         run: make zemu_test
-
 
   build_package_nanosp:
     needs: [configure, build_and_test]
@@ -74,7 +75,7 @@ jobs:
           components: rust-src
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -136,7 +137,7 @@ jobs:
           components: rust-src
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -198,7 +199,7 @@ jobs:
           components: rust-src
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Checkout
         uses: actions/checkout@v4
         with:
