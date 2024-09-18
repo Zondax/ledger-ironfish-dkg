@@ -82,7 +82,7 @@ describe.each(models)('DKG', function (m) {
               approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
               approveAction: ButtonKind.ApproveTapButton,
             })
-          const app = new IronfishApp(sim.getTransport())
+          const app = new IronfishApp(sim.getTransport(), true)
           const resp = await fn(sim, app)
 
           // Clean events from previous commands as each sim lives for many commands (DKG generation + signing)
@@ -128,12 +128,9 @@ describe.each(models)('DKG', function (m) {
             await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
             await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-identity`)
 
-            const identity = await identityReq
-
-            expect(i + ' ' + identity.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(identity.errorMessage).toEqual('No errors')
-
-            return identity
+            const result = await identityReq
+            expect(result.identity.length).toBeTruthy()
+            return result
           })
 
           if (!identity.identity) throw new Error('no identity found')
@@ -149,14 +146,10 @@ describe.each(models)('DKG', function (m) {
             await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-round1`)
 
             const round1 = await round1Req
-
-            expect(i + ' ' + round1.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(round1.errorMessage).toEqual('No errors')
-
+            expect(round1.publicPackage.length).toBeTruthy()
+            expect(round1.secretPackage.length).toBeTruthy()
             return round1
           })
-
-          if (!round1.publicPackage || !round1.secretPackage) throw new Error('no round 1 found')
 
           round1s.push({
             publicPackage: round1.publicPackage.toString('hex'),
@@ -176,14 +169,10 @@ describe.each(models)('DKG', function (m) {
             await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-round2`)
 
             const round2 = await round2Req
-
-            expect(i + ' ' + round2.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(round2.errorMessage).toEqual('No errors')
-
+            expect(round2.publicPackage.length).toBeTruthy()
+            expect(round2.secretPackage.length).toBeTruthy()
             return round2
           })
-
-          if (!round2.publicPackage || !round2.secretPackage) throw new Error('no round 2 found')
 
           round2s.push({
             publicPackage: round2.publicPackage.toString('hex'),
@@ -210,10 +199,6 @@ describe.each(models)('DKG', function (m) {
             await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-round3`)
 
             const round3 = await round3Req
-
-            expect(i + ' ' + round3.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(round3.errorMessage).toEqual('No errors')
-
             return round3
           })
         }
@@ -222,14 +207,10 @@ describe.each(models)('DKG', function (m) {
           const result = await runMethod(globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgGetPublicPackage()
 
-            expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(result.errorMessage).toEqual('No errors')
-            expect(result.publicPackage).toBeTruthy()
+            expect(result.publicPackage.length).toBeTruthy()
 
             return result
           })
-
-          if (!result.publicPackage) throw new Error('no publicPackage found')
 
           publicPackages.push(result.publicPackage.toString('hex'))
         }
@@ -245,9 +226,7 @@ describe.each(models)('DKG', function (m) {
 
             const result = await resultReq
 
-            expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(result.errorMessage).toEqual('No errors')
-            expect(result.encryptedKeys).toBeTruthy()
+            expect(result.encryptedKeys.length).toBeTruthy()
 
             return result
           })
@@ -264,8 +243,6 @@ describe.each(models)('DKG', function (m) {
           const result = await runMethod(globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
 
-            expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(result.errorMessage).toEqual('No errors')
             expect('publicAddress' in result).toBeTruthy()
 
             return result
@@ -292,8 +269,6 @@ describe.each(models)('DKG', function (m) {
           const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
 
-            expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(result.errorMessage).toEqual('No errors')
             expect('viewKey' in result).toBeTruthy()
             expect('ivk' in result).toBeTruthy()
             expect('ovk' in result).toBeTruthy()
@@ -317,8 +292,6 @@ describe.each(models)('DKG', function (m) {
           const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
 
-            expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(result.errorMessage).toEqual('No errors')
             expect('ak' in result).toBeTruthy()
             expect('nsk' in result).toBeTruthy()
 
@@ -344,14 +317,10 @@ describe.each(models)('DKG', function (m) {
           const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgGetCommitments(unsignedTx.hash().toString('hex'))
 
-            expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(result.errorMessage).toEqual('No errors')
-            expect(result.commitments).toBeTruthy()
+            expect(result.commitments.length).toBeTruthy()
 
             return result
           })
-
-          if (!result.commitments) throw new Error('no commitment found')
 
           commitments.push(result.commitments.toString('hex'))
         }
@@ -367,14 +336,10 @@ describe.each(models)('DKG', function (m) {
               unsignedTx.hash().toString('hex'),
             )
 
-            expect(i + ' ' + result.returnCode.toString(16)).toEqual(i + ' ' + '9000')
-            expect(result.errorMessage).toEqual('No errors')
-            expect(result.signature).toBeTruthy()
+            expect(result.signature.length).toBeTruthy()
 
             return result
           })
-
-          if (!result.signature) throw new Error('no signature found')
 
           signatures.push(result.signature.toString('hex'))
         }
@@ -412,7 +377,7 @@ describe.each(models)('DKG', function (m) {
               approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
               approveAction: ButtonKind.ApproveTapButton,
             })
-            const app = new IronfishApp(sim.getTransport())
+            const app = new IronfishApp(sim.getTransport(), true)
             let respReq: any = app.dkgRestoreKeys(e)
 
             await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
@@ -420,34 +385,23 @@ describe.each(models)('DKG', function (m) {
 
             let resp = await respReq
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
-
             resp = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
             expect(resp.viewKey.toString('hex')).toEqual(viewKeys.viewKey)
             expect(resp.ovk.toString('hex')).toEqual(viewKeys.ovk)
             expect(resp.ivk.toString('hex')).toEqual(viewKeys.ivk)
 
             resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
             expect(resp.ak.toString('hex')).toEqual(proofKeys.ak)
             expect(resp.nsk.toString('hex')).toEqual(proofKeys.nsk)
 
             resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
             expect(resp.publicAddress.toString('hex')).toEqual(publicAddress)
 
             resp = await app.dkgGetPublicPackage()
 
-            expect(resp.returnCode.toString(16)).toEqual('9000')
-            expect(resp.errorMessage).toEqual('No errors')
             expect(resp.publicPackage.toString('hex')).toEqual(publicPackage)
           } finally {
             await sim.close()
@@ -467,10 +421,9 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
-      let resp: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
-      expect(resp.returnCode.toString(16)).toEqual('b022')
+      await expect(app.dkgRetrieveKeys(IronfishKeys.ViewKey)).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -488,7 +441,7 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
       let respReq = app.dkgBackupKeys()
 
@@ -496,9 +449,6 @@ describe.each(models)('DKG', function (m) {
       await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-d`)
 
       const resp = await respReq
-
-      expect(resp.returnCode.toString(16)).toEqual('9000')
-      expect(resp.errorMessage).toEqual('No errors')
     } finally {
       await sim.close()
     }
@@ -515,10 +465,9 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
-      let resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
-      expect(resp.returnCode.toString(16)).toEqual('b022')
+      await expect(app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -534,10 +483,9 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
-      let resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
-      expect(resp.returnCode.toString(16)).toEqual('b022')
+      await expect(app.dkgRetrieveKeys(IronfishKeys.PublicAddress)).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -553,10 +501,9 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
-      let resp = await app.dkgGetPublicPackage()
-      expect(resp.returnCode.toString(16)).toEqual('b022')
+      await expect(app.dkgGetPublicPackage()).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -572,10 +519,9 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
-      let resp = await app.dkgBackupKeys()
-      expect(resp.returnCode.toString(16)).toEqual('b022')
+      await expect(app.dkgBackupKeys()).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -587,10 +533,10 @@ describe.each(models)('DKG', function (m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
       let resp: any = await app.dkgRound3()
 
-      expect(resp.returnCode.toString(16)).toEqual('b022')
+      await expect(app.dkgRound3()).rejects.toThrow()
     } finally {
       await sim.close()
     }
@@ -608,7 +554,7 @@ describe.each(models)('DKG', function (m) {
           approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
           approveAction: ButtonKind.ApproveTapButton,
         })
-        const app = new IronfishApp(sim.getTransport())
+        const app = new IronfishApp(sim.getTransport(), true)
         const identityReq = app.dkgGetIdentity(i)
 
         await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
@@ -616,9 +562,7 @@ describe.each(models)('DKG', function (m) {
 
         let identity = await identityReq
 
-        expect(identity.returnCode.toString(16)).toEqual('9000')
-        expect(identity.errorMessage).toEqual('No errors')
-        expect(identity.identity?.toString('hex')).toEqual(v)
+        expect(identity.identity.toString('hex')).toEqual(v)
       } finally {
         await sim.close()
       }
