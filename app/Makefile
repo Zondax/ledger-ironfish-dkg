@@ -21,7 +21,7 @@ MY_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.installer_script
 
 # Set the default value for PRODUCTION_BUILD to 0 if not already defined
-PRODUCTION_BUILD ?= 0
+PRODUCTION_BUILD ?= 1
 
 $(info ************ TARGET_NAME  = [$(TARGET_NAME)])
 
@@ -66,7 +66,8 @@ endif
 
 $(info PATHS LIST = $(APPPATH))
 
-APP_LOAD_PARAMS = --curve ed25519 $(COMMON_LOAD_PARAMS) --path $(APPPATH)
+APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME)
+APP_DELETE_PARAMS = --appName $(APPNAME)
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.devices
 
@@ -84,33 +85,34 @@ $(error ICONNAME is not set)
 endif
 
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
+APPVERSION_STR=v$(APPVERSION)
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
 .PHONY: buildS
 buildS:
-	APPVERSION=$(APPVERSION) cargo ledger build nanos
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanos
 	FOLDER=nanos make post-build
 
 .PHONY: buildX
 buildX:
-	APPVERSION=$(APPVERSION) cargo ledger build nanox
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanox
 	FOLDER=nanox make post-build
 
 .PHONY: buildS2
 buildS2:
-	APPVERSION=$(APPVERSION) cargo ledger build nanosplus
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanosplus
 	FOLDER=nanosplus make post-build
 
 .PHONY: buildST
 buildST:
-	APPVERSION=$(APPVERSION) cargo ledger build stax
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build stax
 	FOLDER=stax make post-build
 
 
 .PHONY: buildFL
 buildFL:
-	APPVERSION=$(APPVERSION) cargo ledger build flex
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build flex
 	FOLDER=flex make post-build
 
 
@@ -156,8 +158,19 @@ lint-stax:
 
 
 .PHONY: post-build
-post-build:
+post-build: move-files-to-output read-params-from-json create-install-script
+
+.PHONY: move-files-to-output
+move-files-to-output:
 	cp target/$(FOLDER)/release/ledger-ironfish-dkg bin/app.elf
 	cp target/$(FOLDER)/release/ledger-ironfish-dkg.hex bin/app.hex
 	cp target/$(FOLDER)/release/ledger-ironfish-dkg.apdu bin/app.apdu
-	make create-install-script
+
+.PHONY: read-params-from-json
+read-params-from-json:
+	$(eval T_ID := $(shell jq -r '.targetId' target/$(FOLDER)/release/app_$(FOLDER).json))
+	$(eval DATA_SIZE := $(shell jq -r '.dataSize' target/$(FOLDER)/release/app_$(FOLDER).json))
+	$(eval API_LEVEL := $(shell jq -r '.apiLevel' target/$(FOLDER)/release/app_$(FOLDER).json))
+
+	$(eval APP_LOAD_PARAMS := $(APP_LOAD_PARAMS) --targetId $(T_ID) --dataSize $(DATA_SIZE) --apiLevel $(API_LEVEL))
+	$(eval APP_DELETE_PARAMS := $(APP_DELETE_PARAMS) --targetId $(T_ID))

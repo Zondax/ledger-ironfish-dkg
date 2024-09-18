@@ -41,10 +41,6 @@ pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> R
     };
 
     match ins {
-        Instruction::GetAppName => {
-            comm.append(env!("CARGO_PKG_NAME").as_bytes());
-            Ok(())
-        }
         Instruction::GetVersion => handler_get_version(comm),
         Instruction::DkgGetIdentity => handler_dkg_get_identity(comm),
         Instruction::DkgRound1 { chunk } => handler_dkg_round_1(comm, *chunk, ctx),
