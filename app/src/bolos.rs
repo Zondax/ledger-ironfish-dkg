@@ -19,6 +19,7 @@ pub fn zlog(_buf: &str) {
         zemu_log(_buf.as_bytes().as_ptr())
     }
 }
+
 pub fn zlog_stack(_buf: &str) {
     #[cfg(feature = "ledger")]
     unsafe {
