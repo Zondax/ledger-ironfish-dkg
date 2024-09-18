@@ -21,13 +21,15 @@ import { TModel } from '@zondax/zemu/dist/types'
 
 jest.setTimeout(60000)
 
+// This is required for stax and flex as the ledger label is different to the one Zondax has
+// This app enables (ledger) vs This application enables (zondax)
 const startTextFn = (model: TModel) => (isTouchDevice(model) ? 'Ironfish DKG' : DEFAULT_START_OPTIONS.startText)
 
 describe('Basic', function () {
   test.each(models)('can start and stop container', async function (m) {
     const sim = new Zemu(m.path)
     try {
-      await sim.start({ ...defaultOptions, model: m.name })
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
     } finally {
       await sim.close()
     }
