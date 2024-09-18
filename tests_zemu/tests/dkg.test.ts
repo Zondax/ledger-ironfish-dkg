@@ -82,7 +82,7 @@ describe.each(models)('DKG', function (m) {
               approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
               approveAction: ButtonKind.ApproveTapButton,
             })
-          const app = new IronfishApp(sim.getTransport())
+          const app = new IronfishApp(sim.getTransport(), true)
           const resp = await fn(sim, app)
 
           // Clean events from previous commands as each sim lives for many commands (DKG generation + signing)
@@ -412,7 +412,7 @@ describe.each(models)('DKG', function (m) {
               approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
               approveAction: ButtonKind.ApproveTapButton,
             })
-            const app = new IronfishApp(sim.getTransport())
+            const app = new IronfishApp(sim.getTransport(), true)
             let respReq: any = app.dkgRestoreKeys(e)
 
             await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
@@ -467,7 +467,7 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
       let resp: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
       expect(resp.returnCode.toString(16)).toEqual('b022')
@@ -488,7 +488,7 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
       let respReq = app.dkgBackupKeys()
 
@@ -515,7 +515,7 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
       let resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
       expect(resp.returnCode.toString(16)).toEqual('b022')
@@ -534,7 +534,7 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
       let resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
       expect(resp.returnCode.toString(16)).toEqual('b022')
@@ -553,7 +553,7 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
       let resp = await app.dkgGetPublicPackage()
       expect(resp.returnCode.toString(16)).toEqual('b022')
@@ -572,7 +572,7 @@ describe.each(models)('DKG', function (m) {
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
         approveAction: ButtonKind.ApproveTapButton,
       })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
 
       let resp = await app.dkgBackupKeys()
       expect(resp.returnCode.toString(16)).toEqual('b022')
@@ -587,7 +587,7 @@ describe.each(models)('DKG', function (m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
-      const app = new IronfishApp(sim.getTransport())
+      const app = new IronfishApp(sim.getTransport(), true)
       let resp: any = await app.dkgRound3()
 
       expect(resp.returnCode.toString(16)).toEqual('b022')
@@ -608,7 +608,7 @@ describe.each(models)('DKG', function (m) {
           approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
           approveAction: ButtonKind.ApproveTapButton,
         })
-        const app = new IronfishApp(sim.getTransport())
+        const app = new IronfishApp(sim.getTransport(), true)
         const identityReq = app.dkgGetIdentity(i)
 
         await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
