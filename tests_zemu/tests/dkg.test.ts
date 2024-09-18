@@ -435,7 +435,7 @@ describe.each(models)('DKG', function (m) {
       const app = new IronfishApp(sim.getTransport(), true)
 
       let resp: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
-      expect(resp.returnCode.toString(16)).toEqual('b022')
+      expect(resp.returnCode.toString(16)).toEqual('Unknown Return Code: 0xB022')
     } finally {
       await sim.close()
     }
@@ -482,7 +482,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      await expect(app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)).rejects.toThrow('b022')
+      await expect(app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)).rejects.toThrow('Unknown Return Code: 0xB022')
     } finally {
       await sim.close()
     }
@@ -500,7 +500,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      await expect(app.dkgRetrieveKeys(IronfishKeys.PublicAddress)).rejects.toThrow('b022')
+      await expect(app.dkgRetrieveKeys(IronfishKeys.PublicAddress)).rejects.toThrow('Unknown Return Code: 0xB022')
     } finally {
       await sim.close()
     }
@@ -518,7 +518,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      await expect(app.dkgGetPublicPackage()).rejects.toThrow('b022')
+      await expect(app.dkgGetPublicPackage()).rejects.toThrow('Unknown Return Code: 0xB022')
     } finally {
       await sim.close()
     }
@@ -536,7 +536,7 @@ describe.each(models)('DKG', function (m) {
       })
       const app = new IronfishApp(sim.getTransport(), true)
 
-      await expect(app.dkgBackupKeys()).rejects.toThrow('b022')
+      await expect(app.dkgBackupKeys()).rejects.toThrow('Unknown Return Code: 0xB022')
     } finally {
       await sim.close()
     }
@@ -551,7 +551,7 @@ describe.each(models)('DKG', function (m) {
       const app = new IronfishApp(sim.getTransport(), true)
       let resp: any = await app.dkgRound3()
 
-      expect(resp.returnCode.toString(16)).toEqual('b022')
+      await expect(app.dkgRound3()).rejects.toThrow('Unknown Return Code: 0xB022')
     } finally {
       await sim.close()
     }
