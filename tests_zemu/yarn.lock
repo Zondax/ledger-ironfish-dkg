@@ -788,16 +788,6 @@
   resolved "https://registry.yarnpkg.com/@js-sdsl/ordered-map/-/ordered-map-4.4.2.tgz#9299f82874bab9e4c7f9c48d865becbfe8d6907c"
   integrity sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==
 
-"@ledgerhq/devices@^8.0.0":
-  version "8.4.0"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-8.4.0.tgz#f3a03576d4a53d731bdaa212a00bd0adbfb86fb1"
-  integrity sha512-TUrMlWZJ+5AFp2lWMw4rGQoU+WtjIqlFX5SzQDL9phaUHrt4TFierAGHsaj5+tUHudhD4JhIaLI2cn1NOyq5NQ==
-  dependencies:
-    "@ledgerhq/errors" "^6.17.0"
-    "@ledgerhq/logs" "^6.12.0"
-    rxjs "^7.8.1"
-    semver "^7.3.5"
-
 "@ledgerhq/devices@^8.4.2":
   version "8.4.2"
   resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-8.4.2.tgz#f1c56194cf1343d56cad49c8feba92ad93432e14"
@@ -807,11 +797,6 @@
     "@ledgerhq/logs" "^6.12.0"
     rxjs "^7.8.1"
     semver "^7.3.5"
-
-"@ledgerhq/errors@^6.12.3", "@ledgerhq/errors@^6.17.0":
-  version "6.17.0"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.17.0.tgz#0d56361fe6eb7de3b239e661710679f933f1fcca"
-  integrity sha512-xnOVpy/gUUkusEORdr2Qhw3Vd0MGfjyVGgkGR9Ck6FXE26OIdIQ3tNmG5BdZN+gwMMFJJVxxS4/hr0taQfZ43w==
 
 "@ledgerhq/errors@^6.18.0":
   version "6.18.0"
@@ -854,16 +839,7 @@
     node-hid "2.1.2"
     usb "2.9.0"
 
-"@ledgerhq/hw-transport@6.28.1":
-  version "6.28.1"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.28.1.tgz#cb22fe9bc23af4682c30f2aac7fe6f7ab13ed65a"
-  integrity sha512-RaZe+abn0zBIz82cE9tp7Y7aZkHWWbEaE2yJpfxT8AhFz3fx+BU0kLYzuRN9fmA7vKueNJ1MTVUCY+Ex9/CHSQ==
-  dependencies:
-    "@ledgerhq/devices" "^8.0.0"
-    "@ledgerhq/errors" "^6.12.3"
-    events "^3.3.0"
-
-"@ledgerhq/hw-transport@^6.31.2":
+"@ledgerhq/hw-transport@6.31.2", "@ledgerhq/hw-transport@^6.31.2":
   version "6.31.2"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.31.2.tgz#79c95f7928a64a0e3b5bc4ea7b5be04b9f738322"
   integrity sha512-B27UIzMzm2IXPGYnEB95R7eHxpXBkTBHh6MUJJQZVknt8LilEz1tfpTYUdzAKDGQ+Z5MZyYb01Eh3Zqm3kn3uw==
@@ -1425,15 +1401,14 @@
 "@zondax/ledger-ironfish@../js":
   version "0.0.0"
   dependencies:
-    "@ironfish/rust-nodejs" "../ironfish/ironfish-rust-nodejs"
-    "@zondax/ledger-js" "^0.2.1"
+    "@zondax/ledger-js" "^1.0.1"
 
-"@zondax/ledger-js@^0.2.1":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@zondax/ledger-js/-/ledger-js-0.2.2.tgz#b334cecaa372a8bfb91ae4fc5dd0d1c52411da4e"
-  integrity sha512-7wOUlRF2+kRaRU2KSzKb7XjPfScwEg3Cjg6NH/p+ikQLJ9eMkGC45NhSxYn8lixIIk+TgZ4yzTNOzFvF836gQw==
+"@zondax/ledger-js@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@zondax/ledger-js/-/ledger-js-1.0.1.tgz#a1c51943c5b7d1370cea588b193197234485d196"
+  integrity sha512-9h+aIXyEK+Rdic5Ppsmq+tptDFwPTacG1H6tpZHFdhtBFHYFOLLkKTTmq5rMTv84aAPS1v0tnsF1e2Il6M05Cg==
   dependencies:
-    "@ledgerhq/hw-transport" "6.28.1"
+    "@ledgerhq/hw-transport" "6.31.2"
 
 "@zondax/zemu@^0.50.2":
   version "0.50.2"
