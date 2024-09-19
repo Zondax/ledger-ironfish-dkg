@@ -72,7 +72,7 @@ fn parse_tx(buffer: &Buffer) -> Result<Tx, AppSW> {
     let elements = buffer.get_element(tx_pos)?;
     tx_pos += 1;
 
-    if elements > MAX_PARTICIPANTS{
+    if elements > MAX_PARTICIPANTS {
         return Err(AppSW::TooManyParticipants);
     }
 
