@@ -61,20 +61,6 @@ pub struct MerkleNote<'a> {
     pub(crate) note_encryption_keys: &'a [u8; NOTE_ENCRYPTION_KEY_SIZE],
 }
 
-// let value_commitment = read_point(&mut reader)?;
-// let note_commitment = read_scalar(&mut reader)?;
-// let ephemeral_public_key = read_point(&mut reader)?;
-//
-// let mut encrypted_note = [0; ENCRYPTED_NOTE_SIZE + aead::MAC_SIZE];
-// reader.read_exact(&mut encrypted_note[..])?;
-// let mut note_encryption_keys = [0; NOTE_ENCRYPTION_KEY_SIZE];
-// reader.read_exact(&mut note_encryption_keys[..])?;
-// pub fn write<W: io::Write>(&self, writer: &mut W) -> Result<(), IronfishError> {
-//     writer.write_all(&self.value_commitment.to_bytes())?;
-//     writer.write_all(&self.note_commitment.to_bytes_le())?;
-//     writer.write_all(&self.ephemeral_public_key.to_bytes())?;
-//     writer.write_all(&self.encrypted_note)?;
-//     writer.write_all(&self.note_encryption_keys)?;
 impl<'a> FromBytes<'a> for MerkleNote<'a> {
     #[inline(never)]
     fn from_bytes_into(
