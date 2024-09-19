@@ -138,3 +138,20 @@ macro_rules! generate_from_bytes_conversion {
 generate_from_bytes_conversion!(Fr, read_fr);
 generate_from_bytes_conversion!(Fq, read_fq);
 generate_from_bytes_conversion!(Scalar, read_scalar);
+
+#[cfg(test)]
+mod utils {
+    use super::*;
+
+    const EXTENDED_POINT: &str = "247f750514f0a0018af8fc17ef85ad376fa92390603bf9f8b8cb1597d57d7d52";
+
+    #[test]
+    fn parse_extended_as_affine() {
+        let raw_extended = hex::decode(EXTENDED_POINT).unwrap();
+        let raw_extended: [u8; 32] = raw_extended.try_into().unwrap();
+
+        let affine = parse_affine_point(&raw_extended).unwrap();
+
+        assert_eq!(raw_extended, affine.to_bytes());
+    }
+}
