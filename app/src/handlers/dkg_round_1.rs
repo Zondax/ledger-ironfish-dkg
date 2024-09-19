@@ -20,7 +20,7 @@ use crate::app_ui::run_action::ui_run_action;
 use crate::bolos::{zlog, zlog_stack};
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
-use crate::ironfish::constants::IDENTITY_LEN;
+use crate::ironfish::constants::{IDENTITY_LEN, MAX_PARTICIPANTS};
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
@@ -71,6 +71,10 @@ fn parse_tx(buffer: &Buffer) -> Result<Tx, AppSW> {
 
     let elements = buffer.get_element(tx_pos)?;
     tx_pos += 1;
+
+    if elements > MAX_PARTICIPANTS{
+        return Err(AppSW::TooManyParticipants);
+    }
 
     let mut identities: Vec<Identity> = Vec::with_capacity(elements as usize);
     for _i in 0..elements {
