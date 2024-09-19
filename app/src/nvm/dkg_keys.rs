@@ -9,7 +9,8 @@ use ledger_device_sdk::nvm::*;
 use ledger_device_sdk::NVMData;
 
 // This is necessary to store the object in NVM and not in RAM
-pub const DKG_KEYS_MAX_SIZE: usize = 3000;
+// The max data saved here is for 4 participants, which sends 1024 bytes.
+pub const DKG_KEYS_MAX_SIZE: usize = 1100;
 
 // Fix positions with u8 values
 const DKG_STATUS: usize = 0;

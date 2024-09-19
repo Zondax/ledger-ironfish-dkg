@@ -40,6 +40,7 @@ pub enum AppSW {
     InvalidNVMWrite = 0xB021,
     InvalidDkgStatus = 0xB022,
     InvalidDkgKeysVersion = 0xB023,
+    TooManyParticipants = 0xB024,
     #[cfg(feature = "ledger")]
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,

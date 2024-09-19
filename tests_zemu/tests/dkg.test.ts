@@ -527,6 +527,30 @@ describe.each(models)('DKG', function (m) {
     }
   })
 
+  test(`${m.name} - attempt to run round1 with 5 participants`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
+      const app = new IronfishApp(sim.getTransport(), true)
+
+      await expect(
+        app.dkgRound1(
+          0,
+          identities.map(({ v }) => v),
+          3,
+        ),
+      ).rejects.toThrow()
+    } finally {
+      await sim.close()
+    }
+  })
+
   // TODO complete me
   /*
   test(`${m.name} - attempt to run round3 when no round1 was executed`, async () => {
