@@ -117,6 +117,12 @@ jobs:
           tag_name: ${{ steps.nanosp.outputs.tag_name }}
           draft: false
           prerelease: false
+      - name: Upload script (only if not published)
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: installer_nanos_plus.sh
+          path: ./app/pkg/installer_nanos_plus.sh
 
   build_package_stax:
     needs: [configure, build_and_test]
@@ -173,6 +179,12 @@ jobs:
           tag_name: ${{ steps.stax.outputs.tag_name }}
           draft: false
           prerelease: false
+      - name: Upload script (only if not published)
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: installer_stax.sh
+          path: ./app/pkg/installer_stax.sh
 
   build_package_flex:
     needs: [configure, build_and_test]
@@ -229,3 +241,9 @@ jobs:
           tag_name: ${{ steps.flex.outputs.tag_name }}
           draft: false
           prerelease: false
+      - name: Upload script (only if not published)
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: installer_flex.sh
+          path: ./app/pkg/installer_flex.sh
