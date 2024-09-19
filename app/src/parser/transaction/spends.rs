@@ -11,21 +11,6 @@ use super::FromBytes;
 use super::ObjectList;
 use crate::parser::ParserError;
 
-// hashing spends:
-// pub(crate) fn serialize_signature_fields<W: io::Write>(
-//     &self,
-//     writer: W,
-// ) -> Result<(), IronfishError> {
-//     serialize_signature_fields(
-//         writer,
-//         &self.proof,
-//         &self.value_commitment,
-//         &self.root_hash,
-//         self.tree_size,
-//         &self.nullifier,
-//     )
-// }
-
 #[cfg_attr(test, derive(Debug))]
 #[derive(Copy, PartialEq, Clone)]
 pub struct Spend<'a>(&'a [u8]);
@@ -36,7 +21,7 @@ impl<'a> FromBytes<'a> for Spend<'a> {
         input: &'a [u8],
         out: &mut MaybeUninit<Spend<'a>>,
     ) -> Result<&'a [u8], nom::Err<ParserError>> {
-        zlog_stack("Spend::from_bytes_into\n");
+        zlog_stack("Spend::from_bytes_into\0");
         let out = out.as_mut_ptr();
         let (rem, data) = take(SPEND_LEN)(input)?;
 

@@ -25,7 +25,7 @@ impl<'a> FromBytes<'a> for Output<'a> {
         input: &'a [u8],
         out: &mut MaybeUninit<Output<'a>>,
     ) -> Result<&'a [u8], nom::Err<ParserError>> {
-        zlog_stack("Output::from_bytes_into\n");
+        zlog_stack("Output::from_bytes_into\0");
         // Lazy parsing of output
         // later we can parse each field
         let output = out.as_mut_ptr();

@@ -68,9 +68,6 @@ pub fn ui_review_transaction<'a>(
     ovk: &OutgoingViewKey,
 ) -> Result<bool, AppSW> {
     zlog_stack("ui_review_transaction***\0");
-    let field_pairs = transaction
-        .review_fields(ovk)
-        .map_err(|_| AppSW::BufferOutOfBounds)?;
 
     // Create a vector to hold the Field structs
     let fields: Vec<Field> = field_pairs
@@ -249,6 +246,16 @@ pub fn ui_review<'a>(
         const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
         #[cfg(target_os = "flex")]
         const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
+
+        let field_pairs = transaction
+            .review_fields(ovk)
+            .map_err(|_| AppSW::BufferOutOfBounds)?;
+
+        // Create a vector to hold the Field structs
+        let fields: Vec<Field> = field_pairs
+            .iter()
+            .map(|(name, value)| Field { name, value })
+            .collect();
 
         let mut review = NbglReview::new()
             .tx_type(TransactionType::Operation)

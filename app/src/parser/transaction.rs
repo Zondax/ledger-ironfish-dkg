@@ -138,7 +138,9 @@ impl<'a> Transaction<'a> {
         ovk: &OutgoingViewKey,
     ) -> Result<Vec<(String, String)>, IronfishError> {
         zlog_stack("Transaction::review_fields\n");
+
         let num_output = self.outputs_iter().count();
+
         // allocate spaces for num_outputs * 3(owner, amount, asset_it) + 1(fee) + 1(expiration) + 1(tx_version)
         let mut fields = Vec::with_capacity(num_output * 3 + 1 + 1 + 1);
 
@@ -164,7 +166,6 @@ impl<'a> Transaction<'a> {
 
             // now get the encrypted Note
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
-            zlog_stack("Transaction::note decrypted\n");
 
             fields.push((
                 format!("Owner {}", output_number),
