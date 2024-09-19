@@ -17,7 +17,7 @@
 
 use crate::{ironfish::view_keys::OutgoingViewKey, AppSW, Transaction};
 
-use alloc::{fmt::format, vec::Vec};
+use alloc::{fmt::format, format, vec::Vec};
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
     bitmaps::{CROSSMARK, EYE, VALIDATE_14},
@@ -105,3 +105,39 @@ pub fn ui_review_transaction<'a>(
         Ok(review.show(&fields))
     }
 }
+
+pub fn ui_review_get_identity<'a>(i_index: u8 ) -> Result<bool, AppSW> {
+    #[cfg(not(any(target_os = "stax", target_os = "flex")))]
+    {
+        let review_message = &["Get Identity"];
+
+        let i_index_str = format!("{}", i_index);
+        let my_field: [Field; 1] = [Field{name: "Index", value: i_index_str.as_str()}];
+
+        let my_review = MultiFieldReview::new(
+            &my_field,
+            review_message,
+            Some(&EYE),
+            "Approve",
+            Some(&VALIDATE_14),
+            "Reject",
+            Some(&CROSSMARK),
+        );
+
+        Ok(my_review.show())
+    }
+
+    #[cfg(any(target_os = "stax", target_os = "flex"))]
+    {
+        #[cfg(target_os = "stax")]
+        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
+        #[cfg(target_os = "flex")]
+        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
+
+        Ok(NbglChoice::new()
+            .glyph(&FERRIS)
+            .show(review_message[0], "", "Approve", "Reject"))
+    }
+}
+
+
