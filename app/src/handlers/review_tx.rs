@@ -32,6 +32,8 @@ use nom::number::complete::{be_u16, be_u32};
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 #[inline(never)]
 pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
+    use crate::nvm::set_tx_hash;
+
     zlog_stack("start handler_review_tx\0");
 
     accumulate_data(comm, chunk, ctx)?;
@@ -62,6 +64,9 @@ pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Res
     if !ui_review_transaction(&tx, &account_keys.outgoing_viewing_key)? {
         return Err(AppSW::Deny);
     }
+
+    // Save transaction hash in memory
+    set_tx_hash(hash);
 
     let total_chunks = save_result(ctx, hash.as_slice())?;
     comm.append(&total_chunks);

@@ -192,6 +192,7 @@ impl<'a> Transaction<'a> {
             let merkle_note = output.note().unwrap();
             // now get the encrypted Note
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
+            zlog_stack("Transaction::note decrypted\n");
 
             fields.push((
                 format!("Owner {}", output_number),
