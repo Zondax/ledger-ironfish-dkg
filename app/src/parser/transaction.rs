@@ -138,7 +138,9 @@ impl<'a> Transaction<'a> {
         ovk: &OutgoingViewKey,
     ) -> Result<Vec<(String, String)>, IronfishError> {
         zlog_stack("Transaction::review_fields\n");
-        let mut fields = Vec::new();
+        let num_output = self.outputs_iter().count();
+        // allocate spaces for num_outputs * 3(owner, amount, asset_it) + 1(fee) + 1(expiration) + 1(tx_version)
+        let mut fields = Vec::with_capacity(num_output * 3 + 1 + 1 + 1);
 
         // Add transaction version
         fields.push((
@@ -155,31 +157,42 @@ impl<'a> Transaction<'a> {
             let output_number = i + 1;
 
             // Safe to unwrap because MerkleNote was also parsed in outputs from_bytes impl
-            let merkle_note = output.note().unwrap();
+            let Ok(merkle_note) = output.note() else {
+                zlog_stack("Transaction::note not found**\0");
+                return Err(IronfishError::InvalidData);
+            };
+
             // now get the encrypted Note
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
             zlog_stack("Transaction::note decrypted\n");
 
             fields.push((
                 format!("Owner {}", output_number),
-                format!("{}", note.owner),
+                hex::encode(note.owner.public_address()),
             ));
+
+            zlog_stack("Transaction::owner pushed\0");
             fields.push((
                 format!("Amount {}", output_number),
                 format!("{}", note.value),
             ));
 
+            zlog_stack("Transaction::amount pushed\0");
+
             fields.push((
                 format!("AssetID {}", output_number),
-                format!("{}", note.asset_id),
+                hex::encode(note.asset_id.as_bytes()),
             ));
+            zlog_stack("Transaction::asset_id pushed\0");
         }
 
         // Add fee
         fields.push(("Fee".to_string(), format!("{}", self.fee)));
+        zlog_stack("Transaction::fee pushed\0");
 
         // Add expiration
         fields.push(("Expiration".to_string(), format!("{}", self.expiration)));
+        zlog_stack("Transaction::expiration pushed\0");
 
         Ok(fields)
     }
