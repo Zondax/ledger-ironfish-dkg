@@ -2,12 +2,6 @@ name: Build
 on:
   workflow_dispatch:
   push:
-  pull_request:
-    branches:
-      - main
-      - develop
-      - master # for safety reasons
-      - dev  # for safety reasons
 
 jobs:
   configure:
@@ -27,7 +21,7 @@ jobs:
           sudo apt-get install -y curl protobuf-compiler build-essential git wget unzip python3 python3-pip \
             libssl-dev libffi-dev libreadline-dev zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
             libgdbm-dev libnss3-dev liblzma-dev libxml2-dev libxmlsec1-dev libffi-dev libyaml-dev \
-            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm
+            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm jq
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
@@ -72,7 +66,7 @@ jobs:
           sudo apt-get install -y curl protobuf-compiler build-essential git wget unzip python3 python3-pip \
             libssl-dev libffi-dev libreadline-dev zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
             libgdbm-dev libnss3-dev liblzma-dev libxml2-dev libxmlsec1-dev libffi-dev libyaml-dev \
-            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm
+            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm jq
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
@@ -117,6 +111,12 @@ jobs:
           tag_name: ${{ steps.nanosp.outputs.tag_name }}
           draft: false
           prerelease: false
+      - name: Upload script (only if not published)
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: installer_nanos_plus.sh
+          path: ./app/pkg/installer_nanos_plus.sh
 
   build_package_stax:
     needs: [configure, build_and_test]
@@ -128,7 +128,7 @@ jobs:
           sudo apt-get install -y curl protobuf-compiler build-essential git wget unzip python3 python3-pip \
             libssl-dev libffi-dev libreadline-dev zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
             libgdbm-dev libnss3-dev liblzma-dev libxml2-dev libxmlsec1-dev libffi-dev libyaml-dev \
-            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm
+            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm jq
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
@@ -173,6 +173,12 @@ jobs:
           tag_name: ${{ steps.stax.outputs.tag_name }}
           draft: false
           prerelease: false
+      - name: Upload script (only if not published)
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: installer_stax.sh
+          path: ./app/pkg/installer_stax.sh
 
   build_package_flex:
     needs: [configure, build_and_test]
@@ -184,7 +190,7 @@ jobs:
           sudo apt-get install -y curl protobuf-compiler build-essential git wget unzip python3 python3-pip \
             libssl-dev libffi-dev libreadline-dev zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
             libgdbm-dev libnss3-dev liblzma-dev libxml2-dev libxmlsec1-dev libffi-dev libyaml-dev \
-            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm
+            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm jq
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
@@ -229,3 +235,9 @@ jobs:
           tag_name: ${{ steps.flex.outputs.tag_name }}
           draft: false
           prerelease: false
+      - name: Upload script (only if not published)
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: installer_flex.sh
+          path: ./app/pkg/installer_flex.sh
