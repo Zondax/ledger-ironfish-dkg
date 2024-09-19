@@ -47,6 +47,8 @@ jobs:
       - name: Install yarn
         run: |
           npm install -g yarn
+      - name: Install zemu deps
+        run: make zemu_install
       - name: Install ledger deps
         run: |
           cargo install cargo-ledger
@@ -56,8 +58,6 @@ jobs:
         run: |
           export PATH=/home/runner/.local/bin:$PATH
           make all
-      - name: Install zemu deps
-        run: make zemu_install
       - name: Run tests
         run: make zemu_test
 
