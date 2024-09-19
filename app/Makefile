@@ -169,9 +169,9 @@ move-files-to-output:
 .PHONY: read-params-from-json
 read-params-from-json:
 	ls -la target/$(FOLDER)/release
-	$(eval T_ID := $(shell jq -r '.targetId' app/target/$(FOLDER)/release/app_$(FOLDER).json))
-	$(eval DATA_SIZE := $(shell jq -r '.dataSize' app/target/$(FOLDER)/release/app_$(FOLDER).json))
-	$(eval API_LEVEL := $(shell jq -r '.apiLevel' app/target/$(FOLDER)/release/app_$(FOLDER).json))
+	$(eval T_ID := $(shell pwd && jq -r '.targetId' target/$(FOLDER)/release/app_$(FOLDER).json))
+	$(eval DATA_SIZE := $(shell pwd && jq -r '.dataSize' target/$(FOLDER)/release/app_$(FOLDER).json))
+	$(eval API_LEVEL := $(shell pwd && jq -r '.apiLevel' target/$(FOLDER)/release/app_$(FOLDER).json))
 
 	$(eval APP_LOAD_PARAMS := $(APP_LOAD_PARAMS) --targetId $(T_ID) --dataSize $(DATA_SIZE) --apiLevel $(API_LEVEL))
 	$(eval APP_DELETE_PARAMS := $(APP_DELETE_PARAMS) --targetId $(T_ID))
