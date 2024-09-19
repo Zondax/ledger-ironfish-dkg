@@ -24,7 +24,7 @@ use ledger_ironfish_dkg::{context::TxContext, AppSW};
 use ledger_ironfish_dkg::ledger::*;
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
-use ledger_device_sdk::nbgl::{init_comm};
+use ledger_device_sdk::nbgl::init_comm;
 
 ledger_device_sdk::set_panic!(ledger_device_sdk::exiting_panic);
 
