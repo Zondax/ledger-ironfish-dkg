@@ -902,6 +902,7 @@ dependencies = [
  "ledger_device_sdk",
  "nom",
  "numtoa",
+ "rand",
  "serde",
  "serde-json-core",
 ]

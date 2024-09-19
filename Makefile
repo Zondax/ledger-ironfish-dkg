@@ -38,3 +38,7 @@ zemu_install: zemu_install_ironfish_link zemu_install_js_link
 .PHONY: copy-files
 copy-files:
 	find . -type d -name "*sp-*" -exec cp ../snapshots-tmp/sp-dkg-p2-m2-0-identity/00003.png {} \;
+
+.PHONY: rust_tests
+rust_tests:
+	cd app && cargo test --no-default-features 

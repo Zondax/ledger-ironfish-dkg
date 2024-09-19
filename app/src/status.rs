@@ -1,4 +1,6 @@
+#[cfg(feature = "ledger")]
 use ledger_device_sdk::io::{Reply, StatusWords};
+
 use nom::error::ErrorKind;
 
 use crate::{ironfish::errors::IronfishError, parser::ParserError};
@@ -38,6 +40,8 @@ pub enum AppSW {
     InvalidNVMWrite = 0xB021,
     InvalidDkgStatus = 0xB022,
     InvalidDkgKeysVersion = 0xB023,
+    TooManyParticipants = 0xB024,
+    #[cfg(feature = "ledger")]
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,
 }
@@ -84,6 +88,7 @@ impl From<ParserError> for AppSW {
     }
 }
 
+#[cfg(feature = "ledger")]
 impl From<AppSW> for Reply {
     fn from(sw: AppSW) -> Reply {
         Reply(sw as u16)

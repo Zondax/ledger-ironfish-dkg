@@ -4,6 +4,8 @@ pub const TX_HASH_LEN: usize = 32;
 
 pub const IDENTITY_LEN: usize = 129;
 
+pub const MAX_PARTICIPANTS: u8 = 4;
+
 pub const SPENDING_KEY_GENERATOR: AffineNielsPoint = AffinePoint::from_raw_unchecked(
     Fq::from_raw([
         0x47bf_4692_0a95_a753,

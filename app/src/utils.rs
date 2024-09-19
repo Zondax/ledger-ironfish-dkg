@@ -1,4 +1,5 @@
 mod bip32;
+#[cfg(feature = "ledger")]
 pub mod response;
 
 pub use bip32::Bip32Path;
