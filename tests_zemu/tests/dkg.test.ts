@@ -495,8 +495,8 @@ describe.each(models)('DKG', function (m) {
 
       const hashResp = app.reviewTransaction(serialized.toString('hex'))
 
-      // await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
-      // await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-review_transaction`)
+      await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+      await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-review_transaction`)
 
       resp = await hashResp
 
