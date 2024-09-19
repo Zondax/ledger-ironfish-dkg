@@ -23,12 +23,8 @@ use ledger_ironfish_dkg::{context::TxContext, AppSW};
 
 use ledger_ironfish_dkg::ledger::*;
 
-#[cfg(feature = "pending_review_screen")]
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
-use ledger_device_sdk::ui::gadgets::display_pending_review;
-
 #[cfg(any(target_os = "stax", target_os = "flex"))]
-use ledger_device_sdk::nbgl::{init_comm, NbglReviewStatus, StatusType};
+use ledger_device_sdk::nbgl::{init_comm};
 
 ledger_device_sdk::set_panic!(ledger_device_sdk::exiting_panic);
 

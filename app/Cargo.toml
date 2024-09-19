@@ -46,7 +46,7 @@ lto = true
 # heap 16.3k, opt-level=s -> 3 participants work, app size 680K
 
 [features]
-default = ["ledger", "pending_review_screen"]
+default = ["ledger"]
 pending_review_screen = []
 ledger = ["ledger_device_sdk"]
 
