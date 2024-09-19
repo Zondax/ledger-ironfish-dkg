@@ -1,6 +1,6 @@
 [package]
 name = "ledger-ironfish-dkg"
-version = "0.0.0"
+version = "0.0.0" # The version is being taken from Makefile.version file
 edition = "2021"
 
 [[bin]]
