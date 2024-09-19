@@ -75,10 +75,6 @@ APP_DELETE_PARAMS = --appName $(APPNAME)
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.devices
 
 DEFAULT_ICON = nanos_$(ICON_NAME).gif
-copy_icon:
-	cp $(DEFAULT_ICON) glyphs/icon_app.gif
-
-all: copy_icon
 
 $(info TARGET_NAME  = [$(TARGET_NAME)])
 $(info ICONNAME  = [$(ICONNAME)])
@@ -159,7 +155,7 @@ lint-stax:
 
 
 .PHONY: post-build
-post-build: move-files-to-output read-params-from-json create-install-script
+post-build: move-files-to-output read-params-from-json get-icon-hex create-install-script
 
 .PHONY: move-files-to-output
 move-files-to-output:
@@ -176,3 +172,15 @@ read-params-from-json:
 
 	$(eval APP_LOAD_PARAMS := $(APP_LOAD_PARAMS) --targetId $(T_ID) --dataSize $(DATA_SIZE) --apiLevel $(API_LEVEL))
 	$(eval APP_DELETE_PARAMS := $(APP_DELETE_PARAMS) --targetId $(T_ID))
+
+
+# This was taken from the Makefile.app_params in the ledger-secure-sdk
+ICON_HEX_FILE := $(CURDIR)/icon.hex
+ICONHEX_CMD := $(if $(filter $(TARGET_NAME),TARGET_NANOX TARGET_NANOS2), \
+        python3 $(CURDIR)/../deps/ledger-secure-sdk/lib_nbgl/tools/icon2glyph.py --reverse --hexbitmap $(ICON_HEX_FILE) $(ICONNAME), \
+        python3 $(CURDIR)/../deps/ledger-secure-sdk/lib_nbgl/tools/icon2glyph.py --hexbitmap $(ICON_HEX_FILE) $(ICONNAME))
+
+.PHONY: get-icon-hex
+get-icon-hex:
+    ICONHEX := $(shell $(ICONHEX_CMD) && cat $(ICON_HEX_FILE) && rm -f $(ICON_HEX_FILE))
+    APP_LOAD_PARAMS += --icon $(ICONHEX)
