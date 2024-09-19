@@ -38,6 +38,16 @@ educe = { version = "0.6.0" }
 arrayref = { version = "0.3.8", default-features = false }
 aead = "0.5.2"
 rand = { version = "0.8.5", default-features = false, features = ["alloc"] }
+lazy_static = { version = "1.5.0", default-features = false, features = [
+    "spin_no_std",
+] }
+spin = { version = "0.9.8", default-features = false, features = [
+    "spin_mutex",
+], optional = true }
+
+[dev-dependencies]
+lazy_static = { version = "1.5.0" }
+
 [profile.release]
 # changed from z (default on template) to s in order to reduce stack size
 # it will increase the binary size, but it is something we can afford here
@@ -49,7 +59,7 @@ lto = true
 
 [features]
 default = ["ledger"]
-ledger = ["ledger_device_sdk"]
+ledger = ["ledger_device_sdk", "spin", "lazy_static/spin_no_std"]
 
 [package.metadata.ledger]
 curve = ["ed25519"]
