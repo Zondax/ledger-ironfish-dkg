@@ -15,7 +15,7 @@
  *  limitations under the License.
  *****************************************************************************/
 
-use crate::{ironfish::view_keys::OutgoingViewKey, AppSW, Transaction};
+use crate::{ironfish::view_keys::OutgoingViewKey, ledger::zlog_stack, AppSW, Transaction};
 
 use alloc::{format, vec::Vec};
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
@@ -67,6 +67,7 @@ pub fn ui_review_transaction<'a>(
     transaction: &'a Transaction<'a>,
     ovk: &OutgoingViewKey,
 ) -> Result<bool, AppSW> {
+    zlog_stack("ui_review_transaction***\0");
     let field_pairs = transaction
         .review_fields(ovk)
         .map_err(|_| AppSW::BufferOutOfBounds)?;

@@ -56,6 +56,13 @@ pub struct OutgoingViewKey {
     pub(crate) view_key: [u8; 32],
 }
 
+#[cfg(test)]
+impl OutgoingViewKey {
+    pub fn new(bytes: [u8; 32]) -> Self {
+        Self { view_key: bytes }
+    }
+}
+
 #[derive(Clone)]
 pub struct ProofGenerationKey {
     pub ak: jubjub::AffinePoint,

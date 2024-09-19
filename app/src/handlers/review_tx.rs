@@ -1,9 +1,3 @@
-use core::mem::MaybeUninit;
-
-use crate::app_ui::run_action::ui_review_transaction;
-use crate::crypto::get_dkg_keys;
-use crate::utils::response::save_result;
-use crate::{AppSW, FromBytes, Transaction};
 /*****************************************************************************
  *   Ledger App Ironfish Rust.
  *   (c) 2023 Ledger SAS.
@@ -25,6 +19,12 @@ use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::ironfish::constants::TX_HASH_LEN;
 use crate::nvm::buffer::{Buffer, BUFFER_SIZE};
+use core::mem::MaybeUninit;
+
+use crate::app_ui::run_action::ui_review_transaction;
+use crate::crypto::get_dkg_keys;
+use crate::utils::response::save_result;
+use crate::{AppSW, FromBytes, Transaction};
 use ledger_device_sdk::io::Comm;
 use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, be_u32};
@@ -40,21 +40,17 @@ pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Res
     if !ctx.done {
         return Ok(());
     }
-    zlog_stack("Accumulator done\0");
 
     // lets get access to all buffer raw data
     // because we would handle offests internally in our
     // transaction parser
     let input = ctx.buffer.get_full_buffer();
-    zlog_stack("got_buffer\0");
 
     let mut tx = MaybeUninit::uninit();
 
-    zlog_stack("start tx_parsing\0");
     Transaction::from_bytes_into(input, &mut tx).map_err(|_| AppSW::TxParsingFail)?;
 
     let tx = unsafe { tx.assume_init() };
-    zlog_stack("done tx_parsing\0");
     let hash = tx.hash();
 
     // Get outgoing viewing key
@@ -67,6 +63,7 @@ pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Res
 
     // Save transaction hash in memory
     set_tx_hash(hash);
+    zlog_stack("tx_hash set***\0");
 
     let total_chunks = save_result(ctx, hash.as_slice())?;
     comm.append(&total_chunks);
