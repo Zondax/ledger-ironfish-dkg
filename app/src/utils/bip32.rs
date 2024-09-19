@@ -31,7 +31,10 @@ impl TryFrom<&[u8]> for Bip32Path {
         if data.is_empty() // At least the length byte is required
             || (data[0] as usize * 4 != data.len() - 1)
         {
+            #[cfg(feature = "ledger")]
             return Err(AppSW::WrongApduLength);
+            #[cfg(not(feature = "ledger"))]
+            return Err(AppSW::Deny);
         }
 
         Ok(Bip32Path(

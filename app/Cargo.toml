@@ -1,10 +1,15 @@
 [package]
 name = "ledger-ironfish-dkg"
 edition = "2021"
+version = "0.0.0"
 
+[[bin]]
+name = "ledger-ironfish-dkg"
+test = false
+path = "bin-app/app.rs"
 
 [dependencies]
-ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "89c2a12106b52a0fae8fbfde3eaab857378f962a" }
+ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "89c2a12106b52a0fae8fbfde3eaab857378f962a", optional = true }
 # ledger_device_sdk = { version="1.14.0" }
 include_gif = "1.2.0"
 serde = { version = "1.0.192", default_features = false, features = ["derive"] }
@@ -25,14 +30,13 @@ ironfish-frost = { git = "https://github.com/Zondax/ironfish-frost.git", rev = "
     "dkg",
     "signing",
 ] }
-#ironfish-frost = { path = "../ironfish-frost", default-features = false, features = ["dkg", "signing"]}
 
 getrandom = { version = "0.2", features = ["custom"] }
 nom = { version = "7.1.3", default-features = false }
 educe = { version = "0.6.0" }
 arrayref = { version = "0.3.8", default-features = false }
 aead = "0.5.2"
-
+rand = { version = "0.8.5", default-features = false, features = ["alloc"] }
 [profile.release]
 # changed from z (default on template) to s in order to reduce stack size
 # it will increase the binary size, but it is something we can afford here
@@ -43,8 +47,9 @@ lto = true
 # heap 16.3k, opt-level=s -> 3 participants work, app size 680K
 
 [features]
-default = ["pending_review_screen"]
+default = ["ledger"]
 pending_review_screen = []
+ledger = ["ledger_device_sdk"]
 
 [package.metadata.ledger]
 curve = ["ed25519"]

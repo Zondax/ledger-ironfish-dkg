@@ -1,14 +1,14 @@
-use crate::bolos::zlog_stack;
-use crate::AppSW;
-use aead::rand_core::RngCore;
+use crate::{bolos::zlog_stack, rand::LedgerRng, AppSW};
 use alloc::vec;
 use alloc::vec::Vec;
 use chacha20poly1305::{
     aead::{Aead, KeyInit},
     ChaCha20Poly1305, Key, Nonce,
 };
+#[cfg(feature = "ledger")]
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
-use ledger_device_sdk::random::LedgerRng;
+// #[cfg(feature = "ledger")]
+// use ledger_device_sdk::random::LedgerRng;
 
 pub const NONCE_LEN: usize = 12;
 pub const KEY_LEN: usize = 32;
@@ -38,7 +38,7 @@ pub fn decrypt(key: &[u8; 32], payload: &[u8], nonce: &[u8]) -> Result<Vec<u8>, 
 
 #[inline(never)]
 pub fn encrypt(key: &[u8; KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
-    let mut rng = LedgerRng {};
+    let mut rng = LedgerRng::new();
     let v1 = rng.next_u64();
     let v2 = rng.next_u64();
 
@@ -65,6 +65,7 @@ pub fn encrypt(key: &[u8; KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
     Ok(ciphertext)
 }
 
+#[cfg(feature = "ledger")]
 #[inline(never)]
 pub fn compute_key() -> [u8; KEY_LEN] {
     let path_0: Vec<u32> = vec![

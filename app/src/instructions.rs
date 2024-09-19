@@ -1,4 +1,5 @@
 use crate::AppSW;
+#[cfg(feature = "ledger")]
 use ledger_device_sdk::io::ApduHeader;
 
 /// Possible input commands received through APDUs.
@@ -17,6 +18,7 @@ pub enum Instruction {
     GetResult { chunk: u8 },
 }
 
+#[cfg(feature = "ledger")]
 impl TryFrom<ApduHeader> for Instruction {
     type Error = AppSW;
 
