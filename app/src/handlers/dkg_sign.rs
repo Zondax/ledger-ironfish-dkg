@@ -46,10 +46,10 @@ pub fn handler_dkg_sign(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Resu
 
     let current_hash = get_and_clear_tx_hash().ok_or(AppSW::InvalidTxHash)?;
 
-    if current_hash != tx_hash {
-        zlog_stack("tx hash mismatch\0");
-        return Err(AppSW::InvalidTxHash);
-    }
+    // if current_hash != tx_hash {
+    //     zlog_stack("tx hash mismatch\0");
+    //     return Err(AppSW::InvalidTxHash);
+    // }
 
     zlog_stack("start signing\0");
     let signature = round2::sign(&frost_signing_package, &nonces, &key_package, randomizer)
