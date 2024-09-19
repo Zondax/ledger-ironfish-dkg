@@ -141,3 +141,51 @@ pub fn ui_review_get_identity<'a>(i_index: u8 ) -> Result<bool, AppSW> {
 }
 
 
+pub fn ui_review_dkg_round1<'a>(i_index: u8, min_signers: u8, participants: u8 ) -> Result<bool, AppSW> {
+    #[cfg(not(any(target_os = "stax", target_os = "flex")))]
+    {
+        let review_message = &["Round 1"];
+
+        let i_index_str = format!("{}", i_index);
+        let min_signers_str = format!("{}", min_signers);
+        let participants_str = format!("{}", participants);
+        let my_field: [Field; 3] = [
+            Field{
+                name: "Identity",
+                value: i_index_str.as_str()
+            },
+            Field{
+                name: "Participants",
+                value: participants_str.as_str()
+            },
+            Field{
+                name: "Min. Signers",
+                value: min_signers_str.as_str()
+            }
+        ];
+
+        let my_review = MultiFieldReview::new(
+            &my_field,
+            review_message,
+            Some(&EYE),
+            "Approve",
+            Some(&VALIDATE_14),
+            "Reject",
+            Some(&CROSSMARK),
+        );
+
+        Ok(my_review.show())
+    }
+
+    #[cfg(any(target_os = "stax", target_os = "flex"))]
+    {
+        #[cfg(target_os = "stax")]
+        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
+        #[cfg(target_os = "flex")]
+        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
+
+        Ok(NbglChoice::new()
+            .glyph(&FERRIS)
+            .show(review_message[0], "", "Approve", "Reject"))
+    }
+}
