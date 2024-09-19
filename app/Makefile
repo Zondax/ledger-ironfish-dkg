@@ -66,7 +66,10 @@ endif
 
 $(info PATHS LIST = $(APPPATH))
 
-APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME)
+APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
+APPVERSION_STR=v$(APPVERSION)
+
+APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion \"$(APPVERSION)\"
 APP_DELETE_PARAMS = --appName $(APPNAME)
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.devices
@@ -84,8 +87,6 @@ ifndef ICONNAME
 $(error ICONNAME is not set)
 endif
 
-APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
-APPVERSION_STR=v$(APPVERSION)
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
