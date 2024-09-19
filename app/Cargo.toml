@@ -2,7 +2,6 @@
 name = "ledger-ironfish-dkg"
 version = "0.0.0"
 edition = "2021"
-version = "0.0.0"
 
 [[bin]]
 name = "ledger-ironfish-dkg"
@@ -56,7 +55,7 @@ ledger = ["ledger_device_sdk"]
 curve = ["ed25519"]
 flags = "0"
 path = ["44'/1338'"]
-name = "Ironfish"
+name = "Ironfish DKG"
 
 [package.metadata.ledger.nanox]
 icon = "nanox_icon.gif"
