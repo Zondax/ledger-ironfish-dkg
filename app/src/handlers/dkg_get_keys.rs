@@ -27,7 +27,7 @@ use ledger_device_sdk::io::Comm;
 pub fn handler_dkg_get_keys(
     comm: &mut Comm,
     key_type: &u8,
-    ctx: &mut TxContext,
+    _ctx: &mut TxContext,
 ) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 
