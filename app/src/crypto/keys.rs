@@ -50,3 +50,38 @@ pub(crate) fn get_dkg_keys() -> Result<MultisigAccountKeys, AppSW> {
 
     Ok(derive_account_keys(&verifying_key, &group_secret_key))
 }
+
+
+#[inline(never)]
+pub(crate) fn generate_key_type(account_keys: &MultisigAccountKeys, key_type: u8) -> Result<Vec<u8>, AppSW> {
+    zlog_stack("start get_requested_keys\0");
+
+    let mut resp: Vec<u8> = Vec::with_capacity(32 * 4);
+    match key_type {
+        0 => {
+            let data = account_keys.public_address.public_address();
+            resp.extend_from_slice(&data);
+
+            Ok(resp)
+        }
+        1 => {
+            resp.extend_from_slice(account_keys.view_key.authorizing_key.to_bytes().as_ref());
+            resp.extend_from_slice(
+                account_keys
+                    .view_key
+                    .nullifier_deriving_key
+                    .to_bytes()
+                    .as_ref(),
+            );
+            resp.extend_from_slice(account_keys.incoming_viewing_key.view_key.as_ref());
+            resp.extend_from_slice(account_keys.outgoing_viewing_key.view_key.as_ref());
+            Ok(resp)
+        }
+        2 => {
+            resp.extend_from_slice(account_keys.view_key.authorizing_key.to_bytes().as_ref());
+            resp.extend_from_slice(account_keys.proof_authorizing_key.to_bytes().as_ref());
+            Ok(resp)
+        }
+        _ => Err(AppSW::InvalidKeyType),
+    }
+}
