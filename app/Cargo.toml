@@ -49,7 +49,6 @@ lto = true
 
 [features]
 default = ["ledger"]
-pending_review_screen = []
 ledger = ["ledger_device_sdk"]
 
 [package.metadata.ledger]
