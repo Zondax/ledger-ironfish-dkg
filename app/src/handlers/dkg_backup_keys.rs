@@ -15,14 +15,14 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::app_ui::run_action::ui_review_backup_keys;
-use crate::bolos::{zlog};
+use crate::bolos::zlog;
 use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, encrypt};
+use crate::crypto::{generate_key_type, get_dkg_keys};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
 use crate::AppSW;
 use ledger_device_sdk::io::Comm;
-use crate::crypto::{generate_key_type, get_dkg_keys};
 
 #[inline(never)]
 pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {

@@ -17,12 +17,12 @@
 
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
+use crate::crypto::{generate_key_type, get_dkg_keys};
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec::Vec;
 use ledger_device_sdk::io::Comm;
-use crate::crypto::{get_dkg_keys, generate_key_type};
 
 #[inline(never)]
 pub fn handler_dkg_get_keys(
@@ -32,11 +32,10 @@ pub fn handler_dkg_get_keys(
 ) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 
-    let account_keys =get_dkg_keys()?;
+    let account_keys = get_dkg_keys()?;
     let resp = generate_key_type(&account_keys, *key_type)?;
     drop(account_keys);
 
     comm.append(resp.as_slice().as_ref());
     Ok(())
 }
-

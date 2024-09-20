@@ -51,9 +51,11 @@ pub(crate) fn get_dkg_keys() -> Result<MultisigAccountKeys, AppSW> {
     Ok(derive_account_keys(&verifying_key, &group_secret_key))
 }
 
-
 #[inline(never)]
-pub(crate) fn generate_key_type(account_keys: &MultisigAccountKeys, key_type: u8) -> Result<Vec<u8>, AppSW> {
+pub(crate) fn generate_key_type(
+    account_keys: &MultisigAccountKeys,
+    key_type: u8,
+) -> Result<Vec<u8>, AppSW> {
     zlog_stack("start get_requested_keys\0");
 
     let mut resp: Vec<u8> = Vec::with_capacity(32 * 4);

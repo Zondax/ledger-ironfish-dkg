@@ -144,9 +144,12 @@ pub fn ui_review_dkg_round2<'a>(i_index: u8, round1_public_package_len: u8) -> R
     ui_review(review_message, "Accept operation?", &fields, true)
 }
 
-
 #[inline(never)]
-pub fn ui_review_backup_keys<'a>(public_address: Vec<u8>, participants: usize, min_signers: usize) -> Result<bool, AppSW> {
+pub fn ui_review_backup_keys<'a>(
+    public_address: Vec<u8>,
+    participants: usize,
+    min_signers: usize,
+) -> Result<bool, AppSW> {
     let review_message = &["Backup Keys", ""];
 
     let public_address_hex_str = format!("0x{}", hex::encode(public_address));
