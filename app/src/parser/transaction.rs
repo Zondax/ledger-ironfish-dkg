@@ -150,17 +150,11 @@ impl<'a> Transaction<'a> {
             self.tx_version.as_str().to_string(),
         ));
 
-        // Now populate with outputDescrition::Note
-        // for each note we render:
-        // - Address Owner?
-        // - Asset_id
-        // - Amount
         for (i, output) in self.outputs.iter().enumerate() {
             let output_number = i + 1;
 
             // Safe to unwrap because MerkleNote was also parsed in outputs from_bytes impl
             let Ok(merkle_note) = output.note() else {
-                zlog_stack("Transaction::note not found**\0");
                 return Err(IronfishError::InvalidData);
             };
 
@@ -172,19 +166,15 @@ impl<'a> Transaction<'a> {
                 hex::encode(note.owner.public_address()),
             ));
 
-            zlog_stack("Transaction::owner pushed\0");
             fields.push((
                 format!("Amount {}", output_number),
                 format!("{}", note.value),
             ));
 
-            zlog_stack("Transaction::amount pushed\0");
-
             fields.push((
                 format!("AssetID {}", output_number),
                 hex::encode(note.asset_id.as_bytes()),
             ));
-            zlog_stack("Transaction::asset_id pushed\0");
         }
 
         // Add fee
