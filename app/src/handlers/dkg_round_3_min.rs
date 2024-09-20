@@ -61,7 +61,7 @@ pub fn handler_dkg_round_3_min(
     if !ui_review_dkg_round3(
         min_tx.identity_index,
         (min_tx.round_1_packages.len() + 1) as u8,
-        (min_tx.round_2_packages.len() + 1) as u8 ,
+        (min_tx.round_2_packages.len() + 1) as u8,
         (min_tx.participants.len() + 1) as u8,
         min_tx.gsk_bytes.len() as u8,
     )? {
