@@ -189,9 +189,7 @@ pub fn ui_review_dkg_round3<'a>(
 pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
     let review_message = &["Restore Keys", ""];
 
-    let fields: [Field; 0] = [];
-
-    ui_review(review_message, "Accept operation?", &fields, true)
+    ui_run_action(review_message)
 }
 
 pub fn ui_review<'a>(
