@@ -120,6 +120,14 @@ pub fn ui_review_dkg_round1<'a>(
     ui_review(review_message, "Accept operation?", &fields, true)
 }
 
+pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
+    let review_message = &["Restore Keys", ""];
+
+    let fields: [Field; 0] = [];
+
+    ui_review(review_message, "Accept operation?", &fields, true)
+}
+
 pub fn ui_review<'a>(
     review_message: &'a [&'a str],
     finish_title: &'a str,
