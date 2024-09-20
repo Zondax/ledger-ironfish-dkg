@@ -469,6 +469,8 @@ describe.each(models)('DKG', function (m) {
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
       await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-restore-keys`)
 
+      await sim.deleteEvents()
+
       let resp = await respReq
       console.log('dkgRetrieveKeys: ViewKey')
 
@@ -498,6 +500,8 @@ describe.each(models)('DKG', function (m) {
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
       await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-review_transaction`)
 
+      await sim.deleteEvents()
+
       resp = await hashResp
 
       let tx_hash = unsignedTx.hash().toString('hex')
@@ -505,12 +509,9 @@ describe.each(models)('DKG', function (m) {
       console.log('tx_hash :', tx_hash)
       console.log('resp.hash :', resp.hash?.toString('hex'))
 
-      expect(resp.hash?.toString('hex')).toEqual('')
-      expect(resp.returnCode.toString(16)).toEqual('9000')
-      expect(resp.errorMessage).toEqual('No errors')
+      expect(resp.hash.toString('hex')).toEqual(tx_hash)
 
       // Clean events from previous commands as each sim lives for many commands (DKG generation + signing)
-      await sim.deleteEvents()
     } finally {
       await sim.close()
     }
