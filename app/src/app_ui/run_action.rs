@@ -30,6 +30,7 @@ use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, Transact
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use include_gif::include_gif;
 
+#[inline(never)]
 pub fn ui_run_action<'a>(review_message: &'a [&'a str]) -> Result<bool, AppSW> {
     #[cfg(not(any(target_os = "stax", target_os = "flex")))]
     {
@@ -61,6 +62,7 @@ pub fn ui_run_action<'a>(review_message: &'a [&'a str]) -> Result<bool, AppSW> {
     }
 }
 
+#[inline(never)]
 pub fn ui_review_transaction<'a>(
     transaction: &'a Transaction<'a>,
     ovk: &OutgoingViewKey,
@@ -80,6 +82,7 @@ pub fn ui_review_transaction<'a>(
     ui_review(&review_message, "Approve transaction?", &fields, false)
 }
 
+#[inline(never)]
 pub fn ui_review_get_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
     let review_message = &["Get Identity", ""];
 
@@ -92,6 +95,7 @@ pub fn ui_review_get_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
     ui_review(review_message, "Accept operation?", &fields, true)
 }
 
+#[inline(never)]
 pub fn ui_review_dkg_round1<'a>(
     i_index: u8,
     min_signers: u8,
@@ -120,6 +124,68 @@ pub fn ui_review_dkg_round1<'a>(
     ui_review(review_message, "Accept operation?", &fields, true)
 }
 
+#[inline(never)]
+pub fn ui_review_dkg_round2<'a>(i_index: u8, round1_public_package_len: u8) -> Result<bool, AppSW> {
+    let review_message = &["Round 2", ""];
+
+    let i_index_str = format!("{}", i_index);
+    let round1_public_package_len_str = format!("{}", round1_public_package_len);
+    let fields: [Field; 2] = [
+        Field {
+            name: "Identity Num.",
+            value: i_index_str.as_str(),
+        },
+        Field {
+            name: "Packages from R1",
+            value: round1_public_package_len_str.as_str(),
+        },
+    ];
+
+    ui_review(review_message, "Accept operation?", &fields, true)
+}
+
+#[inline(never)]
+pub fn ui_review_dkg_round3<'a>(
+    i_index: u8,
+    round1_public_package_len: u8,
+    round2_public_package_len: u8,
+    participants_len: u8,
+    gsk_len: u8,
+) -> Result<bool, AppSW> {
+    let review_message = &["Round 3", ""];
+
+    let i_index_str = format!("{}", i_index);
+    let round1_public_package_len_str = format!("{}", round1_public_package_len);
+    let round2_public_package_len_str = format!("{}", round2_public_package_len);
+    let participants_len_str = format!("{}", participants_len);
+    let gsk_len_str = format!("{}", gsk_len);
+    let fields: [Field; 5] = [
+        Field {
+            name: "Identity Num.",
+            value: i_index_str.as_str(),
+        },
+        Field {
+            name: "Participants",
+            value: participants_len_str.as_str(),
+        },
+        Field {
+            name: "Packages from R1",
+            value: round1_public_package_len_str.as_str(),
+        },
+        Field {
+            name: "Packages from R2",
+            value: round2_public_package_len_str.as_str(),
+        },
+        Field {
+            name: "Group Shared Keys",
+            value: gsk_len_str.as_str(),
+        },
+    ];
+
+    ui_review(review_message, "Accept operation?", &fields, true)
+}
+
+#[inline(never)]
 pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
     let review_message = &["Restore Keys", ""];
 
