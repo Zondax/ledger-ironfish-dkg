@@ -40,7 +40,7 @@ const SKIP_ERRORS_IN_PHASE = true
 // Reference taken from https://github.com/iron-fish/ironfish/pull/5324/files
 
 describe.each(models)('DKG', function (m) {
-  it(`${m.name} - can start and stop container`, async function () {
+  it.concurrent(`${m.name} - can start and stop container`, async function () {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
@@ -54,7 +54,7 @@ describe.each(models)('DKG', function (m) {
     { p: 3, min: 2 },
     { p: 2, min: 2 },
   ])(`${m.name} - participants`, function ({ p: participants, min: minSigners }) {
-    it('p: ' + participants + ' - min: ' + minSigners, async function () {
+    it.concurrent('p: ' + participants + ' - min: ' + minSigners, async function () {
       const checkSimRequired = (sims: Zemu[], i: number): { sim: Zemu; created: boolean } => {
         let created = false
         let sim: Zemu | undefined
@@ -389,7 +389,7 @@ describe.each(models)('DKG', function (m) {
   describe.each(restoreKeysTestCases)(
     `${m.name} - restore keys`,
     ({ index, encrypted, publicAddress, proofKeys, viewKeys, publicPackage }) => {
-      test(index + '', async () => {
+      test.concurrent(index + '', async () => {
         for (let e of encrypted) {
           const sim = new Zemu(m.path)
           try {
@@ -434,7 +434,7 @@ describe.each(models)('DKG', function (m) {
     },
   )
 
-  test(`${m.name} - attempt to retrieve viewKeys when no keys are present`, async () => {
+  test.concurrent(`${m.name} - attempt to retrieve viewKeys when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
       await sim.start({
@@ -454,7 +454,7 @@ describe.each(models)('DKG', function (m) {
 
   // TODO implement a way to send the command, and but no get the response
   /*
-  test(`${m.name} - attempt to retrieve result after another command`, async () => {
+  test.concurrent(`${m.name} - attempt to retrieve result after another command`, async () => {
     const sim = new Zemu(m.path)
     try {
       await sim.start({
@@ -478,7 +478,7 @@ describe.each(models)('DKG', function (m) {
   })
   */
 
-  test(`${m.name} - attempt to retrieve proof keys when no keys are present`, async () => {
+  test.concurrent(`${m.name} - attempt to retrieve proof keys when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
       await sim.start({
@@ -496,7 +496,7 @@ describe.each(models)('DKG', function (m) {
     }
   })
 
-  test(`${m.name} - attempt to retrieve public address when no keys are present`, async () => {
+  test.concurrent(`${m.name} - attempt to retrieve public address when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
       await sim.start({
@@ -514,7 +514,7 @@ describe.each(models)('DKG', function (m) {
     }
   })
 
-  test(`${m.name} - attempt to retrieve public package when no keys are present`, async () => {
+  test.concurrent(`${m.name} - attempt to retrieve public package when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
       await sim.start({
@@ -532,7 +532,7 @@ describe.each(models)('DKG', function (m) {
     }
   })
 
-  test(`${m.name} - attempt to backup keys when no keys are present`, async () => {
+  test.concurrent(`${m.name} - attempt to backup keys when no keys are present`, async () => {
     const sim = new Zemu(m.path)
     try {
       await sim.start({
@@ -550,7 +550,7 @@ describe.each(models)('DKG', function (m) {
     }
   })
 
-  test(`${m.name} - attempt to run round1 with 5 participants`, async () => {
+  test.concurrent(`${m.name} - attempt to run round1 with 5 participants`, async () => {
     const sim = new Zemu(m.path)
     try {
       await sim.start({
@@ -576,7 +576,7 @@ describe.each(models)('DKG', function (m) {
 
   // TODO complete me
   /*
-  test(`${m.name} - attempt to run round3 when no round1 was executed`, async () => {
+  test.concurrent(`${m.name} - attempt to run round3 when no round1 was executed`, async () => {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
@@ -591,7 +591,7 @@ describe.each(models)('DKG', function (m) {
   */
 
   describe.each(identities)(`${m.name} - generate identities`, function ({ i, v }) {
-    test(i + '', async function () {
+    test.concurrent(i + '', async function () {
       const sim = new Zemu(m.path)
       try {
         await sim.start({
