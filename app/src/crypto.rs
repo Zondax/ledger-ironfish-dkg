@@ -9,5 +9,6 @@ pub use encryption_keys::*;
 pub use epk::Epk;
 #[cfg(feature = "ledger")]
 pub(crate) use keys::get_dkg_keys;
+pub(crate) use keys::generate_key_type;
 pub use keys::ConstantKey;
 pub use utils::*;
