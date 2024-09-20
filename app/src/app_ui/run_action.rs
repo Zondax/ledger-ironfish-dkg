@@ -149,13 +149,13 @@ pub fn ui_review_dkg_round2<'a>(i_index: u8, round1_public_package_len: u8) -> R
 pub fn ui_review_backup_keys<'a>(public_address: Vec<u8>, participants: usize, min_signers: usize) -> Result<bool, AppSW> {
     let review_message = &["Backup Keys", ""];
 
-    let public_address_str = format!("{}", hex::encode(public_address));
+    let public_address_hex_str = format!("0x{}", hex::encode(public_address));
     let min_signers_str = format!("{}", min_signers);
     let participants_str = format!("{}", participants);
     let fields: [Field; 3] = [
         Field {
             name: "Public Address",
-            value: public_address_str.as_str(),
+            value: public_address_hex_str.as_str(),
         },
         Field {
             name: "Participants",
