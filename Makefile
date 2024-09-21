@@ -16,21 +16,6 @@ default:
 	COIN=$(COIN) $(MAKE) -C app $@
 endif
 
-
-
-zemu_install_ironfish_link:
-	cd ironfish && yarn unlink || true
-	cd $(TESTS_ZEMU_DIR) && yarn unlink @ironfish/rust-nodejs || true
-	# Now build and link
-	cd ironfish && yarn install && cd ironfish-rust-nodejs && yarn link || true
-	cd $(TESTS_ZEMU_DIR) && yarn link @ironfish/rust-nodejs || true
-
-# Redefine zemu_install, as we still need to compile the ironfish package locally
-.PHONY: zemu_install
-zemu_install: zemu_install_ironfish_link zemu_install_js_link
-	# and now install everything
-	cd $(TESTS_ZEMU_DIR) && yarn install
-
 # Copy files quickly from a source to a folder with a regular expresions
 # In some cases, when something change in the screens for some command, it changes for each participant.
 # This makes it hard and tedious to update each participant snapshots (one per test run).
