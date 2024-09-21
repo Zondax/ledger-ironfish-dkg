@@ -88,23 +88,23 @@ include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
 .PHONY: buildX
 buildX:
-	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo +nightly-2023-11-10  ledger build nanox
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo +nightly-2023-11-10  ledger build nanox
 	FOLDER=nanox make post-build
 
 .PHONY: buildS2
 buildS2:
-	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo +nightly-2023-11-10  ledger build nanosplus
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo +nightly-2023-11-10  ledger build nanosplus
 	FOLDER=nanosplus make post-build
 
 .PHONY: buildST
 buildST:
-	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo +nightly-2023-11-10  ledger build stax
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo +nightly-2023-11-10  ledger build stax
 	FOLDER=stax make post-build
 
 
 .PHONY: buildFL
 buildFL:
-	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo +nightly-2023-11-10  ledger build flex
+	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo +nightly-2023-11-10  ledger build flex
 	FOLDER=flex make post-build
 
 
