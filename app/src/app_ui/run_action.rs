@@ -122,7 +122,7 @@ pub fn ui_review_transaction<'a>(
             .titles("Review", "Transaction", "Approve Transaction?")
             .glyph(&FERRIS);
 
-        Ok(review.show(&fields))
+        Ok(review.show(&fields, false))
     }
 }
 
@@ -293,16 +293,6 @@ pub fn ui_review<'a>(
         const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
         #[cfg(target_os = "flex")]
         const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
-
-        let field_pairs = transaction
-            .review_fields(ovk)
-            .map_err(|_| AppSW::BufferOutOfBounds)?;
-
-        // Create a vector to hold the Field structs
-        let fields: Vec<Field> = field_pairs
-            .iter()
-            .map(|(name, value)| Field { name, value })
-            .collect();
 
         let mut review = NbglReview::new()
             .tx_type(TransactionType::Operation)
