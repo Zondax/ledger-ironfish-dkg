@@ -17,7 +17,7 @@
 
 use crate::bolos::zlog_stack;
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
-use crate::{nvm::dkg_keys::AppSW};
+use crate::AppSW;
 #[cfg(feature = "ledger")]
 use crate::{nvm::dkg_keys::DkgKeys};
 use alloc::vec::Vec;
