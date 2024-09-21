@@ -86,11 +86,6 @@ endif
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
-.PHONY: buildS
-buildS:
-	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo +nightly-2023-11-10 ledger build nanos
-	FOLDER=nanos make post-build
-
 .PHONY: buildX
 buildX:
 	APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo +nightly-2023-11-10  ledger build nanox
