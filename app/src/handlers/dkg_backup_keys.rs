@@ -14,10 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use crate::app_ui::run_action::ui_run_action;
-use crate::bolos::{zlog, zlog_stack};
+use crate::app_ui::run_action::ui_review_backup_keys;
+use crate::bolos::zlog;
 use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, encrypt};
+use crate::crypto::{generate_key_type, get_dkg_keys};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
 use crate::AppSW;
@@ -27,14 +28,21 @@ use ledger_device_sdk::io::Comm;
 pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {
     zlog("start handler_dkg_backup_keys\0");
 
+    let account_keys = get_dkg_keys()?;
+    let public_address = generate_key_type(&account_keys, 0u8)?;
+    drop(account_keys);
+
+    let min_signers = DkgKeys.load_min_signers()?;
+    let participants = DkgKeys.load_identities()?.len();
+
+    if !ui_review_backup_keys(public_address, participants, min_signers)? {
+        return Err(AppSW::Deny);
+    }
+
     let data = DkgKeys.backup_keys()?;
     let key = compute_key();
 
     let resp = encrypt(&key, data)?;
-
-    if !ui_run_action(&["Backup DKG Keys?"])? {
-        return Err(AppSW::Deny);
-    }
 
     let total_chunks = save_result(ctx, resp.as_slice())?;
     comm.append(&total_chunks);
