@@ -17,12 +17,10 @@
 
 use crate::bolos::zlog_stack;
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
+use crate::{nvm::dkg_keys::AppSW};
 #[cfg(feature = "ledger")]
-use crate::{nvm::dkg_keys::DkgKeys, AppSW};
+use crate::{nvm::dkg_keys::DkgKeys};
 use alloc::vec::Vec;
-use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
-use ironfish_frost::dkg::round3::PublicKeyPackage;
-use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
 #[cfg(feature = "ledger")]
 use ledger_device_sdk::io::{Comm, Event};
 
