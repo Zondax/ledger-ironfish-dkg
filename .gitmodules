@@ -1,9 +1,6 @@
 [submodule "js"]
 	path = js
 	url = https://github.com/Zondax/ledger-ironfish-js
-[submodule "ironfish"]
-	path = ironfish
-	url = https://github.com/iron-fish/ironfish
 [submodule "deps/ledger-zxlib"]
 	path = deps/ledger-zxlib
 	url = https://github.com/Zondax/ledger-zxlib
