@@ -1,9 +1,11 @@
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
 
+use arrayref::array_ref;
 use jubjub::{AffinePoint, Scalar};
-use nom::number::complete::le_u64;
+use nom::{bytes::complete::take, number::complete::le_u64};
 
 use crate::{
+    bolos::zlog_num,
     crypto::{decrypt, read_scalar},
     ironfish::{errors::IronfishError, public_address::PublicAddress},
     parser::AssetIdentifier,
@@ -108,6 +110,7 @@ impl Note {
 
         unsafe {
             addr_of_mut!((*out).randomness).write(randomness);
+            addr_of_mut!((*out).value).write(value);
         }
 
         Ok(())
