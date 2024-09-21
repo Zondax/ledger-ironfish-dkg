@@ -17,9 +17,9 @@
 
 use crate::bolos::zlog_stack;
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
-use crate::AppSW;
 #[cfg(feature = "ledger")]
-use crate::{nvm::dkg_keys::DkgKeys};
+use crate::nvm::dkg_keys::DkgKeys;
+use crate::AppSW;
 use alloc::vec::Vec;
 #[cfg(feature = "ledger")]
 use ledger_device_sdk::io::{Comm, Event};
