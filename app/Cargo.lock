@@ -966,6 +966,7 @@ dependencies = [
  "jubjub",
  "lazy_static",
  "ledger_device_sdk",
+ "lexical-core",
  "nom",
  "numtoa",
  "rand",
@@ -999,6 +1000,35 @@ dependencies = [
  "critical-section",
  "embedded-alloc",
  "glob",
+]
+
+[[package]]
+name = "lexical-core"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0885f6cdfe75c96e45bbf1c4e49511f128201391ce3b56e60e29f5a1fadbc1c1"
+dependencies = [
+ "lexical-util",
+ "lexical-write-integer",
+]
+
+[[package]]
+name = "lexical-util"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "591ce1a12ecd3b26d4121ab360a6a4483a67f05a5372add6acbfd0b65c9285d9"
+dependencies = [
+ "static_assertions",
+]
+
+[[package]]
+name = "lexical-write-integer"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48c6d47254ddb292771dce7697ae2be9619f8e369d01a9ccda15ef2ff50443fc"
+dependencies = [
+ "lexical-util",
+ "static_assertions",
 ]
 
 [[package]]

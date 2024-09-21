@@ -12,7 +12,7 @@ use nom::{
 };
 
 use crate::{
-    bolos::{zlog, zlog_stack},
+    bolos::{zlog, zlog_num, zlog_stack},
     ironfish::{errors::IronfishError, multisig::MultisigAccountKeys, view_keys::OutgoingViewKey},
     parser::{
         constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
@@ -137,12 +137,12 @@ impl<'a> Transaction<'a> {
         &self,
         ovk: &OutgoingViewKey,
     ) -> Result<Vec<(String, String)>, IronfishError> {
+        use lexical_core::BUFFER_SIZE as INT_BUFFER_SIZE;
+
         zlog_stack("Transaction::review_fields\n");
 
-        let num_output = self.outputs_iter().count();
-
-        // allocate spaces for num_outputs * 3(owner, amount, asset_it) + 1(fee) + 1(expiration) + 1(tx_version)
-        let mut fields = Vec::with_capacity(num_output * 3 + 1 + 1 + 1);
+        let mut fields = Vec::new();
+        let mut buffer = [b'0'; INT_BUFFER_SIZE as usize];
 
         // Add transaction version
         fields.push((
@@ -161,29 +161,26 @@ impl<'a> Transaction<'a> {
             // now get the encrypted Note
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
 
-            fields.push((
-                format!("Owner {}", output_number),
-                hex::encode(note.owner.public_address()),
-            ));
+            let owner_value = hex::encode(note.owner.public_address());
+            let raw = lexical_core::write(note.value, &mut buffer);
+            let amount = core::str::from_utf8(raw).unwrap();
+            let amount_value = String::from(amount);
+            let asset_value = hex::encode(note.asset_id.as_bytes());
 
-            fields.push((
-                format!("Amount {}", output_number),
-                format!("{}", note.value),
-            ));
-
-            fields.push((
-                format!("AssetID {}", output_number),
-                hex::encode(note.asset_id.as_bytes()),
-            ));
+            fields.push((format!("Owner {}", output_number as u8), owner_value));
+            fields.push((format!("Amount {}", output_number as u8), amount_value));
+            fields.push((format!("AssetID {}", output_number as u8), asset_value));
         }
 
         // Add fee
-        fields.push(("Fee".to_string(), format!("{}", self.fee)));
-        zlog_stack("Transaction::fee pushed\0");
+        let raw = lexical_core::write(self.fee, &mut buffer);
+        let fee = core::str::from_utf8(raw).unwrap();
+        fields.push(("Fee".to_string(), String::from(fee)));
 
         // Add expiration
-        fields.push(("Expiration".to_string(), format!("{}", self.expiration)));
-        zlog_stack("Transaction::expiration pushed\0");
+        let raw = lexical_core::write(self.expiration, &mut buffer);
+        let expiration = core::str::from_utf8(raw).unwrap();
+        fields.push(("Expiration".to_string(), String::from(expiration)));
 
         Ok(fields)
     }
