@@ -265,6 +265,7 @@ pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
     ui_run_action(review_message)
 }
 
+#[inline(never)]
 pub fn ui_review<'a>(
     review_message: &'a [&'a str],
     finish_title: &'a str,

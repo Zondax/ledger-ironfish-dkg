@@ -55,6 +55,7 @@ impl Note {
     ///
     /// This function allows the owner to decrypt the note using the derived
     /// shared secret and their own view key.
+    #[inline(never)]
     pub(crate) fn from_spender_encrypted(
         // public_address: SubgroupPoint,
         public_address: AffinePoint,

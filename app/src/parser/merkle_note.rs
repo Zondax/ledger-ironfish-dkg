@@ -110,6 +110,7 @@ impl<'a> FromBytes<'a> for MerkleNote<'a> {
 }
 
 impl<'a> MerkleNote<'a> {
+    #[inline(never)]
     pub fn decrypt_note_for_spender(
         &self,
         spender_key: &OutgoingViewKey,

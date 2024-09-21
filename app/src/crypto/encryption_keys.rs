@@ -17,6 +17,7 @@ use crate::{
 ///
 /// Naming is getting a bit far-fetched here because it's the keys used to
 /// encrypt other keys. Keys, all the way down!
+#[inline(never)]
 pub fn calculate_key_for_encryption_keys(
     outgoing_view_key: &OutgoingViewKey,
     value_commitment: &AffinePoint,
