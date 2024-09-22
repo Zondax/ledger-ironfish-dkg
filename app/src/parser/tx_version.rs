@@ -4,8 +4,8 @@ use super::ParserError;
 #[derive(Copy, PartialEq, Clone)]
 #[cfg_attr(test, derive(Debug))]
 pub enum TransactionVersion {
-    V1,
-    V2,
+    V1 = 1,
+    V2 = 2,
 }
 
 impl TransactionVersion {
