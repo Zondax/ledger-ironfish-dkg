@@ -458,6 +458,7 @@ describe.each(models)('DKG', function (m) {
         model: m.name,
         startText: startTextFn(m.name),
         approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        // Use the approval button type to tap, as that is what we do when restoring keys
         approveAction: ButtonKind.ApproveTapButton,
       })
 
@@ -469,12 +470,12 @@ describe.each(models)('DKG', function (m) {
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
       await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-restore-keys`)
 
-      await sim.deleteEvents()
-
-      let resp = await respReq
+      await respReq
       console.log('dkgRetrieveKeys: ViewKey')
 
-      resp = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+      await sim.deleteEvents()
+
+      let resp: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
       let viewKey = {
         viewKey: resp.viewKey.toString('hex'),
         ivk: resp.ivk.toString('hex'),
@@ -494,6 +495,9 @@ describe.each(models)('DKG', function (m) {
 
       const serialized = unsignedTx.serialize()
       console.log('SERIALIZED_TRANSACTION: {}', serialized.toString('hex'))
+
+      // Change the approve button type to hold, as we are signing a tx now.
+      sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
 
       const hashResp = app.reviewTransaction(serialized.toString('hex'))
 
