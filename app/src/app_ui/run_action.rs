@@ -311,7 +311,7 @@ pub fn ui_review<'a>(
         #[cfg(target_os = "flex")]
         const ICON: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
 
-        let review = NbglReview::new()
+        let mut review = NbglReview::new()
             .tx_type(TransactionType::Operation)
             .titles(title, subtitle, finish_title)
             .glyph(&ICON);
