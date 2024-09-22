@@ -500,8 +500,6 @@ describe.each(models)('DKG', function (m) {
         ovk: resp.ovk.toString('hex'),
       }
 
-      console.log('OVK: {}', resp.ovk.toString('hex'))
-
       resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
       let proofKey = { ak: resp.ak.toString('hex'), nsk: resp.nsk.toString('hex') }
 
@@ -512,7 +510,6 @@ describe.each(models)('DKG', function (m) {
       const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
       const serialized = unsignedTx.serialize()
-      console.log('SERIALIZED_TRANSACTION: {}', serialized.toString('hex'))
 
       // Change the approve button type to hold, as we are signing a tx now.
       sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
