@@ -22,11 +22,14 @@ use alloc::vec::Vec;
 use ironfish_frost::participant::Secret as ironfishSecret;
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 use ledger_device_sdk::io::Comm;
+use crate::bolos::{app_canary, zlog_stack};
 
 const MAX_IDENTITY_INDEX: u8 = 5;
 
 #[inline(never)]
 pub fn handler_dkg_get_identity(comm: &mut Comm) -> Result<(), AppSW> {
+    zlog_stack("start handler_identity\0");
+
     let data_vec = comm
         .get_data()
         .map_err(|_| AppSW::WrongApduLength)?
