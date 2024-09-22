@@ -89,10 +89,6 @@ impl<'a> Mint<'a> {
         version: TransactionVersion,
         out: &mut MaybeUninit<Mint<'a>>,
     ) -> Result<&'a [u8], nom::Err<ParserError>> {
-        const PUBKEY_RANDOMNESS_SIZE: usize = 32;
-        const PROOF_SIZE: usize = 192;
-        const ASSET_SIZE: usize = ASSET_LEN;
-        const VALUE_SIZE: usize = 8;
         const OWNER_SIZE: usize = 32;
         const FLAG_SIZE: usize = 1;
         const TRANSFER_OWNERSHIP_SIZE: usize = 32;

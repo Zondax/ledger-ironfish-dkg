@@ -106,7 +106,6 @@ impl Note {
         // PublicAddress
         let sender = unsafe { &mut *addr_of_mut!((*out).sender).cast() };
         let rem = PublicAddress::from_bytes_into(rem, sender)?;
-        let sender = unsafe { sender.assume_init() };
 
         unsafe {
             addr_of_mut!((*out).randomness).write(randomness);

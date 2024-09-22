@@ -45,7 +45,6 @@ impl<'a> FromBytes<'a> for Output<'a> {
 }
 
 impl<'a> Output<'a> {
-    const PROOF_POS: usize = 0;
     const NOTE_POS: usize = 192;
 
     pub fn raw_note(&self) -> &'a [u8] {

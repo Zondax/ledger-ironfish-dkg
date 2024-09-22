@@ -30,13 +30,13 @@ const FROST_PUBLIC_PACKAGE_POS: usize = 16;
 // Again, leave some bytes free for future entities (u16) we want to save something new... positions from 10 to 24 (7 entities, as 2 bytes per each)
 const DATA_STARTING_POS: u16 = 24;
 
-enum DkgKeyStatus {
+pub enum DkgKeyStatus {
     Idle,
     Initiated,
     Completed,
 }
 
-enum DkgKeyVersion {
+pub enum DkgKeyVersion {
     V1 = 1,
 }
 

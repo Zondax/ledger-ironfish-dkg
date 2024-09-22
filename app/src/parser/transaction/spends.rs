@@ -37,11 +37,6 @@ impl<'a> Spend<'a> {
     #[inline(never)]
     pub fn hash(&self, hasher: &mut State) {
         const PUBLIC_KEY_RANDOMNESS_LEN: usize = 32;
-        const PROOF_LEN: usize = 192;
-        const VALUE_COMMITMENT_LEN: usize = 32;
-        const ROOT_HASH_LEN: usize = 32;
-        const TREE_SIZE_LEN: usize = 4;
-        const NULLIFIER_LEN: usize = 32;
         const AUTHORIZING_SIGNATURE_LEN: usize = 64;
 
         let start = PUBLIC_KEY_RANDOMNESS_LEN;

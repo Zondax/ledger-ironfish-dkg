@@ -224,7 +224,7 @@ impl<'a> Transaction<'a> {
             output.hash(&mut hasher);
         }
 
-        for (i, mint) in self.mints.iter().enumerate() {
+        for mint in self.mints.iter() {
             mint.hash(&mut hasher);
         }
 

@@ -281,9 +281,9 @@ pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
 pub fn ui_review<'a>(
     title: &'a str,
     subtitle: &'a str,
-    finish_title: &'a str,
+    _finish_title: &'a str,
     fields: &'a [Field<'a>],
-    light: bool,
+    _light: bool,
 ) -> Result<bool, AppSW> {
     zlog_stack("x ui_review\0");
     app_canary();
@@ -313,7 +313,7 @@ pub fn ui_review<'a>(
 
         let mut review = NbglReview::new()
             .tx_type(TransactionType::Operation)
-            .titles(title, subtitle, finish_title)
+            .titles(title, subtitle, _finish_title)
             .glyph(&ICON);
 
         Ok(review.show(&fields, true))

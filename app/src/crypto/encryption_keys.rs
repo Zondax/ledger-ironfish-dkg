@@ -1,5 +1,3 @@
-use ff::PrimeField;
-
 use blake2b_simd::Params as Blake2b;
 use jubjub::{AffinePoint, Scalar};
 

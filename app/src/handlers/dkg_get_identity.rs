@@ -16,7 +16,7 @@
  *****************************************************************************/
 
 use crate::app_ui::run_action::ui_review_get_identity;
-use crate::bolos::{app_canary, zlog_stack};
+use crate::bolos::zlog_stack;
 use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;

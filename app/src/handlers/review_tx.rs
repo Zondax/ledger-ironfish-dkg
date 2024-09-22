@@ -18,7 +18,6 @@ use crate::accumulator::accumulate_data;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::ironfish::constants::TX_HASH_LEN;
-use crate::nvm::buffer::{Buffer, BUFFER_SIZE};
 use core::mem::MaybeUninit;
 
 use crate::app_ui::run_action::ui_review_transaction;
