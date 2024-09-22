@@ -16,7 +16,7 @@ use crate::{
     ironfish::{errors::IronfishError, multisig::MultisigAccountKeys, view_keys::OutgoingViewKey},
     parser::{
         constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
-        SIGNATURE_HASH_PERSONALIZATION, TX_HASH_LEN,
+        SIGNATURE_HASH_PERSONALIZATION, TRANSACTION_SIGNATURE_VERSION, TX_HASH_LEN,
     },
 };
 
@@ -24,6 +24,8 @@ mod burns;
 mod mints;
 mod outputs;
 mod spends;
+
+use self::mints::MintList;
 
 use super::{FromBytes, ObjectList, ParserError, TransactionVersion};
 pub use burns::Burn;
@@ -40,7 +42,7 @@ pub struct Transaction<'a> {
 
     spends: ObjectList<'a, Spend<'a>>,
     outputs: ObjectList<'a, Output<'a>>,
-    mints: ObjectList<'a, Mint<'a>>,
+    mints: MintList<'a>,
     burns: ObjectList<'a, Burn<'a>>,
     fee: i64,
     expiration: u32,
@@ -86,9 +88,11 @@ impl<'a> FromBytes<'a> for Transaction<'a> {
             unsafe { &mut *addr_of_mut!((*out).outputs).cast() };
         let rem = ObjectList::new_into_with_len(rem, outputs, num_outputs as usize)?;
 
-        let mints: &mut MaybeUninit<ObjectList<'a, Mint<'a>>> =
+        // Mints contains an optional field which depends on the transaction version
+        // so we must take all the bytes manually first
+        let mints: &mut MaybeUninit<MintList<'a>> =
             unsafe { &mut *addr_of_mut!((*out).mints).cast() };
-        let rem = ObjectList::new_into_with_len(rem, mints, num_mints as usize)?;
+        let rem = MintList::parse_into(rem, version, num_mints as usize, mints)?;
 
         let burns: &mut MaybeUninit<ObjectList<'a, Burn<'a>>> =
             unsafe { &mut *addr_of_mut!((*out).burns).cast() };
@@ -193,6 +197,7 @@ impl<'a> Transaction<'a> {
             .personal(SIGNATURE_HASH_PERSONALIZATION)
             .to_state();
 
+        hasher.update(TRANSACTION_SIGNATURE_VERSION);
         hasher.update(&[self.tx_version as u8]);
 
         let expiration = self.expiration.to_le_bytes();
@@ -210,7 +215,7 @@ impl<'a> Transaction<'a> {
             output.hash(&mut hasher);
         }
 
-        for mint in self.mints.iter() {
+        for (i, mint) in self.mints.iter().enumerate() {
             mint.hash(&mut hasher);
         }
 
@@ -249,7 +254,6 @@ mod transaction_test {
         let tx = hex::decode(TRANSACTION).unwrap();
         let (_, tx) = Transaction::from_bytes(&tx).unwrap();
         let hash = hex::encode(tx.hash());
-        std::println!("hash: {}", hash);
         assert_eq!(hash, TX_HASH);
     }
 

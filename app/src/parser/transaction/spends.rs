@@ -36,10 +36,23 @@ impl<'a> FromBytes<'a> for Spend<'a> {
 impl<'a> Spend<'a> {
     #[inline(never)]
     pub fn hash(&self, hasher: &mut State) {
-        // both serialization and
-        // hashing uses the same serialize_signature_fields
-        // function so we can be sure inner data is correctly passed
-        // to the hasher
-        hasher.update(self.0);
+        const PUBLIC_KEY_RANDOMNESS_LEN: usize = 32;
+        const PROOF_LEN: usize = 192;
+        const VALUE_COMMITMENT_LEN: usize = 32;
+        const ROOT_HASH_LEN: usize = 32;
+        const TREE_SIZE_LEN: usize = 4;
+        const NULLIFIER_LEN: usize = 32;
+        const AUTHORIZING_SIGNATURE_LEN: usize = 64;
+
+        let start = PUBLIC_KEY_RANDOMNESS_LEN;
+        let end = self.0.len() - AUTHORIZING_SIGNATURE_LEN;
+
+        // Extract and hash only the relevant parts:
+        // - proof (192 bytes)
+        // - value_commitment (32 bytes)
+        // - root_hash (32 bytes)
+        // - tree_size (4 bytes)
+        // - nullifier (32 bytes)
+        hasher.update(&self.0[start..end]);
     }
 }

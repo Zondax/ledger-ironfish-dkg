@@ -17,8 +17,19 @@ pub const PUBLIC_ADDRESS_SIZE: usize = 32;
 pub const SPEND_LEN: usize = 32 + 192 + 32 + 32 + 4 + 32 + 64;
 // 192-bytes proof + 328-bytes Merkle Note
 pub const OUTPUT_LEN: usize = 192 + 328;
-pub const MINT_LEN: usize = 32 + 192 + 193 + 8;
+// 33-bytes public_key randomness
+// 192-byes proof
+// 193-bytes asset_len
+// 8-bytes value
+// + optional values 32 bytes owner, opion flag + 32_bytes new owner
+pub const MINT_LEN: usize = 32 + 192 + ASSET_LEN + 8;
 pub const BURN_LEN: usize = 32 + 8;
+// Asset len description
+// 32-bytes creator(address)
+// 32-bytes(name)
+// 96-bytes(metadata_len)
+// 1-byte(nonce)
+pub const ASSET_LEN: usize = 161; //193;
 pub const REDJUBJUB_SIGNATURE_LEN: usize = 64;
 pub const KEY_LENGTH: usize = 32;
 pub const SCALAR_SIZE: usize = 32;
@@ -57,4 +68,5 @@ pub const PRF_NF_PERSONALIZATION: &[u8; 8] = b"ironf_nf";
 pub const VALUE_COMMITMENT_GENERATOR_PERSONALIZATION: &[u8; 8] = b"ironf_cv";
 
 pub const TX_HASH_LEN: usize = 32;
+pub const TRANSACTION_SIGNATURE_VERSION: &[u8; 1] = &[0];
 pub const SIGNATURE_HASH_PERSONALIZATION: &[u8; 8] = b"IFsighsh";
