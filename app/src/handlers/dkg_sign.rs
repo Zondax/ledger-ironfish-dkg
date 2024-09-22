@@ -41,15 +41,18 @@ pub fn handler_dkg_sign(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Resu
 
     let (frost_signing_package, randomizer, tx_hash) = parse_tx(&ctx.buffer)?;
 
-    let key_package = DkgKeys.load_key_package()?;
-    let nonces = generate_nonces(&key_package, tx_hash)?;
-
+    // By this point, the transaction should have already been reviewed.
+    // Before proceeding, we need to ensure that the transaction was approved.
+    // The transaction hash must be available and it should match the hash we received.
     let current_hash = get_and_clear_tx_hash().ok_or(AppSW::InvalidTxHash)?;
 
     if current_hash != tx_hash {
         zlog_stack("tx hash mismatch\0");
         return Err(AppSW::InvalidTxHash);
     }
+
+    let key_package = DkgKeys.load_key_package()?;
+    let nonces = generate_nonces(&key_package, tx_hash)?;
 
     zlog_stack("start signing\0");
     let signature = round2::sign(&frost_signing_package, &nonces, &key_package, randomizer)
