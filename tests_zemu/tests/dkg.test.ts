@@ -341,6 +341,7 @@ describe.each(models)('DKG', function (m) {
         // Pass those values to the following commands
         const unsignedTxRaw = buildTx(pks[0], viewKeys[0], proofKeys[0])
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
+        const serialized = unsignedTx.serialize()
 
         for (let i = 0; i < participants; i++) {
           const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
@@ -359,6 +360,23 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            // Change the approve button type to hold, as we are signing a tx now.
+            sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
+            const hashResp = app.reviewTransaction(serialized.toString('hex'))
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            try {
+              await sim.compareSnapshotsAndApprove(
+                '.',
+                `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-review_transaction`,
+              )
+            } catch (e) {
+              // TODO navigate and approve, but do not compare snapshots... needs to be added to zemu
+              // Skip error, as a new public address is generated each time. Snapshots will be different in every run
+            }
+
+            await sim.deleteEvents()
+
             let result = await app.dkgSign(
               unsignedTx.publicKeyRandomness(),
               signingPackage.frostSigningPackage().toString('hex'),
