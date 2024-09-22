@@ -123,6 +123,7 @@ describe.each(models)('DKG', function (m) {
       let error = false
 
       try {
+        // First: Generate identities
         for (let i = 0; i < participants; i++) {
           try {
             const identity = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
@@ -340,6 +341,7 @@ describe.each(models)('DKG', function (m) {
         // Pass those values to the following commands
         const unsignedTxRaw = buildTx(pks[0], viewKeys[0], proofKeys[0])
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
+        const serialized = unsignedTx.serialize()
 
         for (let i = 0; i < participants; i++) {
           const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
@@ -358,6 +360,23 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            // Change the approve button type to hold, as we are signing a tx now.
+            sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
+            const hashResp = app.reviewTransaction(serialized.toString('hex'))
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            try {
+              await sim.compareSnapshotsAndApprove(
+                '.',
+                `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-review_transaction`,
+              )
+            } catch (e) {
+              // TODO navigate and approve, but do not compare snapshots... needs to be added to zemu
+              // Skip error, as a new public address is generated each time. Snapshots will be different in every run
+            }
+
+            await sim.deleteEvents()
+
             let result = await app.dkgSign(
               unsignedTx.publicKeyRandomness(),
               signingPackage.frostSigningPackage().toString('hex'),
@@ -447,6 +466,75 @@ describe.each(models)('DKG', function (m) {
       })
     },
   )
+
+  test(`${m.name} - reviewTransaction`, async () => {
+    const sim = new Zemu(m.path)
+    try {
+      // await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        // Use the approval button type to tap, as that is what we do when restoring keys
+        approveAction: ButtonKind.ApproveTapButton,
+      })
+
+      const app = new IronfishApp(sim.getTransport(), true)
+      const reviewer0 = restoreKeysTestCases[0]
+
+      let respReq: any = app.dkgRestoreKeys(reviewer0.encrypted[0])
+
+      await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+      await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-restore-keys`)
+
+      await respReq
+      console.log('dkgRetrieveKeys: ViewKey')
+
+      await sim.deleteEvents()
+
+      let resp: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+      let viewKey = {
+        viewKey: resp.viewKey.toString('hex'),
+        ivk: resp.ivk.toString('hex'),
+        ovk: resp.ovk.toString('hex'),
+      }
+
+      resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
+      let proofKey = { ak: resp.ak.toString('hex'), nsk: resp.nsk.toString('hex') }
+
+      resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
+      let pubkey = resp.publicAddress.toString('hex')
+
+      const unsignedTxRaw = buildTx(pubkey, viewKey, proofKey)
+      const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
+
+      const serialized = unsignedTx.serialize()
+
+      // Change the approve button type to hold, as we are signing a tx now.
+      sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
+
+      const hashResp = app.reviewTransaction(serialized.toString('hex'))
+
+      await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+      await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-review_transaction`)
+
+      await sim.deleteEvents()
+
+      resp = await hashResp
+
+      let tx_hash = unsignedTx.hash().toString('hex')
+
+      console.log('tx_hash :', tx_hash)
+      console.log('resp.hash :', resp.hash?.toString('hex'))
+
+      expect(resp.hash.toString('hex')).toEqual(tx_hash)
+
+      // Clean events from previous commands as each sim lives for many commands (DKG generation + signing)
+    } finally {
+      await sim.close()
+    }
+  })
 
   test.concurrent(`${m.name} - attempt to retrieve viewKeys when no keys are present`, async () => {
     const sim = new Zemu(m.path)

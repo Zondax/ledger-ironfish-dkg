@@ -1,5 +1,3 @@
-use ff::PrimeField;
-
 use blake2b_simd::Params as Blake2b;
 use jubjub::{AffinePoint, Scalar};
 
@@ -17,17 +15,20 @@ use crate::{
 ///
 /// Naming is getting a bit far-fetched here because it's the keys used to
 /// encrypt other keys. Keys, all the way down!
+#[inline(never)]
 pub fn calculate_key_for_encryption_keys(
     outgoing_view_key: &OutgoingViewKey,
     value_commitment: &AffinePoint,
-    note_commitment: &Scalar,
+    // note_commitment: &Scalar,
+    note_commitment: &[u8; 32],
     // public_key: &SubgroupPoint,
     public_key: &[u8; KEY_LENGTH],
 ) -> [u8; 32] {
     let mut key_input = [0u8; 128];
     key_input[0..32].copy_from_slice(&outgoing_view_key.view_key);
     key_input[32..64].copy_from_slice(&value_commitment.to_bytes());
-    key_input[64..96].copy_from_slice(&note_commitment.to_bytes());
+    // key_input[64..96].copy_from_slice(&note_commitment.to_bytes());
+    key_input[64..96].copy_from_slice(note_commitment);
     key_input[96..128].copy_from_slice(public_key);
 
     Blake2b::new()

@@ -6,6 +6,7 @@ use group::{
 };
 
 use crate::{
+    bolos::zlog_stack,
     crypto::{calculate_key_for_encryption_keys, parse_affine_point, read_fr, read_scalar},
     ironfish::{
         errors::IronfishError,
@@ -38,7 +39,8 @@ pub struct MerkleNote<'a> {
     pub(crate) value_commitment: AffinePoint,
 
     /// The hash of the note, committing to it's internal state
-    pub(crate) note_commitment: Scalar,
+    // pub(crate) note_commitment: Scalar,
+    pub(crate) note_commitment: &'a [u8; 32],
 
     /// Public part of ephemeral diffie-hellman key-pair. See the discussion on
     /// [`shared_secret`] to understand how this is used
@@ -58,24 +60,23 @@ pub struct MerkleNote<'a> {
     /// the note directly using their incoming viewing key.
     pub(crate) note_encryption_keys: &'a [u8; NOTE_ENCRYPTION_KEY_SIZE],
 }
+
 impl<'a> FromBytes<'a> for MerkleNote<'a> {
     #[inline(never)]
     fn from_bytes_into(
         input: &'a [u8],
         out: &mut core::mem::MaybeUninit<Self>,
     ) -> Result<&'a [u8], nom::Err<ParserError>> {
+        zlog_stack("MerkleNote::from_bytes_into\n");
+
         let (rem, affine) = take(AFFINE_POINT_SIZE)(input)?;
         let affine = affine
             .try_into()
             .map_err(|_| ParserError::ValueOutOfRange)?;
         let value_commitment = parse_affine_point(affine)?;
 
-        let (rem, raw_scalar) = take(3232usize)(rem)?;
-        let raw_scalar = array_ref!(raw_scalar, 0, 32);
-
-        let note_commitment = Scalar::from_bytes(raw_scalar)
-            .into_option()
-            .ok_or(ParserError::UnexpectedValue)?;
+        let (rem, raw_scalar) = take(32usize)(rem)?;
+        let note_commitment = array_ref!(raw_scalar, 0, 32);
 
         // parsing ephemeral pubkey which is a SubgroupPoint
         let (rem, raw_scalar) = take(32usize)(rem)?;
@@ -109,6 +110,7 @@ impl<'a> FromBytes<'a> for MerkleNote<'a> {
 }
 
 impl<'a> MerkleNote<'a> {
+    #[inline(never)]
     pub fn decrypt_note_for_spender(
         &self,
         spender_key: &OutgoingViewKey,
@@ -135,5 +137,17 @@ impl<'a> MerkleNote<'a> {
         // note.verify_commitment(self.note_commitment)?;
 
         Ok(note)
+    }
+}
+
+#[cfg(test)]
+mod merkle_node_test {
+    use super::*;
+    const MERKLE_NOTE: &str = "280a055a0b05c6b0c93a457ba1509565473bcf6df318e72450a1b0e563f2f363412e27142ae4b554bd8c07c4587846c5ee3c36d04339a019462fabed7a4efc5cba51035633edb4cc6fa92c8586af3f9d7b5e22a3b7db7949e2864e82cebab2c218e529e8a5c0527348ec4c378f077af4d20fb886b0887640b8388e88735b9069afb2fe77c97185dc91fa53f19a5690c8ff4299c508be22c882ca3a21e844e0dd8ccd98b29379d0e08fa627265d14ee8b91770357509f1fb48eb87ba67bc717287d48685cff3b517691301d0f6186175eeb102eb4bbeee7225d68a166c3652615eb2fb077013d5e2da47e60a87663539eaef119584221f2a7158d3f3dc5c79da1e311c1ced8437bd506cab329bd7626ff97770597355b1b0d0a87328bb9f7f9da708c0af29d90f7845587df5b2bf08f0beb32d05cce5fbe7861ec8a7f5439216f1c6bf51c0fb8673d";
+
+    #[test]
+    fn parse_merkle_note() {
+        let bytes = hex::decode(MERKLE_NOTE).unwrap();
+        MerkleNote::from_bytes(&bytes).unwrap();
     }
 }

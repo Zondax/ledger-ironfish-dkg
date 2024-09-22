@@ -5,7 +5,7 @@ use nom::number::complete::be_u16;
 
 // This is necessary to store the object in NVM and not in RAM
 // The max data received is round2 for 4 participants, which sends 2250 bytes.
-pub const BUFFER_SIZE: usize = 2300;
+pub const BUFFER_SIZE: usize = 4000;
 
 #[derive(Clone, Copy)]
 pub enum BufferMode {
@@ -131,6 +131,11 @@ impl Buffer {
         let (_, value) = be_u16(input)?;
 
         Ok(value as usize)
+    }
+
+    pub fn get_full_buffer(&self) -> &[u8] {
+        let buffer = unsafe { DATA.get_mut() };
+        buffer.get_ref().as_slice()
     }
 
     fn check_read_pos(&self, index: usize) -> Result<(), AppSW> {

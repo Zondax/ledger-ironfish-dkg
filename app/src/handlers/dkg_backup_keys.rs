@@ -35,7 +35,7 @@ pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(
     let min_signers = DkgKeys.load_min_signers()?;
     let participants = DkgKeys.load_identities()?.len();
 
-    if !ui_review_backup_keys(public_address, participants, min_signers)? {
+    if !ui_review_backup_keys(public_address, participants as u8, min_signers as u8)? {
         return Err(AppSW::Deny);
     }
 

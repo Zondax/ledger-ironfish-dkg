@@ -1,9 +1,11 @@
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
 
+use arrayref::array_ref;
 use jubjub::{AffinePoint, Scalar};
-use nom::number::complete::le_u64;
+use nom::{bytes::complete::take, number::complete::le_u64};
 
 use crate::{
+    bolos::zlog_num,
     crypto::{decrypt, read_scalar},
     ironfish::{errors::IronfishError, public_address::PublicAddress},
     parser::AssetIdentifier,
@@ -55,6 +57,7 @@ impl Note {
     ///
     /// This function allows the owner to decrypt the note using the derived
     /// shared secret and their own view key.
+    #[inline(never)]
     pub(crate) fn from_spender_encrypted(
         // public_address: SubgroupPoint,
         public_address: AffinePoint,
@@ -103,10 +106,10 @@ impl Note {
         // PublicAddress
         let sender = unsafe { &mut *addr_of_mut!((*out).sender).cast() };
         let rem = PublicAddress::from_bytes_into(rem, sender)?;
-        let sender = unsafe { sender.assume_init() };
 
         unsafe {
             addr_of_mut!((*out).randomness).write(randomness);
+            addr_of_mut!((*out).value).write(value);
         }
 
         Ok(())

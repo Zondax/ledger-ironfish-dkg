@@ -29,8 +29,6 @@ use ledger_device_sdk::nbgl::{NbglGlyph, NbglHomeAndSettings};
 
 use crate::Instruction;
 
-// use ledger_device_sdk::nvm::*;
-
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     const APP_ICON: Glyph = Glyph::from_include(include_gif!("nanox_icon.gif"));
