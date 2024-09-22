@@ -1,7 +1,6 @@
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
 
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };
@@ -28,6 +27,7 @@ mod spends;
 use self::mints::MintList;
 
 use super::{FromBytes, ObjectList, ParserError, TransactionVersion};
+use crate::utils::int_to_str;
 pub use burns::Burn;
 pub use mints::Mint;
 pub use outputs::Output;
@@ -171,9 +171,18 @@ impl<'a> Transaction<'a> {
             let amount_value = String::from(amount);
             let asset_value = hex::encode(note.asset_id.as_bytes());
 
-            fields.push((format!("Owner {}", output_number as u8), owner_value));
-            fields.push((format!("Amount {}", output_number as u8), amount_value));
-            fields.push((format!("AssetID {}", output_number as u8), asset_value));
+            let output_num_str = int_to_str(output_number as u8);
+
+            let mut owner_label = String::from("Owner ");
+            owner_label.push_str(output_num_str.as_str());
+            let mut amount_label = String::from("Amount ");
+            amount_label.push_str(output_num_str.as_str());
+            let mut asset_id_label = String::from("AssetID ");
+            asset_id_label.push_str(output_num_str.as_str());
+
+            fields.push((owner_label, owner_value));
+            fields.push((amount_label, amount_value));
+            fields.push((asset_id_label, asset_value));
         }
 
         // Add fee

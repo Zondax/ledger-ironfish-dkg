@@ -29,7 +29,6 @@ use ledger_device_sdk::io::Comm;
 use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, be_u32};
 
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
 #[inline(never)]
 pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
     use crate::nvm::set_tx_hash;
@@ -66,21 +65,6 @@ pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Res
     zlog_stack("tx_hash set***\0");
 
     let total_chunks = save_result(ctx, hash.as_slice())?;
-    comm.append(&total_chunks);
-
-    Ok(())
-}
-
-// For now lets keep Transaction parsing and review out of the
-// command processing flow
-#[cfg(any(target_os = "stax", target_os = "flex"))]
-#[inline(never)]
-pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {
-    zlog_stack("start handler_review_tx\0");
-
-    let mut dummy = [0u8; TX_HASH_LEN];
-
-    let total_chunks = save_result(ctx, dummy.as_slice())?;
     comm.append(&total_chunks);
 
     Ok(())

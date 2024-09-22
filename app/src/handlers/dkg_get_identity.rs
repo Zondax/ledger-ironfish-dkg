@@ -16,6 +16,7 @@
  *****************************************************************************/
 
 use crate::app_ui::run_action::ui_review_get_identity;
+use crate::bolos::{app_canary, zlog_stack};
 use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;
@@ -27,6 +28,8 @@ const MAX_IDENTITY_INDEX: u8 = 5;
 
 #[inline(never)]
 pub fn handler_dkg_get_identity(comm: &mut Comm) -> Result<(), AppSW> {
+    zlog_stack("start handler_identity\0");
+
     let data_vec = comm
         .get_data()
         .map_err(|_| AppSW::WrongApduLength)?
