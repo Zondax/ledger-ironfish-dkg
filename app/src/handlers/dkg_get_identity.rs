@@ -16,13 +16,13 @@
  *****************************************************************************/
 
 use crate::app_ui::run_action::ui_review_get_identity;
+use crate::bolos::{app_canary, zlog_stack};
 use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;
 use ironfish_frost::participant::Secret as ironfishSecret;
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 use ledger_device_sdk::io::Comm;
-use crate::bolos::{app_canary, zlog_stack};
 
 const MAX_IDENTITY_INDEX: u8 = 5;
 

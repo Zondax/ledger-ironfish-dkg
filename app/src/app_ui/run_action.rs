@@ -17,7 +17,7 @@
 
 use crate::{ironfish::view_keys::OutgoingViewKey, ledger::zlog_stack, AppSW, Transaction};
 
-use alloc::{vec::Vec};
+use alloc::vec::Vec;
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
     bitmaps::{CROSSMARK, EYE, VALIDATE_14},
@@ -27,10 +27,10 @@ use ledger_device_sdk::ui::{
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, TransactionType};
 
-#[cfg(any(target_os = "stax", target_os = "flex"))]
-use include_gif::include_gif;
 use crate::bolos::app_canary;
 use crate::utils::int_to_str;
+#[cfg(any(target_os = "stax", target_os = "flex"))]
+use include_gif::include_gif;
 
 #[inline(never)]
 pub fn ui_run_action<'a>(review_message: &'a [&'a str]) -> Result<bool, AppSW> {
@@ -207,7 +207,7 @@ pub fn ui_review_backup_keys<'a>(
     let participants_str = int_to_str(participants);
     let min_signers_str = int_to_str(min_signers);
     let mut public_address_hex_str = hex::encode(public_address);
-    public_address_hex_str.insert_str(0,"0x");
+    public_address_hex_str.insert_str(0, "0x");
 
     let fields: [Field; 3] = [
         Field {
@@ -319,4 +319,3 @@ pub fn ui_review<'a>(
         Ok(review.show(&fields, true))
     }
 }
-

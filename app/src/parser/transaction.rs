@@ -25,11 +25,11 @@ mod outputs;
 mod spends;
 
 use super::{FromBytes, ObjectList, ParserError, TransactionVersion};
+use crate::utils::int_to_str;
 pub use burns::Burn;
 pub use mints::Mint;
 pub use outputs::Output;
 pub use spends::Spend;
-use crate::utils::int_to_str;
 
 #[cfg_attr(test, derive(Debug))]
 #[derive(Copy, PartialEq, Clone)]

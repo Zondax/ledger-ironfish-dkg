@@ -2,10 +2,10 @@ mod bip32;
 #[cfg(feature = "ledger")]
 pub mod response;
 
+use crate::bolos::zlog_stack;
 use alloc::string::{String, ToString};
 pub use bip32::Bip32Path;
 use core::cmp;
-use crate::bolos::zlog_stack;
 
 pub fn str_to_array<const SIZE: usize>(string: &str) -> [u8; SIZE] {
     let bytes = string.as_bytes();
@@ -17,9 +17,8 @@ pub fn str_to_array<const SIZE: usize>(string: &str) -> [u8; SIZE] {
     arr
 }
 
-
 #[inline(never)]
-pub fn int_to_str<'a>(num: u8) -> String{
+pub fn int_to_str<'a>(num: u8) -> String {
     use lexical_core::BUFFER_SIZE as INT_BUFFER_SIZE;
 
     zlog_stack("start int_to_str\0");
