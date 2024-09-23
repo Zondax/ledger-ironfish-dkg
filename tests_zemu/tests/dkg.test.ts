@@ -21,7 +21,7 @@ import { isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions
 import { Transaction } from '@ironfish/sdk'
 import { buildTx, minimizeRound3Inputs } from './utils'
 import { TModel } from '@zondax/zemu/dist/types'
-import aggregateRawSignatureShares = multisig.aggregateRawSignatureShares
+import aggregateSignatureShares = multisig.aggregateSignatureShares
 
 jest.setTimeout(4500000)
 
@@ -383,10 +383,10 @@ describe.each(models)('DKG', function (m) {
             return result
           })
 
-          commitments.push(result.commitments.toString('hex'))
+          commitments.push(multisig.SigningCommitment.fromRaw(identities[i], result.commitments, unsignedTx.hash(), identities))
         }
 
-        const signingPackageHex = unsignedTx.signingPackageFromRaw(identities, commitments)
+        const signingPackageHex = unsignedTx.signingPackage(commitments)
         const signingPackage = new multisig.SigningPackage(Buffer.from(signingPackageHex, 'hex'))
 
         for (let i = 0; i < participants; i++) {
@@ -402,16 +402,12 @@ describe.each(models)('DKG', function (m) {
             return result
           })
 
-          signatures.push(result.signature.toString('hex'))
+          signatures.push(
+            multisig.SignatureShare.fromFrost(result.signature, Buffer.from(identities[i], 'hex')).frostSignatureShare().toString('hex'),
+          )
         }
 
-        let signedTxRaw = aggregateRawSignatureShares(
-          identities,
-          publicPackages[0],
-          unsignedTxRaw.toString('hex'),
-          signingPackage.frostSigningPackage().toString('hex'),
-          signatures,
-        )
+        let signedTxRaw = aggregateSignatureShares(publicPackages[0], signingPackage.frostSigningPackage().toString('hex'), signatures)
         expect(verifyTransactions([signedTxRaw])).toBeTruthy()
 
         const signedTx = new Transaction(signedTxRaw)
@@ -615,10 +611,10 @@ describe.each(models)('DKG', function (m) {
             return result
           })
 
-          commitments.push(result.commitments.toString('hex'))
+          commitments.push(multisig.SigningCommitment.fromRaw(identities[i], result.commitments, unsignedTx.hash(), identities))
         }
 
-        const signingPackageHex = unsignedTx.signingPackageFromRaw(identities, commitments)
+        const signingPackageHex = unsignedTx.signingPackage(commitments)
         const signingPackage = new multisig.SigningPackage(Buffer.from(signingPackageHex, 'hex'))
 
         for (let i = 0; i < participants; i++) {
@@ -634,7 +630,9 @@ describe.each(models)('DKG', function (m) {
             return result
           })
 
-          signatures.push(result.signature.toString('hex'))
+          signatures.push(
+            multisig.SignatureShare.fromFrost(result.signature, Buffer.from(identities[i], 'hex')).frostSignatureShare().toString('hex'),
+          )
         }
 
         // Attempt to sign again. It should fail as the tx hash is cleaned
@@ -650,13 +648,7 @@ describe.each(models)('DKG', function (m) {
           ).rejects.toThrow()
         }
 
-        let signedTxRaw = aggregateRawSignatureShares(
-          identities,
-          publicPackages.toString('hex'),
-          unsignedTxRaw.toString('hex'),
-          signingPackage.frostSigningPackage().toString('hex'),
-          signatures,
-        )
+        let signedTxRaw = aggregateSignatureShares(publicPackages[0], signingPackage.frostSigningPackage().toString('hex'), signatures)
         expect(verifyTransactions([signedTxRaw])).toBeTruthy()
 
         const signedTx = new Transaction(signedTxRaw)
