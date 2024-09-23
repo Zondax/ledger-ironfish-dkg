@@ -27,20 +27,20 @@ use ledger_device_sdk::io::Comm;
 #[inline(never)]
 pub fn handler_dkg_get_keys(
     comm: &mut Comm,
-    key_type: &u8,
+    key_type: u8,
     _ctx: &mut TxContext,
 ) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 
     let resp: Vec<u8>;
 
-    if *key_type == 3 {
+    if key_type == 3 {
         let identity_index = DkgKeys.load_identity_index()?;
         let identity = compute_dkg_secret(identity_index as u8).to_identity();
         resp = identity.serialize().as_slice().to_vec();
     } else {
         let account_keys = get_dkg_keys()?;
-        resp = multisig_to_key_type(&account_keys, *key_type)?;
+        resp = multisig_to_key_type(&account_keys, key_type)?;
         drop(account_keys);
     }
 

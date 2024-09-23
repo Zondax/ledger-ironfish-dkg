@@ -27,7 +27,7 @@ use ledger_device_sdk::io::Comm;
 const MAX_IDENTITY_INDEX: u8 = 5;
 
 #[inline(never)]
-pub fn handler_dkg_get_identity(comm: &mut Comm) -> Result<(), AppSW> {
+pub fn handler_dkg_get_identity(comm: &mut Comm, require_review: bool) -> Result<(), AppSW> {
     zlog_stack("start handler_identity\0");
 
     let data_vec = comm
@@ -43,8 +43,10 @@ pub fn handler_dkg_get_identity(comm: &mut Comm) -> Result<(), AppSW> {
     let secret = compute_dkg_secret(data[0]);
     let identity = secret.to_identity();
 
-    if !ui_review_get_identity(data[0])? {
-        return Err(AppSW::Deny);
+    if require_review {
+        if !ui_review_get_identity(data[0])? {
+            return Err(AppSW::Deny);
+        }
     }
 
     comm.append(identity.serialize().as_ref());
