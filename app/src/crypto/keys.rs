@@ -50,7 +50,7 @@ pub(crate) fn get_dkg_keys() -> Result<MultisigAccountKeys, AppSW> {
 }
 
 #[inline(never)]
-pub(crate) fn generate_key_type(
+pub(crate) fn multisig_to_key_type(
     account_keys: &MultisigAccountKeys,
     key_type: u8,
 ) -> Result<Vec<u8>, AppSW> {
