@@ -336,6 +336,21 @@ describe.each(models)('DKG', function (m) {
 
         console.log('proofKeys ' + JSON.stringify(proofKeys, null, 2))
 
+        // get identity from the multisig DKG process just finalized
+        for (let i = 0; i < participants; i++) {
+          const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            let result = await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
+
+            expect('identity' in result).toBeTruthy()
+
+            return result
+          })
+
+          if (!result.identity) throw new Error('no identity found')
+
+          expect(result.identity.toString('hex')).toBe(identities[i])
+        }
+
         // Craft new tx, to get the tx hash and the public randomness
         // Pass those values to the following commands
         const unsignedTxRaw = buildTx(pks[0], viewKeys[0], proofKeys[0])

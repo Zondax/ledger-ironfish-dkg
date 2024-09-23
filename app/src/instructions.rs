@@ -43,7 +43,7 @@ impl TryFrom<ApduHeader> for Instruction {
             (19, 0..=2, 0) => Ok(Instruction::DkgRound3Min { chunk: value.p1 }),
             (20, 0..=2, 0) => Ok(Instruction::DkgCommitments { chunk: value.p1 }),
             (21, 0..=2, 0) => Ok(Instruction::DkgSign { chunk: value.p1 }),
-            (22, 0, 0..=2) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
+            (22, 0, 0..=3) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
             (24, 0..=2, 0) => Ok(Instruction::DkgGetPublicPackage),
             (25, 0, 0) => Ok(Instruction::DkgBackupKeys),
             (26, 0..=2, 0) => Ok(Instruction::DkgRestoreKeys { chunk: value.p1 }),

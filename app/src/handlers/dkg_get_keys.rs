@@ -17,8 +17,8 @@
 
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::crypto::{generate_key_type, get_dkg_keys};
-use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
+use crate::crypto::{get_dkg_keys, multisig_to_key_type};
+use crate::handlers::dkg_get_identity::compute_dkg_secret;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec::Vec;
@@ -32,9 +32,17 @@ pub fn handler_dkg_get_keys(
 ) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 
-    let account_keys = get_dkg_keys()?;
-    let resp = generate_key_type(&account_keys, *key_type)?;
-    drop(account_keys);
+    let resp: Vec<u8>;
+
+    if *key_type == 3 {
+        let identity_index = DkgKeys.load_identity_index()?;
+        let identity = compute_dkg_secret(identity_index as u8).to_identity();
+        resp = identity.serialize().as_slice().to_vec();
+    } else {
+        let account_keys = get_dkg_keys()?;
+        resp = multisig_to_key_type(&account_keys, *key_type)?;
+        drop(account_keys);
+    }
 
     comm.append(resp.as_slice().as_ref());
     Ok(())
