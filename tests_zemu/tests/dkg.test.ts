@@ -126,13 +126,8 @@ describe.each(models)('DKG', function (m) {
         for (let i = 0; i < participants; i++) {
           try {
             const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
-              const identityReq = app.dkgGetIdentity(i)
+              const result = await app.dkgGetIdentity(i, false)
 
-              // Wait until we are not in the main menu
-              await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
-              await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-identity`)
-
-              const result = await identityReq
               expect(result.identity.length).toBeTruthy()
               return result
             })
@@ -799,7 +794,7 @@ describe.each(models)('DKG', function (m) {
           approveAction: ButtonKind.ApproveTapButton,
         })
         const app = new IronfishApp(sim.getTransport(), true)
-        const identityReq = app.dkgGetIdentity(i)
+        const identityReq = app.dkgGetIdentity(i, true)
 
         await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
         await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-identity-${i}`)
