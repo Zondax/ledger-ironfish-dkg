@@ -17,12 +17,12 @@
 
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::crypto::{multisig_to_key_type, get_dkg_keys};
+use crate::crypto::{get_dkg_keys, multisig_to_key_type};
+use crate::handlers::dkg_get_identity::compute_dkg_secret;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec::Vec;
 use ledger_device_sdk::io::Comm;
-use crate::handlers::dkg_get_identity::compute_dkg_secret;
 
 #[inline(never)]
 pub fn handler_dkg_get_keys(

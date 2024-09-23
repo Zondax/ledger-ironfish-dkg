@@ -18,7 +18,7 @@ use crate::app_ui::run_action::ui_review_backup_keys;
 use crate::bolos::zlog;
 use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, encrypt};
-use crate::crypto::{multisig_to_key_type, get_dkg_keys};
+use crate::crypto::{get_dkg_keys, multisig_to_key_type};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
 use crate::AppSW;
