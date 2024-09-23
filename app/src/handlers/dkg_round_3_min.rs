@@ -16,7 +16,7 @@
  *****************************************************************************/
 
 use crate::accumulator::accumulate_data;
-use crate::app_ui::run_action::ui_run_action;
+use crate::app_ui::run_action::ui_review_dkg_round3;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
@@ -56,7 +56,15 @@ pub fn handler_dkg_round_3_min(
     // Try to deserialize the transaction
     let min_tx = parse_tx_min(&ctx.buffer)?;
 
-    if !ui_run_action(&["Run DKG Round 3?"])? {
+    // As we are running the minimum version of round 3, the identity of the current participant is not included
+    // The same happens to round 1 and round 2 public packages.
+    if !ui_review_dkg_round3(
+        min_tx.identity_index,
+        (min_tx.round_1_packages.len() + 1) as u8,
+        (min_tx.round_2_packages.len() + 1) as u8,
+        (min_tx.participants.len() + 1) as u8,
+        min_tx.gsk_bytes.len() as u8,
+    )? {
         return Err(AppSW::Deny);
     }
 

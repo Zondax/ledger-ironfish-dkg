@@ -16,7 +16,7 @@
  *****************************************************************************/
 
 use crate::accumulator::accumulate_data;
-use crate::app_ui::run_action::ui_run_action;
+use crate::app_ui::run_action::ui_review_dkg_round1;
 use crate::bolos::{zlog, zlog_stack};
 use crate::context::TxContext;
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
@@ -48,7 +48,7 @@ pub fn handler_dkg_round_1(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
 
     let mut tx: Tx = parse_tx(&ctx.buffer)?;
 
-    if !ui_run_action(&["Run DKG Round 1?"])? {
+    if !ui_review_dkg_round1(tx.identity_index, tx.min_signers, tx.identities.len() as u8)? {
         return Err(AppSW::Deny);
     }
 

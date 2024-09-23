@@ -10,7 +10,7 @@ use ledger_device_sdk::NVMData;
 
 // This is necessary to store the object in NVM and not in RAM
 // The max data saved here is for 4 participants, which sends 1024 bytes.
-pub const DKG_KEYS_MAX_SIZE: usize = 1100;
+pub const DKG_KEYS_MAX_SIZE: usize = 2000;
 
 // Fix positions with u8 values
 const DKG_STATUS: usize = 0;
@@ -30,13 +30,13 @@ const FROST_PUBLIC_PACKAGE_POS: usize = 16;
 // Again, leave some bytes free for future entities (u16) we want to save something new... positions from 10 to 24 (7 entities, as 2 bytes per each)
 const DATA_STARTING_POS: u16 = 24;
 
-enum DkgKeyStatus {
+pub enum DkgKeyStatus {
     Idle,
     Initiated,
     Completed,
 }
 
-enum DkgKeyVersion {
+pub enum DkgKeyVersion {
     V1 = 1,
 }
 

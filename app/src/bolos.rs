@@ -18,12 +18,17 @@ pub fn zlog(_buf: &str) {
     unsafe {
         zemu_log(_buf.as_bytes().as_ptr())
     }
+    #[cfg(test)]
+    std::println!("{_buf}")
 }
+
 pub fn zlog_stack(_buf: &str) {
     #[cfg(feature = "ledger")]
     unsafe {
         zemu_log_stack(_buf.as_bytes().as_ptr())
     }
+    #[cfg(test)]
+    std::println!("{_buf}")
 }
 
 pub fn zlog_num(buf: &str, num: u32) {

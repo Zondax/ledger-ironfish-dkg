@@ -9,8 +9,9 @@ test = false
 path = "bin-app/app.rs"
 
 [dependencies]
-ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "89c2a12106b52a0fae8fbfde3eaab857378f962a", optional = true }
-# ledger_device_sdk = { version="1.14.0" }
+ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "44f0ea001c138ccdee6adc2798e90d2a8cffd8ba", optional = true }
+# ledger_device_sdk = { version="1.14.0" , optional = true}
+# ledger_device_sdk = { path="../../ledger-device-rust-sdk/ledger_device_sdk" , optional = true}
 include_gif = "1.2.0"
 serde = { version = "1.0.192", default_features = false, features = ["derive"] }
 serde-json-core = { git = "https://github.com/rust-embedded-community/serde-json-core" }
@@ -37,19 +38,38 @@ educe = { version = "0.6.0" }
 arrayref = { version = "0.3.8", default-features = false }
 aead = "0.5.2"
 rand = { version = "0.8.5", default-features = false, features = ["alloc"] }
+lazy_static = { version = "1.5.0", default-features = false, features = [
+    "spin_no_std",
+] }
+spin = { version = "0.9.8", default-features = false, features = [
+    "spin_mutex",
+], optional = true }
+lexical-core = { version = "1.0.1", default-features = false, features = ["write-integers"] }
+
+[dev-dependencies]
+lazy_static = { version = "1.5.0" }
+insta = { version = "1", features = ["glob"] }
+serde_json = "1.0.85"
+
 [profile.release]
-# changed from z (default on template) to s in order to reduce stack size
-# it will increase the binary size, but it is something we can afford here
-opt-level = "s"
 lto = true
 
+# The opt-level is set based on the device model because stack and binary size. While flex and stax has
+# 44K of SRAM, Nanos2 and NanoX have 40K. That difference makes necessary an opt-level s for nano x and nano s2,
+# because stack size is not enough otherwise.
+# In the other hand, stax and flex should use z. They have more stack, but the app won't fit otherwise. The screen libs
+# are heavier, and the app with clear signing won't fit.
+
+# Opt-leve z optimize the size more, making the app less performant (consumes more stack)
+# Opt-leve s optimize the size, but not that much, making the app a bit more performant (consumes less stack)
+
+# From testing on Nano S2...
 # heap 15k, opt-level=z -> 3 participants fail on signing because of heap fragmentation, app size XXX
 # heap 16.3k, opt-level=s -> 3 participants work, app size 680K
 
 [features]
 default = ["ledger"]
-pending_review_screen = []
-ledger = ["ledger_device_sdk"]
+ledger = ["ledger_device_sdk", "spin", "lazy_static/spin_no_std"]
 
 [package.metadata.ledger]
 curve = ["ed25519"]

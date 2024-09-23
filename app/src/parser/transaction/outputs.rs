@@ -1,8 +1,10 @@
+use blake2b_simd::{Params as Blake2b, State};
 use core::mem::MaybeUninit;
 use core::ptr::addr_of_mut;
 
 use nom::bytes::complete::take;
 
+use crate::bolos::zlog_stack;
 use crate::parser::constants::OUTPUT_LEN;
 use crate::parser::MerkleNote;
 
@@ -23,6 +25,7 @@ impl<'a> FromBytes<'a> for Output<'a> {
         input: &'a [u8],
         out: &mut MaybeUninit<Output<'a>>,
     ) -> Result<&'a [u8], nom::Err<ParserError>> {
+        zlog_stack("Output::from_bytes_into\0");
         // Lazy parsing of output
         // later we can parse each field
         let output = out.as_mut_ptr();
@@ -42,7 +45,6 @@ impl<'a> FromBytes<'a> for Output<'a> {
 }
 
 impl<'a> Output<'a> {
-    const PROOF_POS: usize = 0;
     const NOTE_POS: usize = 192;
 
     pub fn raw_note(&self) -> &'a [u8] {
@@ -67,5 +69,14 @@ impl<'a> Output<'a> {
         let mut note = MaybeUninit::uninit();
         self.note_into(&mut note)?;
         unsafe { Ok(note.assume_init()) }
+    }
+
+    #[inline(never)]
+    pub fn hash(&self, hasher: &mut State) {
+        // both serialization and
+        // hashing uses the same serialize_signature_fields
+        // function so we can be sure inner data is correctly passed
+        // to the hasher
+        hasher.update(self.0);
     }
 }

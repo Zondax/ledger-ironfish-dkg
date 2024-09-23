@@ -15,7 +15,8 @@
  *  limitations under the License.
  *****************************************************************************/
 
-use crate::app_ui::run_action::ui_run_action;
+use crate::app_ui::run_action::ui_review_get_identity;
+use crate::bolos::zlog_stack;
 use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;
@@ -27,6 +28,8 @@ const MAX_IDENTITY_INDEX: u8 = 5;
 
 #[inline(never)]
 pub fn handler_dkg_get_identity(comm: &mut Comm) -> Result<(), AppSW> {
+    zlog_stack("start handler_identity\0");
+
     let data_vec = comm
         .get_data()
         .map_err(|_| AppSW::WrongApduLength)?
@@ -40,7 +43,7 @@ pub fn handler_dkg_get_identity(comm: &mut Comm) -> Result<(), AppSW> {
     let secret = compute_dkg_secret(data[0]);
     let identity = secret.to_identity();
 
-    if !ui_run_action(&["Get DKG Identity?"])? {
+    if !ui_review_get_identity(data[0])? {
         return Err(AppSW::Deny);
     }
 

@@ -18,7 +18,6 @@
 #![cfg_attr(not(test), no_std)]
 
 extern crate alloc;
-
 pub mod bolos;
 #[cfg(feature = "ledger")]
 pub mod context;
@@ -27,6 +26,8 @@ pub mod instructions;
 pub mod ironfish;
 pub mod parser;
 pub mod status;
+#[cfg(test)]
+mod test_ui;
 pub mod utils;
 
 // Public re-exports
