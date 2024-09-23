@@ -18,7 +18,7 @@ use crate::app_ui::run_action::ui_review_backup_keys;
 use crate::bolos::zlog;
 use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, encrypt};
-use crate::crypto::{generate_key_type, get_dkg_keys};
+use crate::crypto::{get_dkg_keys, multisig_to_key_type};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
 use crate::AppSW;
@@ -29,7 +29,7 @@ pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(
     zlog("start handler_dkg_backup_keys\0");
 
     let account_keys = get_dkg_keys()?;
-    let public_address = generate_key_type(&account_keys, 0u8)?;
+    let public_address = multisig_to_key_type(&account_keys, 0u8)?;
     drop(account_keys);
 
     let min_signers = DkgKeys.load_min_signers()?;

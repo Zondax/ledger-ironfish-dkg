@@ -5,7 +5,7 @@ use ledger_device_sdk::io::ApduHeader;
 /// Possible input commands received through APDUs.
 pub enum Instruction {
     GetVersion,
-    DkgGetIdentity,
+    DkgGetIdentity { review: bool },
     DkgGetPublicPackage,
     DkgRound1 { chunk: u8 },
     DkgRound2 { chunk: u8 },
@@ -37,13 +37,15 @@ impl TryFrom<ApduHeader> for Instruction {
     fn try_from(value: ApduHeader) -> Result<Self, Self::Error> {
         match (value.ins, value.p1, value.p2) {
             (0, 0, 0) => Ok(Instruction::GetVersion),
-            (16, 0, 0) => Ok(Instruction::DkgGetIdentity),
+            (16, 0..=1, 0) => Ok(Instruction::DkgGetIdentity {
+                review: value.p1 == 1,
+            }),
             (17, 0..=2, 0) => Ok(Instruction::DkgRound1 { chunk: value.p1 }),
             (18, 0..=2, 0) => Ok(Instruction::DkgRound2 { chunk: value.p1 }),
             (19, 0..=2, 0) => Ok(Instruction::DkgRound3Min { chunk: value.p1 }),
             (20, 0..=2, 0) => Ok(Instruction::DkgCommitments { chunk: value.p1 }),
             (21, 0..=2, 0) => Ok(Instruction::DkgSign { chunk: value.p1 }),
-            (22, 0, 0..=2) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
+            (22, 0, 0..=3) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
             (24, 0..=2, 0) => Ok(Instruction::DkgGetPublicPackage),
             (25, 0, 0) => Ok(Instruction::DkgBackupKeys),
             (26, 0..=2, 0) => Ok(Instruction::DkgRestoreKeys { chunk: value.p1 }),
