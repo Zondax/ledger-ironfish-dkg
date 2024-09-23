@@ -14,7 +14,7 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import Zemu, { ButtonKind, DEFAULT_START_OPTIONS, isTouchDevice } from '@zondax/zemu'
+import Zemu, { ButtonKind, DEFAULT_START_OPTIONS, IDeviceModel, isTouchDevice } from '@zondax/zemu'
 import { defaultOptions, identities, models, restoreKeysTestCases } from './common'
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions } from '@ironfish/rust-nodejs'
@@ -39,6 +39,47 @@ const SKIP_ERRORS_IN_PHASE = true
 
 // Reference taken from https://github.com/iron-fish/ironfish/pull/5324/files
 
+const checkSimRequired = (m: IDeviceModel, sims: Zemu[], i: number): { sim: Zemu; created: boolean } => {
+  let created = false
+  let sim: Zemu | undefined
+
+  if (!sims.length) {
+    sim = new Zemu(m.path)
+    created = true
+  } else if (sims.length === 1) {
+    sim = sims[0]
+  } else {
+    sim = sims[i]
+  }
+
+  if (!sim) throw new Error('sim should have a value here')
+  return { sim, created }
+}
+
+const runMethod = async (m: IDeviceModel, rcvSims: Zemu[], i: number, fn: (sim: Zemu, app: IronfishApp) => Promise<any>): Promise<any> => {
+  const { sim, created } = checkSimRequired(m, rcvSims, i)
+
+  try {
+    if (created)
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
+    const app = new IronfishApp(sim.getTransport(), true)
+    const resp = await fn(sim, app)
+
+    // Clean events from previous commands as each sim lives for many commands (DKG generation + signing)
+    await sim.deleteEvents()
+
+    return resp
+  } finally {
+    if (created) await sim.close()
+  }
+}
+
 describe.each(models)('DKG', function (m) {
   it.concurrent(`${m.name} - can start and stop container`, async function () {
     const sim = new Zemu(m.path)
@@ -55,47 +96,6 @@ describe.each(models)('DKG', function (m) {
     { p: 2, min: 2 },
   ])(`${m.name} - participants`, function ({ p: participants, min: minSigners }) {
     it.concurrent('p: ' + participants + ' - min: ' + minSigners, async function () {
-      const checkSimRequired = (sims: Zemu[], i: number): { sim: Zemu; created: boolean } => {
-        let created = false
-        let sim: Zemu | undefined
-
-        if (!sims.length) {
-          sim = new Zemu(m.path)
-          created = true
-        } else if (sims.length === 1) {
-          sim = sims[0]
-        } else {
-          sim = sims[i]
-        }
-
-        if (!sim) throw new Error('sim should have a value here')
-        return { sim, created }
-      }
-
-      const runMethod = async (rcvSims: Zemu[], i: number, fn: (sim: Zemu, app: IronfishApp) => Promise<any>): Promise<any> => {
-        const { sim, created } = checkSimRequired(rcvSims, i)
-
-        try {
-          if (created)
-            await sim.start({
-              ...defaultOptions,
-              model: m.name,
-              startText: startTextFn(m.name),
-              approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
-              approveAction: ButtonKind.ApproveTapButton,
-            })
-          const app = new IronfishApp(sim.getTransport(), true)
-          const resp = await fn(sim, app)
-
-          // Clean events from previous commands as each sim lives for many commands (DKG generation + signing)
-          await sim.deleteEvents()
-
-          return resp
-        } finally {
-          if (created) await sim.close()
-        }
-      }
-
       const globalSims: Zemu[] = []
 
       if (ONE_GLOBAL_APP) globalSims.push(new Zemu(m.path))
@@ -120,13 +120,12 @@ describe.each(models)('DKG', function (m) {
       let viewKeys: any[] = []
       let proofKeys: any[] = []
       let signatures: any[] = []
-      let error = false
 
       try {
         // First: Generate identities
         for (let i = 0; i < participants; i++) {
           try {
-            const identity = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
               const identityReq = app.dkgGetIdentity(i)
 
               // Wait until we are not in the main menu
@@ -148,7 +147,7 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           try {
-            const round1 = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            const round1 = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
               const round1Req = app.dkgRound1(i, identities, minSigners)
 
               await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
@@ -171,7 +170,7 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           try {
-            const round2 = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            const round2 = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
               const round2Req = app.dkgRound2(
                 i,
                 round1s.map(r => r.publicPackage),
@@ -198,7 +197,7 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           try {
-            await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
               const {
                 participants: ids,
                 round1PublicPkgs,
@@ -224,7 +223,7 @@ describe.each(models)('DKG', function (m) {
         }
 
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
+          const result = await runMethod(m, globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgGetPublicPackage()
 
             expect(result.publicPackage.length).toBeTruthy()
@@ -239,7 +238,7 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           try {
-            const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
               let resultReq = app.dkgBackupKeys()
 
               await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
@@ -269,7 +268,7 @@ describe.each(models)('DKG', function (m) {
 
         // Generate keys from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
+          const result = await runMethod(m, globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
 
             expect('publicAddress' in result).toBeTruthy()
@@ -295,7 +294,7 @@ describe.each(models)('DKG', function (m) {
 
         // Generate view keys from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+          const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
 
             expect('viewKey' in result).toBeTruthy()
@@ -318,7 +317,7 @@ describe.each(models)('DKG', function (m) {
 
         // Generate view keys from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+          const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
 
             expect('ak' in result).toBeTruthy()
@@ -344,7 +343,32 @@ describe.each(models)('DKG', function (m) {
         const serialized = unsignedTx.serialize()
 
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+          await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            // Change the approve button type to hold, as we are signing a tx now.
+            sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
+            const resultReq = app.reviewTransaction(serialized.toString('hex'))
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            try {
+              await sim.compareSnapshotsAndApprove(
+                '.',
+                `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-review_transaction`,
+              )
+            } catch (e) {
+              // TODO navigate and approve, but do not compare snapshots... needs to be added to zemu
+              // Skip error, as a new public address is generated each time. Snapshots will be different in every run
+            }
+
+            const result = await resultReq
+            expect(result.hash.length).toBeTruthy()
+            expect(result.hash.toString('hex')).toBe(unsignedTx.hash().toString('hex'))
+
+            return result
+          })
+        }
+
+        for (let i = 0; i < participants; i++) {
+          const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgGetCommitments(unsignedTx.hash().toString('hex'))
 
             expect(result.commitments.length).toBeTruthy()
@@ -359,24 +383,7 @@ describe.each(models)('DKG', function (m) {
         const signingPackage = new multisig.SigningPackage(Buffer.from(signingPackageHex, 'hex'))
 
         for (let i = 0; i < participants; i++) {
-          const result = await runMethod(globalSims, i, async (sim: Zemu, app: IronfishApp) => {
-            // Change the approve button type to hold, as we are signing a tx now.
-            sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
-            const hashResp = app.reviewTransaction(serialized.toString('hex'))
-
-            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
-            try {
-              await sim.compareSnapshotsAndApprove(
-                '.',
-                `${m.prefix.toLowerCase()}-dkg-p${participants}-m${minSigners}-${i}-review_transaction`,
-              )
-            } catch (e) {
-              // TODO navigate and approve, but do not compare snapshots... needs to be added to zemu
-              // Skip error, as a new public address is generated each time. Snapshots will be different in every run
-            }
-
-            await sim.deleteEvents()
-
+          const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
             let result = await app.dkgSign(
               unsignedTx.publicKeyRandomness(),
               signingPackage.frostSigningPackage().toString('hex'),
@@ -467,7 +474,7 @@ describe.each(models)('DKG', function (m) {
     },
   )
 
-  test(`${m.name} - reviewTransaction`, async () => {
+  test(`${m.name} - sign transaction`, async () => {
     const sim = new Zemu(m.path)
     try {
       // await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
