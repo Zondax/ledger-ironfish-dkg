@@ -20,7 +20,7 @@ use ledger_device_sdk::io::{Comm, Event};
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
-    bitmaps::{Glyph, BACK, CERTIFICATE, DASHBOARD},
+    bitmaps::{Glyph, DASHBOARD},
     gadgets::{EventOrPageIndex, MultiPageMenu, Page},
 };
 
@@ -33,16 +33,16 @@ use crate::Instruction;
 pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     const APP_ICON: Glyph = Glyph::from_include(include_gif!("nanox_icon.gif"));
 
-    let mut first_page_label: [&str; 2];
+    let mut _first_page_label: [&str; 2];
 
     if env!("PRODUCTION_BUILD") == "0" {
-        first_page_label = ["Ironfish DKG DEMO", "DO NOT USE"];
+        _first_page_label = ["Ironfish DKG DEMO", "DO NOT USE"];
     } else {
-        first_page_label = ["Ironfish DKG", "Ready"];
+        _first_page_label = ["Ironfish DKG", "Ready"];
     }
 
     let pages = [
-        &Page::from((first_page_label, &APP_ICON)),
+        &Page::from((_first_page_label, &APP_ICON)),
         &Page::from((["Ironfish DKG", env!("APPVERSION_STR")], true, true)),
         &Page::from((["Developed by", "Zondax.ch"], true, true)),
         &Page::from((["License", "Apache 2.0"], true, true)),

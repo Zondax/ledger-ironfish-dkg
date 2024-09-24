@@ -1,11 +1,9 @@
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
 
-use arrayref::array_ref;
-use jubjub::{AffinePoint, Scalar};
-use nom::{bytes::complete::take, number::complete::le_u64};
+use jubjub::AffinePoint;
+use nom::number::complete::le_u64;
 
 use crate::{
-    bolos::zlog_num,
     crypto::{decrypt, read_scalar},
     ironfish::{errors::IronfishError, public_address::PublicAddress},
     parser::AssetIdentifier,
@@ -101,11 +99,11 @@ impl Note {
         // Asset Identifier
         let asset_id = unsafe { &mut *addr_of_mut!((*out).asset_id).cast() };
         let rem = AssetIdentifier::from_bytes_into(rem, asset_id)?;
-        let asset_id = unsafe { asset_id.assume_init() };
+        let _asset_id = unsafe { asset_id.assume_init() };
 
         // PublicAddress
         let sender = unsafe { &mut *addr_of_mut!((*out).sender).cast() };
-        let rem = PublicAddress::from_bytes_into(rem, sender)?;
+        let _rem = PublicAddress::from_bytes_into(rem, sender)?;
 
         unsafe {
             addr_of_mut!((*out).randomness).write(randomness);

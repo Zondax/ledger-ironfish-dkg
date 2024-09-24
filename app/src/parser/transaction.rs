@@ -11,8 +11,8 @@ use nom::{
 };
 
 use crate::{
-    bolos::{zlog, zlog_num, zlog_stack},
-    ironfish::{errors::IronfishError, multisig::MultisigAccountKeys, view_keys::OutgoingViewKey},
+    bolos::zlog_stack,
+    ironfish::{errors::IronfishError, view_keys::OutgoingViewKey},
     parser::{
         constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
         SIGNATURE_HASH_PERSONALIZATION, TRANSACTION_SIGNATURE_VERSION, TX_HASH_LEN,
@@ -26,7 +26,7 @@ mod spends;
 
 use self::mints::MintList;
 
-use super::{FromBytes, ObjectList, ParserError, TransactionVersion};
+use super::{FromBytes, ObjectList, TransactionVersion};
 use crate::utils::int_to_str;
 pub use burns::Burn;
 pub use mints::Mint;
@@ -98,7 +98,7 @@ impl<'a> FromBytes<'a> for Transaction<'a> {
             unsafe { &mut *addr_of_mut!((*out).burns).cast() };
         let rem = ObjectList::new_into_with_len(rem, burns, num_burns as usize)?;
 
-        let (rem, sig) = take(REDJUBJUB_SIGNATURE_LEN)(rem)?;
+        let (_rem, sig) = take(REDJUBJUB_SIGNATURE_LEN)(rem)?;
         let binding_sig = arrayref::array_ref![sig, 0, REDJUBJUB_SIGNATURE_LEN];
 
         unsafe {

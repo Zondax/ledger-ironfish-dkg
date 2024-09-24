@@ -149,6 +149,22 @@ lint-stax:
 	APPVERSION=$(APPVERSION) cargo clippy --target stax -- -Dwarnings
 
 
+.PHONY: lint-nanosplus-fix
+lint-nanosplus-fix:
+	APPVERSION=$(APPVERSION) cargo clippy --target nanosplus --fix
+
+.PHONY: lint-nanox-fix
+lint-nanox-fix:
+	APPVERSION=$(APPVERSION) cargo clippy --target nanox --fix
+
+.PHONY: lint-flex-fix
+lint-flex-fix:
+	APPVERSION=$(APPVERSION) cargo clippy --target flex --fix
+
+.PHONY: lint-stax-fix
+lint-stax-fix:
+	APPVERSION=$(APPVERSION) cargo clippy --target stax --fix
+
 .PHONY: post-build
 post-build: move-files-to-output read-params-from-json get-icon-hex create-install-script
 

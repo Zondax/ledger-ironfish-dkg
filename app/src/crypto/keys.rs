@@ -21,8 +21,6 @@ use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec::Vec;
-#[cfg(feature = "ledger")]
-use ledger_device_sdk::io::{Comm, Event};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConstantKey {
