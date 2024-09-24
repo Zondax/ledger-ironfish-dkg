@@ -45,11 +45,12 @@ pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> R
         }
     };
 
-    // If we receive anything else than DkgSign or DkgCommitments command
+    // If we receive anything else than DkgSign, DkgCommitments or GetResult command
     // reset the tx_hash ram buffer
     match ins {
         Instruction::DkgSign { chunk: _chunk } => {}
         Instruction::DkgCommitments { chunk: _chunk } => {}
+        Instruction::GetResult { chunk: _chunk } => {}
         _ => {
             get_and_clear_tx_hash();
         }
