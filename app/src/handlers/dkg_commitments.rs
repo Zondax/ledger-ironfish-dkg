@@ -26,6 +26,7 @@ use crate::AppSW;
 use ironfish_frost::frost::round1::SigningCommitments;
 use ironfish_frost::nonces::deterministic_signing_nonces;
 use ledger_device_sdk::io::Comm;
+use crate::nvm::{get_and_clear_tx_hash, get_tx_hash};
 
 #[inline(never)]
 pub fn handler_dkg_commitments(
@@ -41,6 +42,16 @@ pub fn handler_dkg_commitments(
     }
 
     let tx_hash = parse_tx(&ctx.buffer)?;
+
+    // By this point, the transaction should have already been reviewed.
+    // Before proceeding, we need to ensure that the transaction was approved.
+    // The transaction hash must be available and it should match the hash we received.
+    let current_hash = get_tx_hash().ok_or(AppSW::InvalidTxHash)?;
+
+    if current_hash != tx_hash {
+        zlog_stack("tx hash mismatch\0");
+        return Err(AppSW::InvalidTxHash);
+    }
 
     let key_package = DkgKeys.load_key_package()?;
     let identities = DkgKeys.load_identities()?;
