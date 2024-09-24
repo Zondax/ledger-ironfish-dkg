@@ -16,8 +16,6 @@ pub fn accumulate_data(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Resul
         // Reset transaction context
         ctx.reset_to_receive();
         return Ok(());
-        // Next chunks, append data to raw_tx and return or parse
-        // the transaction if it is the last chunk.
     }
 
     if ctx.buffer.pos + data.len() > BUFFER_SIZE {
