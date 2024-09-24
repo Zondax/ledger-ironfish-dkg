@@ -92,6 +92,7 @@ pub(crate) fn multisig_to_key_type(
     }
 }
 
+#[cfg(feature = "ledger")]
 #[inline(never)]
 pub(crate) fn compute_dkg_secret(index: u8) -> IronfishSecretGuard {
     let index_1 = (index * 2) as u32;
