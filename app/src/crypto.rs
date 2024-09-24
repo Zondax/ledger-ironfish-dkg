@@ -7,6 +7,7 @@ mod utils;
 
 pub use encryption_keys::*;
 pub use epk::Epk;
+pub(crate) use keys::compute_dkg_secret;
 #[cfg(feature = "ledger")]
 pub(crate) use keys::get_dkg_keys;
 pub(crate) use keys::multisig_to_key_type;

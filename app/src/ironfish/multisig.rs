@@ -2,8 +2,8 @@ use crate::ironfish::constants::PROOF_GENERATION_KEY_GENERATOR;
 use crate::ironfish::public_address::PublicAddress;
 use crate::ironfish::sapling::SaplingKey;
 use crate::ironfish::view_keys::{IncomingViewKey, OutgoingViewKey, ViewKey};
-use jubjub::{AffinePoint, Fr};
 use core::ptr;
+use jubjub::{AffinePoint, Fr};
 
 pub struct MultisigAccountKeys {
     /// Equivalent to [`crate::keys::SaplingKey::proof_authorizing_key`]

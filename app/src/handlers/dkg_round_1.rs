@@ -19,7 +19,7 @@ use crate::accumulator::accumulate_data;
 use crate::app_ui::run_action::ui_review_dkg_round1;
 use crate::bolos::{zlog, zlog_stack};
 use crate::context::TxContext;
-use crate::handlers::dkg_get_identity::compute_dkg_secret;
+use crate::crypto::compute_dkg_secret;
 use crate::ironfish::constants::{IDENTITY_LEN, MAX_PARTICIPANTS};
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
