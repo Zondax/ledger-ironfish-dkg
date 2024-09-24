@@ -37,15 +37,15 @@ impl TryFrom<ApduHeader> for Instruction {
     fn try_from(value: ApduHeader) -> Result<Self, Self::Error> {
         match (value.ins, value.p1, value.p2) {
             (0x00, 0, 0) => Ok(Instruction::GetVersion),
-            (0x11, 0..=1, 0) => Ok(Instruction::DkgGetIdentity {
+            (0x10, 0..=1, 0) => Ok(Instruction::DkgGetIdentity {
                 review: value.p1 == 1,
             }),
-            (0x12, 0..=2, 0) => Ok(Instruction::DkgRound1 { chunk: value.p1 }),
-            (0x13, 0..=2, 0) => Ok(Instruction::DkgRound2 { chunk: value.p1 }),
-            (0x14, 0..=2, 0) => Ok(Instruction::DkgRound3Min { chunk: value.p1 }),
-            (0x15, 0..=2, 0) => Ok(Instruction::DkgCommitments { chunk: value.p1 }),
-            (0x16, 0..=2, 0) => Ok(Instruction::DkgSign { chunk: value.p1 }),
-            (0x17, 0, 0..=3) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
+            (0x11, 0..=2, 0) => Ok(Instruction::DkgRound1 { chunk: value.p1 }),
+            (0x12, 0..=2, 0) => Ok(Instruction::DkgRound2 { chunk: value.p1 }),
+            (0x13, 0..=2, 0) => Ok(Instruction::DkgRound3Min { chunk: value.p1 }),
+            (0x14, 0..=2, 0) => Ok(Instruction::DkgCommitments { chunk: value.p1 }),
+            (0x15, 0..=2, 0) => Ok(Instruction::DkgSign { chunk: value.p1 }),
+            (0x16, 0, 0..=3) => Ok(Instruction::DkgGetKeys { key_type: value.p2 }),
             (0x18, 0..=2, 0) => Ok(Instruction::DkgGetPublicPackage),
             (0x19, 0, 0) => Ok(Instruction::DkgBackupKeys),
             (0x1a, 0..=2, 0) => Ok(Instruction::DkgRestoreKeys { chunk: value.p1 }),
@@ -53,7 +53,8 @@ impl TryFrom<ApduHeader> for Instruction {
             (0x1c, 0..=2, 0) => Ok(Instruction::ReviewTx { chunk: value.p1 }),
             // Any supported ins with wrong p1 p2 should fall here
             (0x00, _, _) => Err(AppSW::WrongP1P2),
-            (0x11..=0x1c, _, _) => Err(AppSW::WrongP1P2),
+            (0x11..=0x16, _, _) => Err(AppSW::WrongP1P2),
+            (0x18..=0x1c, _, _) => Err(AppSW::WrongP1P2),
             // Any other value (unsupported ins) should fall here
             (_, _, _) => Err(AppSW::InsNotSupported),
         }
