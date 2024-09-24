@@ -607,6 +607,19 @@ describe.each(models)('DKG', function (m) {
           signatures.push(result.signature.toString('hex'))
         }
 
+        // Attempt to sign again. It should fail as the tx hash is cleaned
+        for (let i = 0; i < participants; i++) {
+          await expect(
+            runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+              await app.dkgSign(
+                unsignedTx.publicKeyRandomness(),
+                signingPackage.frostSigningPackage().toString('hex'),
+                unsignedTx.hash().toString('hex'),
+              )
+            }),
+          ).rejects.toThrow()
+        }
+
         let signedTxRaw = aggregateRawSignatureShares(
           identities,
           publicPackages.toString('hex'),
