@@ -50,7 +50,7 @@ pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> R
     match ins {
         Instruction::DkgSign { chunk: _chunk } => {}
         Instruction::DkgCommitments { chunk: _chunk } => {}
-        (_) => {
+        _ => {
             get_and_clear_tx_hash();
         }
     };

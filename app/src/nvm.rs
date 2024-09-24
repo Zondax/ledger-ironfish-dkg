@@ -29,6 +29,6 @@ pub(crate) fn get_and_clear_tx_hash() -> Option<[u8; 32]> {
 
 // Function to get
 pub(crate) fn get_tx_hash() -> Option<[u8; 32]> {
-    let mut global = GLOBAL.lock();
+    let global = GLOBAL.lock();
     global.clone()
 }

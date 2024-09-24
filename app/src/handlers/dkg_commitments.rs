@@ -21,7 +21,7 @@ use crate::context::TxContext;
 use crate::ironfish::constants::TX_HASH_LEN;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
-use crate::nvm::{get_and_clear_tx_hash, get_tx_hash};
+use crate::nvm::get_tx_hash;
 use crate::utils::response::save_result;
 use crate::AppSW;
 use ironfish_frost::frost::round1::SigningCommitments;

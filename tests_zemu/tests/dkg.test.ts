@@ -544,9 +544,7 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
-            const identityReq = await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
-
-            return identityReq
+            return await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
           })
 
           if (!identity.identity) throw new Error('no identity found')
