@@ -1,7 +1,7 @@
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
 
-use jubjub::{AffinePoint};
-use nom::{number::complete::le_u64};
+use jubjub::AffinePoint;
+use nom::number::complete::le_u64;
 
 use crate::{
     crypto::{decrypt, read_scalar},

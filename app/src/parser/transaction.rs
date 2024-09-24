@@ -11,8 +11,8 @@ use nom::{
 };
 
 use crate::{
-    bolos::{zlog_stack},
-    ironfish::{errors::IronfishError,view_keys::OutgoingViewKey},
+    bolos::zlog_stack,
+    ironfish::{errors::IronfishError, view_keys::OutgoingViewKey},
     parser::{
         constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
         SIGNATURE_HASH_PERSONALIZATION, TRANSACTION_SIGNATURE_VERSION, TX_HASH_LEN,

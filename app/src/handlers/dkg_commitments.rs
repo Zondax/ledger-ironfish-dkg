@@ -18,7 +18,7 @@
 use crate::accumulator::accumulate_data;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::ironfish::constants::{TX_HASH_LEN};
+use crate::ironfish::constants::TX_HASH_LEN;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;

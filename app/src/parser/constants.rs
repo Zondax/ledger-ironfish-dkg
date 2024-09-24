@@ -1,4 +1,3 @@
-
 // Value commitment
 // root of the tree
 // tree_size

@@ -1,4 +1,4 @@
-use blake2b_simd::{ State};
+use blake2b_simd::State;
 use core::mem::MaybeUninit;
 use core::ptr::addr_of_mut;
 

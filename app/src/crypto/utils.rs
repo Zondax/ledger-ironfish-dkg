@@ -3,7 +3,7 @@ use jubjub::{AffinePoint, ExtendedPoint, Fq, Fr, Scalar};
 use nom::bytes::complete::take;
 
 use crate::ironfish::errors::IronfishError;
-use crate::{parser::ParserError};
+use crate::parser::ParserError;
 
 pub fn parse_affine_point(raw_bytes: &[u8; 32]) -> Result<AffinePoint, ParserError> {
     AffinePoint::from_bytes(*raw_bytes)

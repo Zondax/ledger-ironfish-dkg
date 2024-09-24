@@ -1,5 +1,5 @@
 use crate::{bolos::zlog_stack, context::TxContext, AppSW, Instruction};
-use ledger_device_sdk::io::{ Comm};
+use ledger_device_sdk::io::Comm;
 
 mod dkg_backup_keys;
 mod dkg_commitments;

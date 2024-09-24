@@ -10,7 +10,7 @@ use crate::{
     FromBytes,
 };
 use crate::{
-    crypto::{decrypt},
+    crypto::decrypt,
     ironfish::public_address::PublicAddress,
     parser::{
         ParserError, AFFINE_POINT_SIZE, ENCRYPTED_NOTE_SIZE, MAC_SIZE, NOTE_ENCRYPTION_KEY_SIZE,
