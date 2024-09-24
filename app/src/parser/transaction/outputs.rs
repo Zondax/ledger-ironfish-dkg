@@ -1,4 +1,4 @@
-use blake2b_simd::{Params as Blake2b, State};
+use blake2b_simd::{ State};
 use core::mem::MaybeUninit;
 use core::ptr::addr_of_mut;
 
@@ -9,7 +9,6 @@ use crate::parser::constants::OUTPUT_LEN;
 use crate::parser::MerkleNote;
 
 use super::FromBytes;
-use super::ObjectList;
 use crate::parser::ParserError;
 
 // https://github.com/iron-fish/ironfish/blob/master/ironfish-rust/src/transaction/outputs.rs#L133

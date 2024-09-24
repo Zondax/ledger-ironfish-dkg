@@ -1,16 +1,9 @@
 use chacha20poly1305::{ChaCha20Poly1305, Key, KeyInit, Nonce};
-use core::convert::TryFrom;
-use ff::PrimeField;
-use group::cofactor::CofactorGroup;
-use group::Group;
 use jubjub::{AffinePoint, ExtendedPoint, Fq, Fr, Scalar};
 use nom::bytes::complete::take;
 
-use crate::ironfish::constants::{
-    PROOF_GENERATION_KEY_GENERATOR, PUBLIC_KEY_GENERATOR, SPENDING_KEY_GENERATOR,
-};
 use crate::ironfish::errors::IronfishError;
-use crate::{parser::ParserError, ConstantKey};
+use crate::{parser::ParserError};
 
 pub fn parse_affine_point(raw_bytes: &[u8; 32]) -> Result<AffinePoint, ParserError> {
     AffinePoint::from_bytes(*raw_bytes)

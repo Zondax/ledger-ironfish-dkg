@@ -18,7 +18,7 @@
 #![no_std]
 #![no_main]
 
-use ledger_device_sdk::io::{ApduHeader, Comm, Event, Reply, StatusWords};
+use ledger_device_sdk::io::{Comm, Event};
 use ledger_ironfish_dkg::{context::TxContext, AppSW};
 
 use ledger_ironfish_dkg::ledger::*;

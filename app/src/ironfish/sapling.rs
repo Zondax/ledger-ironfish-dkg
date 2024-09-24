@@ -20,11 +20,13 @@ pub const SPEND_KEY_SIZE: usize = 32;
 pub struct SaplingKey {
     /// The private (secret) key from which all the other key parts are derived.
     /// The expanded form of this key is required before a note can be spent.
+    #[allow(unused)]
     spending_key: [u8; SPEND_KEY_SIZE],
 
     /// Part of the expanded form of the spending key, generally referred to as
     /// `ask` in the literature. Derived from spending key using a seeded
     /// pseudorandom hash function. Used to construct authorizing_key.
+    #[allow(unused)]
     pub(crate) spend_authorizing_key: jubjub::Fr,
 
     /// Part of the expanded form of the spending key, generally referred to as

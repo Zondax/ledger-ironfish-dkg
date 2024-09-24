@@ -1,13 +1,8 @@
 use core::ptr::addr_of_mut;
-use group::{
-    cofactor::{CofactorCurve, CofactorCurveAffine, CofactorGroup},
-    prime::PrimeGroup,
-    Curve, Group,
-};
 
 use crate::{
     bolos::zlog_stack,
-    crypto::{calculate_key_for_encryption_keys, parse_affine_point, read_fr, read_scalar},
+    crypto::{calculate_key_for_encryption_keys, parse_affine_point, read_fr},
     ironfish::{
         errors::IronfishError,
         view_keys::{shared_secret, OutgoingViewKey},
@@ -15,7 +10,7 @@ use crate::{
     FromBytes,
 };
 use crate::{
-    crypto::{decrypt, parse_extended_point},
+    crypto::{decrypt},
     ironfish::public_address::PublicAddress,
     parser::{
         ParserError, AFFINE_POINT_SIZE, ENCRYPTED_NOTE_SIZE, MAC_SIZE, NOTE_ENCRYPTION_KEY_SIZE,
@@ -23,7 +18,6 @@ use crate::{
 };
 use arrayref::array_ref;
 use jubjub::AffinePoint;
-use jubjub::{ExtendedPoint, Scalar, SubgroupPoint};
 use nom::bytes::complete::take;
 
 use super::{Note, ENCRYPTED_SHARED_KEY_SIZE};
@@ -127,7 +121,7 @@ impl<'a> MerkleNote<'a> {
 
         let public_address = PublicAddress::new(&note_encryption_keys[..32].try_into().unwrap())?;
 
-        let (rem, secret_key) =
+        let (_rem, secret_key) =
             read_fr(&note_encryption_keys[32..]).map_err(|_| IronfishError::InvalidScalar)?;
         let shared_key = shared_secret(&secret_key, &public_address.0, &self.ephemeral_public_key);
         let note =

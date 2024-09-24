@@ -280,7 +280,7 @@ pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
 #[inline(never)]
 pub fn ui_review<'a>(
     title: &'a str,
-    subtitle: &'a str,
+    _subtitle: &'a str,
     _finish_title: &'a str,
     fields: &'a [Field<'a>],
     _light: bool,

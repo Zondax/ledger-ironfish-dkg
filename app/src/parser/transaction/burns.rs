@@ -1,4 +1,4 @@
-use blake2b_simd::{Params as Blake2b, State};
+use blake2b_simd::{State};
 use core::mem::MaybeUninit;
 use core::ptr::addr_of_mut;
 
@@ -8,7 +8,6 @@ use crate::bolos::zlog_stack;
 use crate::parser::constants::BURN_LEN;
 
 use super::FromBytes;
-use super::ObjectList;
 use crate::parser::ParserError;
 
 #[cfg_attr(test, derive(Debug))]

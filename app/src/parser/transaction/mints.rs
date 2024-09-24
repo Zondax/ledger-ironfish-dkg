@@ -1,16 +1,12 @@
-use blake2b_simd::{Params as Blake2b, State};
+use blake2b_simd::{ State};
 use core::mem::MaybeUninit;
 use core::ptr::addr_of_mut;
 
 use nom::bytes::complete::take;
 
-use crate::bolos::zlog_stack;
 use crate::parser::constants::MINT_LEN;
-use crate::parser::ASSET_LEN;
 use crate::TransactionVersion;
 
-use super::FromBytes;
-use super::ObjectList;
 use crate::parser::ParserError;
 
 #[cfg_attr(test, derive(Debug))]

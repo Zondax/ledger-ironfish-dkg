@@ -1,5 +1,5 @@
 use crate::{bolos::zlog_stack, context::TxContext, AppSW, Instruction};
-use ledger_device_sdk::io::{ApduHeader, Comm, Event, Reply, StatusWords};
+use ledger_device_sdk::io::{ Comm};
 
 mod dkg_backup_keys;
 mod dkg_commitments;
@@ -36,7 +36,7 @@ pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> R
     // reset the buffer to receive mode.
     match ins {
         Instruction::GetResult { chunk: _chunk } => {}
-        (_) => {
+        _ => {
             if let BufferMode::Result = ctx.buffer.mode {
                 ctx.reset_to_receive();
             }

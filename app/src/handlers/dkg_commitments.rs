@@ -18,15 +18,13 @@
 use crate::accumulator::accumulate_data;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::ironfish::constants::{IDENTITY_LEN, TX_HASH_LEN};
+use crate::ironfish::constants::{TX_HASH_LEN};
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
 use crate::AppSW;
-use alloc::vec::Vec;
 use ironfish_frost::frost::round1::SigningCommitments;
 use ironfish_frost::nonces::deterministic_signing_nonces;
-use ironfish_frost::participant::Identity;
 use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
@@ -42,7 +40,7 @@ pub fn handler_dkg_commitments(
         return Ok(());
     }
 
-    let (tx_hash) = parse_tx(&ctx.buffer)?;
+    let tx_hash = parse_tx(&ctx.buffer)?;
 
     let key_package = DkgKeys.load_key_package()?;
     let identities = DkgKeys.load_identities()?;
@@ -58,7 +56,7 @@ pub fn handler_dkg_commitments(
 }
 
 #[inline(never)]
-fn parse_tx(buffer: &Buffer) -> Result<(&[u8]), AppSW> {
+fn parse_tx(buffer: &Buffer) -> Result<&[u8], AppSW> {
     zlog_stack("start parse_tx\0");
 
     let mut tx_pos = 0;
@@ -69,5 +67,5 @@ fn parse_tx(buffer: &Buffer) -> Result<(&[u8]), AppSW> {
         return Err(AppSW::InvalidPayload);
     }
 
-    Ok((tx_hash))
+    Ok(tx_hash)
 }

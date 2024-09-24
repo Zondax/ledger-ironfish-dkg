@@ -17,7 +17,6 @@
 use crate::AppSW;
 use core::str::FromStr;
 use ledger_device_sdk::io;
-use nom::AsBytes;
 
 #[inline(never)]
 pub fn handler_get_version(comm: &mut io::Comm) -> Result<(), AppSW> {
