@@ -20,11 +20,14 @@ use crate::bolos::zlog_stack;
 use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;
+use core::ptr;
 use ironfish_frost::participant::Secret as ironfishSecret;
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 use ledger_device_sdk::io::Comm;
 
 const MAX_IDENTITY_INDEX: u8 = 5;
+const ED25519_KEY_LEN: usize = 64;
+const SECRET_KEY_LEN: usize = 32;
 
 #[inline(never)]
 pub fn handler_dkg_get_identity(comm: &mut Comm, require_review: bool) -> Result<(), AppSW> {
@@ -74,8 +77,8 @@ pub fn compute_dkg_secret(index: u8) -> ironfishSecret {
         (0x80000000 | index_2),
     ];
 
-    let mut secret_key_0 = Secret::<64>::new();
-    let mut secret_key_1 = Secret::<64>::new();
+    let mut secret_key_0 = Secret::<ED25519_KEY_LEN>::new();
+    let mut secret_key_1 = Secret::<ED25519_KEY_LEN>::new();
     let mut cc: ChainCode = Default::default();
 
     // Ignoring 'Result' here because known to be valid
@@ -92,8 +95,16 @@ pub fn compute_dkg_secret(index: u8) -> ironfishSecret {
         Some(cc.value.as_mut()),
     );
 
-    ironfishSecret::from_secret_keys(
-        secret_key_0.as_ref()[0..32].try_into().unwrap(),
-        secret_key_1.as_ref()[0..32].try_into().unwrap(),
-    )
+    let dkg_secret = ironfishSecret::from_secret_keys(
+        secret_key_0.as_ref()[0..SECRET_KEY_LEN].try_into().unwrap(),
+        secret_key_1.as_ref()[0..SECRET_KEY_LEN].try_into().unwrap(),
+    );
+
+    // Zero out the memory of secret_key_0 and secret_key_1
+    unsafe {
+        ptr::write_bytes(&mut secret_key_0 as *mut Secret<ED25519_KEY_LEN>, 0, 1);
+        ptr::write_bytes(&mut secret_key_1 as *mut Secret<ED25519_KEY_LEN>, 0, 1);
+    }
+
+    dkg_secret
 }
