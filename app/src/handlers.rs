@@ -16,6 +16,7 @@ mod get_version;
 mod review_tx;
 
 use crate::nvm::buffer::BufferMode;
+use crate::nvm::get_and_clear_tx_hash;
 use dkg_backup_keys::handler_dkg_backup_keys;
 use dkg_commitments::handler_dkg_commitments;
 use dkg_get_identity::handler_dkg_get_identity;
@@ -29,7 +30,6 @@ use dkg_sign::handler_dkg_sign;
 use get_result::handler_get_result;
 use get_version::handler_get_version;
 use review_tx::handler_review_tx;
-use crate::nvm::get_and_clear_tx_hash;
 
 pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Result<(), AppSW> {
     zlog_stack("handle_apdu\0");

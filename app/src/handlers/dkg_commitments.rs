@@ -21,12 +21,12 @@ use crate::context::TxContext;
 use crate::ironfish::constants::TX_HASH_LEN;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
+use crate::nvm::{get_and_clear_tx_hash, get_tx_hash};
 use crate::utils::response::save_result;
 use crate::AppSW;
 use ironfish_frost::frost::round1::SigningCommitments;
 use ironfish_frost::nonces::deterministic_signing_nonces;
 use ledger_device_sdk::io::Comm;
-use crate::nvm::{get_and_clear_tx_hash, get_tx_hash};
 
 #[inline(never)]
 pub fn handler_dkg_commitments(
