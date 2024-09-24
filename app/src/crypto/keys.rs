@@ -24,6 +24,7 @@ use alloc::vec::Vec;
 use core::ops::{Deref, DerefMut};
 use core::ptr;
 use ironfish_frost::participant::Secret as ironfishSecret;
+#[cfg(feature = "ledger")]
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 
 const ED25519_KEY_LEN: usize = 64;
