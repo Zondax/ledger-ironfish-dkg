@@ -21,6 +21,7 @@ use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;
+use core::ops::{Deref, DerefMut};
 use core::ptr;
 use ironfish_frost::participant::Secret as ironfishSecret;
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
@@ -91,7 +92,7 @@ pub(crate) fn multisig_to_key_type(
 }
 
 #[inline(never)]
-pub(crate) fn compute_dkg_secret(index: u8) -> ironfishSecret {
+pub(crate) fn compute_dkg_secret(index: u8) -> IronfishSecretGuard {
     let index_1 = (index * 2) as u32;
     let index_2 = index_1 + 1;
 
@@ -128,16 +129,51 @@ pub(crate) fn compute_dkg_secret(index: u8) -> ironfishSecret {
         Some(cc.value.as_mut()),
     );
 
-    let dkg_secret = ironfishSecret::from_secret_keys(
+    let mut dkg_secret = ironfishSecret::from_secret_keys(
         secret_key_0.as_ref()[0..SECRET_KEY_LEN].try_into().unwrap(),
         secret_key_1.as_ref()[0..SECRET_KEY_LEN].try_into().unwrap(),
     );
+
+    let result = IronfishSecretGuard::new(dkg_secret.clone());
 
     // Zero out the memory of secret_key_0 and secret_key_1
     unsafe {
         ptr::write_bytes(&mut secret_key_0 as *mut Secret<ED25519_KEY_LEN>, 0, 1);
         ptr::write_bytes(&mut secret_key_1 as *mut Secret<ED25519_KEY_LEN>, 0, 1);
+        ptr::write_bytes(&mut dkg_secret as *mut ironfishSecret, 0, 1);
     }
 
-    dkg_secret
+    result
+}
+
+pub(crate) struct IronfishSecretGuard {
+    secret: ironfishSecret,
+}
+
+impl IronfishSecretGuard {
+    fn new(secret: ironfishSecret) -> Self {
+        IronfishSecretGuard { secret }
+    }
+}
+
+impl Drop for IronfishSecretGuard {
+    fn drop(&mut self) {
+        unsafe {
+            ptr::write_bytes(&mut self.secret as *mut ironfishSecret, 0, 1);
+        }
+    }
+}
+
+impl Deref for IronfishSecretGuard {
+    type Target = ironfishSecret;
+
+    fn deref(&self) -> &Self::Target {
+        &self.secret
+    }
+}
+
+impl DerefMut for IronfishSecretGuard {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.secret
+    }
 }
