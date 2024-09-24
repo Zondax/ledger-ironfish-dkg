@@ -29,9 +29,11 @@ use dkg_sign::handler_dkg_sign;
 use get_result::handler_get_result;
 use get_version::handler_get_version;
 use review_tx::handler_review_tx;
+use crate::nvm::get_and_clear_tx_hash;
 
 pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Result<(), AppSW> {
     zlog_stack("handle_apdu\0");
+
     // If the buffer contains a result from a command, and we receive anything else than GetResult command
     // reset the buffer to receive mode.
     match ins {
@@ -40,6 +42,16 @@ pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> R
             if let BufferMode::Result = ctx.buffer.mode {
                 ctx.reset_to_receive();
             }
+        }
+    };
+
+    // If we receive anything else than DkgSign or DkgCommitments command
+    // reset the tx_hash ram buffer
+    match ins {
+        Instruction::DkgSign { chunk: _chunk } => {}
+        Instruction::DkgCommitments { chunk: _chunk } => {}
+        (_) => {
+            get_and_clear_tx_hash();
         }
     };
 
