@@ -425,7 +425,7 @@ impl DkgKeys {
     pub fn restore_keys(&self, data: &[u8]) -> Result<(), AppSW> {
         zlog_stack("start restore_keys\0");
 
-        if data[1] != 1 {
+        if data[DKG_VERSION] != 1 {
             return Err(AppSW::InvalidDkgKeysVersion);
         }
 
