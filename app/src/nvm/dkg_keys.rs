@@ -10,7 +10,7 @@ use ledger_device_sdk::NVMData;
 
 // This is necessary to store the object in NVM and not in RAM
 // The max data saved here is for 4 participants, which sends 1024 bytes.
-pub const DKG_KEYS_MAX_SIZE: usize = 1200;
+pub const DKG_KEYS_MAX_SIZE: usize = 1250;
 
 // Fix positions with u8 values
 const DKG_STATUS: usize = 0;
@@ -425,7 +425,7 @@ impl DkgKeys {
     pub fn restore_keys(&self, data: &[u8]) -> Result<(), AppSW> {
         zlog_stack("start restore_keys\0");
 
-        if data[1] != 1 {
+        if data[DKG_VERSION] != 1 {
             return Err(AppSW::InvalidDkgKeysVersion);
         }
 
