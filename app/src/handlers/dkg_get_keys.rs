@@ -17,8 +17,7 @@
 
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::crypto::{get_dkg_keys, multisig_to_key_type};
-use crate::handlers::dkg_get_identity::compute_dkg_secret;
+use crate::crypto::{compute_dkg_secret, get_dkg_keys, multisig_to_key_type};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec::Vec;

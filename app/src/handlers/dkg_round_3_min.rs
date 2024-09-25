@@ -19,7 +19,7 @@ use crate::accumulator::accumulate_data;
 use crate::app_ui::run_action::ui_review_dkg_round3;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::handlers::dkg_get_identity::compute_dkg_secret;
+use crate::crypto::compute_dkg_secret;
 use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
