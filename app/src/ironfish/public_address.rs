@@ -7,7 +7,6 @@ use crate::ironfish::errors::IronfishError;
 use crate::ironfish::sapling::SaplingKey;
 use crate::ironfish::view_keys::IncomingViewKey;
 use crate::FromBytes;
-use alloc::string::String;
 use arrayref::array_ref;
 use jubjub::AffinePoint;
 use nom::bytes::complete::take;

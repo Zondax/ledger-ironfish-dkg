@@ -41,7 +41,7 @@ pub fn handler_dkg_round_2(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> R
 
     let identity_index = ctx.buffer.get_element(0)?;
     let (round_1_public_packages, current_pos) = parse_round_1_public_packages(&ctx.buffer, 1)?;
-    let (round_1_secret_package, current_pos) =
+    let (round_1_secret_package, _current_pos) =
         parse_round_1_secret_package(&ctx.buffer, current_pos)?;
 
     if !ui_review_dkg_round2(identity_index, round_1_public_packages.len() as u8)? {

@@ -544,9 +544,7 @@ describe.each(models)('DKG', function (m) {
 
         for (let i = 0; i < participants; i++) {
           const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
-            const identityReq = await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
-
-            return identityReq
+            return await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
           })
 
           if (!identity.identity) throw new Error('no identity found')
@@ -607,6 +605,19 @@ describe.each(models)('DKG', function (m) {
           signatures.push(result.signature.toString('hex'))
         }
 
+        // Attempt to sign again. It should fail as the tx hash is cleaned
+        for (let i = 0; i < participants; i++) {
+          await expect(
+            runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+              await app.dkgSign(
+                unsignedTx.publicKeyRandomness(),
+                signingPackage.frostSigningPackage().toString('hex'),
+                unsignedTx.hash().toString('hex'),
+              )
+            }),
+          ).rejects.toThrow()
+        }
+
         let signedTxRaw = aggregateRawSignatureShares(
           identities,
           publicPackages.toString('hex'),
@@ -620,6 +631,125 @@ describe.each(models)('DKG', function (m) {
         expect(signedTx.spends.length).toBe(1)
         expect(signedTx.mints.length).toBe(1)
         expect(signedTx.burns.length).toBe(0)
+      } finally {
+        for (let i = 0; i < globalSims.length; i++) await globalSims[i].close()
+      }
+    })
+  })
+
+  describe.each(restoreKeysTestCases)(`${m.name} - attempt to sign after sending wrong command`, ({ index, encrypted }) => {
+    test(index + '', async () => {
+      const participants = encrypted.length
+      const globalSims: Zemu[] = []
+
+      let identities: any[] = []
+
+      if (ONE_GLOBAL_APP) globalSims.push(new Zemu(m.path))
+      else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
+
+      for (let i = 0; i < globalSims.length; i++)
+        await globalSims[i].start({
+          ...defaultOptions,
+          model: m.name,
+          startText: startTextFn(m.name),
+          approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+          approveAction: ButtonKind.ApproveTapButton,
+        })
+
+      try {
+        const reqs = []
+        for (let i = 0; i < participants; i++) {
+          await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            let result = app.dkgRestoreKeys(encrypted[i])
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-restore-keys`)
+
+            await result
+          })
+        }
+
+        let viewKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+
+          return {
+            viewKey: result.viewKey.toString('hex'),
+            ivk: result.ivk.toString('hex'),
+            ovk: result.ovk.toString('hex'),
+          }
+        })
+
+        let proofKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
+
+          return { ak: result.ak.toString('hex'), nsk: result.nsk.toString('hex') }
+        })
+
+        let pubkey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
+
+          return result.publicAddress.toString('hex')
+        })
+
+        let publicPackages = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result = await app.dkgGetPublicPackage()
+
+          return result.publicPackage
+        })
+
+        for (let i = 0; i < participants; i++) {
+          const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            return await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
+          })
+
+          if (!identity.identity) throw new Error('no identity found')
+
+          identities.push(identity.identity.toString('hex'))
+        }
+
+        const unsignedTxRaw = buildTx(pubkey, viewKey, proofKey)
+        const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
+
+        const serialized = unsignedTx.serialize()
+
+        for (let i = 0; i < participants; i++) {
+          await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            // Change the approve button type to hold, as we are signing a tx now.
+            sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
+            const resultReq = app.reviewTransaction(serialized.toString('hex'))
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-review-transaction`)
+
+            const result = await resultReq
+            expect(result.hash.length).toBeTruthy()
+            expect(result.hash.toString('hex')).toBe(unsignedTx.hash().toString('hex'))
+
+            return result
+          })
+        }
+
+        // Send wrong command in the middle of signing process (review + commitments + sign)
+        for (let i = 0; i < participants; i++) {
+          const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            return await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
+          })
+
+          if (!identity.identity) throw new Error('no identity found')
+        }
+
+        // Attempt to get commitments
+        for (let i = 0; i < participants; i++) {
+          await expect(
+            runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+              let result = await app.dkgGetCommitments(unsignedTx.hash().toString('hex'))
+
+              expect(result.commitments.length).toBeTruthy()
+
+              return result
+            }),
+          ).rejects.toThrow()
+        }
       } finally {
         for (let i = 0; i < globalSims.length; i++) await globalSims[i].close()
       }

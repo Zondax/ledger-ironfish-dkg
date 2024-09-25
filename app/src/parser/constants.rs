@@ -1,4 +1,3 @@
-use jubjub::{AffineNielsPoint, AffinePoint, Fq};
 // Value commitment
 // root of the tree
 // tree_size

@@ -1,5 +1,5 @@
 use crate::{bolos::zlog_stack, context::TxContext, AppSW, Instruction};
-use ledger_device_sdk::io::{ApduHeader, Comm, Event, Reply, StatusWords};
+use ledger_device_sdk::io::Comm;
 
 mod dkg_backup_keys;
 mod dkg_commitments;
@@ -16,6 +16,7 @@ mod get_version;
 mod review_tx;
 
 use crate::nvm::buffer::BufferMode;
+use crate::nvm::get_and_clear_tx_hash;
 use dkg_backup_keys::handler_dkg_backup_keys;
 use dkg_commitments::handler_dkg_commitments;
 use dkg_get_identity::handler_dkg_get_identity;
@@ -32,14 +33,26 @@ use review_tx::handler_review_tx;
 
 pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Result<(), AppSW> {
     zlog_stack("handle_apdu\0");
+
     // If the buffer contains a result from a command, and we receive anything else than GetResult command
     // reset the buffer to receive mode.
     match ins {
         Instruction::GetResult { chunk: _chunk } => {}
-        (_) => {
+        _ => {
             if let BufferMode::Result = ctx.buffer.mode {
                 ctx.reset_to_receive();
             }
+        }
+    };
+
+    // If we receive anything else than DkgSign, DkgCommitments or GetResult command
+    // reset the tx_hash ram buffer
+    match ins {
+        Instruction::DkgSign { chunk: _chunk } => {}
+        Instruction::DkgCommitments { chunk: _chunk } => {}
+        Instruction::GetResult { chunk: _chunk } => {}
+        _ => {
+            get_and_clear_tx_hash();
         }
     };
 

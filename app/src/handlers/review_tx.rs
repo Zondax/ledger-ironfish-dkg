@@ -17,7 +17,6 @@
 use crate::accumulator::accumulate_data;
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::ironfish::constants::TX_HASH_LEN;
 use core::mem::MaybeUninit;
 
 use crate::app_ui::run_action::ui_review_transaction;
@@ -25,8 +24,6 @@ use crate::crypto::get_dkg_keys;
 use crate::utils::response::save_result;
 use crate::{AppSW, FromBytes, Transaction};
 use ledger_device_sdk::io::Comm;
-use nom::bytes::complete::take;
-use nom::number::complete::{be_u16, be_u32};
 
 #[inline(never)]
 pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Result<(), AppSW> {

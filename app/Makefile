@@ -69,7 +69,7 @@ $(info PATHS LIST = $(APPPATH))
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 APPVERSION_STR=v$(APPVERSION)
 
-APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion \"$(APPVERSION)\"
+APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion $(APPVERSION)
 APP_DELETE_PARAMS = --appName $(APPNAME)
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.devices
@@ -149,6 +149,22 @@ lint-stax:
 	APPVERSION=$(APPVERSION) cargo clippy --target stax -- -Dwarnings
 
 
+.PHONY: lint-nanosplus-fix
+lint-nanosplus-fix:
+	APPVERSION=$(APPVERSION) cargo clippy --target nanosplus --fix
+
+.PHONY: lint-nanox-fix
+lint-nanox-fix:
+	APPVERSION=$(APPVERSION) cargo clippy --target nanox --fix
+
+.PHONY: lint-flex-fix
+lint-flex-fix:
+	APPVERSION=$(APPVERSION) cargo clippy --target flex --fix
+
+.PHONY: lint-stax-fix
+lint-stax-fix:
+	APPVERSION=$(APPVERSION) cargo clippy --target stax --fix
+
 .PHONY: post-build
 post-build: move-files-to-output read-params-from-json get-icon-hex create-install-script
 
@@ -172,7 +188,7 @@ read-params-from-json:
 # This was taken from the Makefile.app_params in the ledger-secure-sdk
 ICON_HEX_FILE := $(CURDIR)/icon.hex
 ICONHEX_CMD := $(if $(filter $(TARGET_NAME),TARGET_NANOX TARGET_NANOS2), \
-        python3 $(CURDIR)/../deps/ledger-secure-sdk/lib_nbgl/tools/icon2glyph.py --reverse --hexbitmap $(ICON_HEX_FILE) $(ICONNAME), \
+        python3 $(CURDIR)/../deps/ledger-secure-sdk/icon3.py --hexbitmaponly $(ICONNAME) > $(ICON_HEX_FILE), \
         python3 $(CURDIR)/../deps/ledger-secure-sdk/lib_nbgl/tools/icon2glyph.py --hexbitmap $(ICON_HEX_FILE) $(ICONNAME))
 
 .PHONY: get-icon-hex

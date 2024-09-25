@@ -1,6 +1,3 @@
-[target.nanosplus]
-runner = "speculos -a=1 --model=nanosp"
-
 [env]
 HEAP_SIZE = "16300"
 

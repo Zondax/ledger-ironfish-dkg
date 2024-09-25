@@ -280,7 +280,7 @@ pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
 #[inline(never)]
 pub fn ui_review<'a>(
     title: &'a str,
-    subtitle: &'a str,
+    _subtitle: &'a str,
     _finish_title: &'a str,
     fields: &'a [Field<'a>],
     _light: bool,
@@ -313,7 +313,7 @@ pub fn ui_review<'a>(
 
         let mut review = NbglReview::new()
             .tx_type(TransactionType::Operation)
-            .titles(title, subtitle, _finish_title)
+            .titles(title, _subtitle, _finish_title)
             .glyph(&ICON);
 
         Ok(review.show(&fields, true))
