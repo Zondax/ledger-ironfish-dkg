@@ -69,7 +69,7 @@ $(info PATHS LIST = $(APPPATH))
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 APPVERSION_STR=v$(APPVERSION)
 
-APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion \"$(APPVERSION)\"
+APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion $(APPVERSION)
 APP_DELETE_PARAMS = --appName $(APPNAME)
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.devices
@@ -188,7 +188,7 @@ read-params-from-json:
 # This was taken from the Makefile.app_params in the ledger-secure-sdk
 ICON_HEX_FILE := $(CURDIR)/icon.hex
 ICONHEX_CMD := $(if $(filter $(TARGET_NAME),TARGET_NANOX TARGET_NANOS2), \
-        python3 $(CURDIR)/../deps/ledger-secure-sdk/lib_nbgl/tools/icon2glyph.py --reverse --hexbitmap $(ICON_HEX_FILE) $(ICONNAME), \
+        python3 $(CURDIR)/../deps/ledger-secure-sdk/icon3.py --hexbitmaponly $(ICONNAME) > $(ICON_HEX_FILE), \
         python3 $(CURDIR)/../deps/ledger-secure-sdk/lib_nbgl/tools/icon2glyph.py --hexbitmap $(ICON_HEX_FILE) $(ICONNAME))
 
 .PHONY: get-icon-hex
