@@ -2,11 +2,12 @@ use crate::ironfish::constants::PROOF_GENERATION_KEY_GENERATOR;
 use crate::ironfish::public_address::PublicAddress;
 use crate::ironfish::sapling::SaplingKey;
 use crate::ironfish::view_keys::{IncomingViewKey, OutgoingViewKey, ViewKey};
+use core::ptr;
 use jubjub::{AffinePoint, Fr};
 
 pub struct MultisigAccountKeys {
     /// Equivalent to [`crate::keys::SaplingKey::proof_authorizing_key`]
-    pub proof_authorizing_key: jubjub::Fr,
+    pub proof_authorizing_key: Fr,
     /// Equivalent to [`crate::keys::SaplingKey::outgoing_viewing_key`]
     pub outgoing_viewing_key: OutgoingViewKey,
     /// Equivalent to [`crate::keys::SaplingKey::view_key`]
@@ -15,6 +16,19 @@ pub struct MultisigAccountKeys {
     pub incoming_viewing_key: IncomingViewKey,
     /// Equivalent to [`crate::keys::SaplingKey::public_address`]
     pub public_address: PublicAddress,
+}
+
+// Implement Drop trait to zero out memory the moment this struct goes out of scope
+impl Drop for MultisigAccountKeys {
+    fn drop(&mut self) {
+        unsafe {
+            ptr::write_bytes(&mut self.proof_authorizing_key as *mut Fr, 0, 1);
+            ptr::write_bytes(&mut self.outgoing_viewing_key as *mut OutgoingViewKey, 0, 1);
+            ptr::write_bytes(&mut self.view_key as *mut ViewKey, 0, 1);
+            ptr::write_bytes(&mut self.incoming_viewing_key as *mut IncomingViewKey, 0, 1);
+            ptr::write_bytes(&mut self.public_address as *mut PublicAddress, 0, 1);
+        }
+    }
 }
 
 pub fn derive_account_keys(
