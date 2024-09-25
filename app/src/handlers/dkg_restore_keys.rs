@@ -20,7 +20,10 @@ use crate::bolos::zlog_stack;
 use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, decrypt, NONCE_LEN};
 use crate::nvm::dkg_keys::DkgKeys;
+use crate::nvm::DkgKeysReader;
 use crate::AppSW;
+use alloc::vec;
+use alloc::vec::Vec;
 use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
@@ -46,11 +49,27 @@ pub fn handler_dkg_restore_keys(
 
     let key = compute_key();
 
-    let resp = decrypt(&key, data, nonce)?;
+    let resp: Vec<u8> = decrypt(&key, data, nonce)?;
 
-    if !ui_review_restore_keys()? {
+    review_restore_keys(resp.as_slice().as_ref())?;
+
+    DkgKeys.restore_keys(resp.as_slice())
+}
+
+#[inline(never)]
+fn review_restore_keys(data: &[u8]) -> Result<(), AppSW> {
+    let dkg_keys_reader = DkgKeysReader::new(data);
+
+    //account_keys = get_dkg_keys()?;
+    let public_address = vec![0, 1, 2, 3, 4, 5];
+    //drop(account_keys);
+
+    let min_signers = dkg_keys_reader.load_min_signers()?;
+    let participants = dkg_keys_reader.load_identities()?.len();
+
+    if !ui_review_restore_keys(public_address, participants as u8, min_signers as u8)? {
         return Err(AppSW::Deny);
     }
 
-    DkgKeys.restore_keys(resp.as_slice())
+    Ok(())
 }

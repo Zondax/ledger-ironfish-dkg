@@ -5,6 +5,7 @@ use chacha20poly1305::{
     aead::{Aead, KeyInit},
     ChaCha20Poly1305, Key, Nonce,
 };
+use core::ptr;
 #[cfg(feature = "ledger")]
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 // #[cfg(feature = "ledger")]
@@ -38,7 +39,7 @@ pub fn decrypt(key: &[u8; 32], payload: &[u8], nonce: &[u8]) -> Result<Vec<u8>, 
 }
 
 #[inline(never)]
-pub fn encrypt(key: &[u8; KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
+pub fn encrypt(key: &[u8; SECRET_KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
     let mut rng = LedgerRng::new();
     let v1 = rng.next_u64();
     let v2 = rng.next_u64();
@@ -68,7 +69,7 @@ pub fn encrypt(key: &[u8; KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
 
 #[cfg(feature = "ledger")]
 #[inline(never)]
-pub fn compute_key() -> [u8; KEY_LEN] {
+pub fn compute_key() -> [u8; SECRET_KEY_LEN] {
     let path_0: Vec<u32> = vec![
         (0x80000000 | 0x2c),
         (0x80000000 | 0x53a),

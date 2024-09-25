@@ -432,3 +432,174 @@ impl DkgKeys {
         self.set_slice(0, data)
     }
 }
+
+pub struct DkgKeysReader<'a> {
+    data: &'a [u8],
+}
+
+impl<'a> DkgKeysReader<'a> {
+    pub fn new(data: &'a [u8]) -> Self {
+        DkgKeysReader { data }
+    }
+
+    #[inline(never)]
+    pub fn get_element(&self, index: usize) -> u8 {
+        self.data[index]
+    }
+
+    #[inline(never)]
+    pub fn get_slice(&self, start_pos: usize, end_pos: usize) -> &[u8] {
+        &self.data[start_pos..end_pos]
+    }
+
+    #[inline(never)]
+    pub fn get_u16(&self, start_pos: usize) -> usize {
+        ((self.data[start_pos] as u16) << 8 | self.data[start_pos + 1] as u16) as usize
+    }
+
+    #[inline(never)]
+    pub fn get_keys_status(&self) -> Result<DkgKeyStatus, AppSW> {
+        zlog_stack("start get_keys_status\0");
+
+        let status = self.get_element(DKG_STATUS);
+        match status {
+            0 => Ok(DkgKeyStatus::Idle),
+            1 => Ok(DkgKeyStatus::Initiated),
+            2 => Ok(DkgKeyStatus::Completed),
+            _ => Err(AppSW::InvalidDkgStatus),
+        }
+    }
+
+    #[inline(never)]
+    pub fn load_group_secret_key(&self) -> Result<GroupSecretKey, AppSW> {
+        zlog_stack("start load_group_secret_key\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
+        let mut start = self.get_u16(GROUP_KEY_PACKAGE_POS);
+        let len = self.get_u16(start);
+        start += 2;
+
+        let raw = self.get_slice(start, start + len);
+        let parsed = <&[u8; GROUP_SECRET_KEY_LEN]>::try_from(raw)
+            .map_err(|_| AppSW::InvalidGroupSecretKey)?;
+
+        Ok(*parsed)
+    }
+
+    #[inline(never)]
+    pub fn load_frost_public_key_package(&self) -> Result<FrostPublicKeyPackage, AppSW> {
+        zlog_stack("start load_frost_public_key_package\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
+        let mut start = self.get_u16(FROST_PUBLIC_PACKAGE_POS);
+        let len = self.get_u16(start);
+        start += 2;
+
+        let data = self.get_slice(start, start + len);
+        let parsed =
+            FrostPublicKeyPackage::deserialize(data).map_err(|_| AppSW::InvalidPublicPackage)?;
+
+        Ok(parsed)
+    }
+
+    #[inline(never)]
+    pub fn load_key_package(&self) -> Result<KeyPackage, AppSW> {
+        zlog_stack("start load_key_package\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
+        let mut start = self.get_u16(KEY_PACKAGE_POS);
+        let len = self.get_u16(start);
+        start += 2;
+
+        let data = self.get_slice(start, start + len);
+        let package = KeyPackage::deserialize(data).map_err(|_| AppSW::InvalidKeyPackage)?;
+
+        Ok(package)
+    }
+
+    #[inline(never)]
+    pub fn load_min_signers(&self) -> Result<usize, AppSW> {
+        zlog_stack("start load_min_signers\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
+        let min_signers = self.get_element(MIN_SIGNERS_POS);
+        Ok(min_signers as usize)
+    }
+
+    #[inline(never)]
+    pub fn load_identity_index(&self) -> Result<usize, AppSW> {
+        zlog_stack("start load_identity_index\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
+        let identity_index = self.get_element(IDENTITY_INDEX_POS);
+        Ok(identity_index as usize)
+    }
+
+    #[inline(never)]
+    pub fn load_identities(&self) -> Result<Vec<Identity>, AppSW> {
+        zlog_stack("start load_identities\0");
+
+        let status = self.get_keys_status()?;
+        match status {
+            DkgKeyStatus::Completed => {}
+            _ => {
+                return Err(AppSW::InvalidDkgStatus);
+            }
+        }
+
+        let mut start = self.get_u16(IDENTITIES_POS);
+        let len = self.get_u16(start);
+        start += 2;
+
+        let end = start + len;
+        let mut identities: Vec<Identity> = Vec::new();
+        while start < end {
+            let data = self.get_slice(start, start + IDENTITY_LEN);
+            let identity = Identity::deserialize_from(data).map_err(|_| AppSW::InvalidIdentity)?;
+            start += IDENTITY_LEN;
+
+            identities.push(identity);
+        }
+
+        if start != end {
+            return Err(AppSW::InvalidPayload);
+        }
+
+        Ok(identities)
+    }
+}
