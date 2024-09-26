@@ -463,7 +463,6 @@ describe.each(models)('DKG', function (m) {
             resp = await respReq
             await sim.deleteEvents()
 
-            console.log(JSON.stringify(resp))
             expect(resp.viewKey.toString('hex')).toEqual(viewKeys.viewKey)
             expect(resp.ovk.toString('hex')).toEqual(viewKeys.ovk)
             expect(resp.ivk.toString('hex')).toEqual(viewKeys.ivk)
@@ -501,6 +500,11 @@ describe.each(models)('DKG', function (m) {
             resp = await app.dkgGetPublicPackage()
 
             expect(resp.publicPackage.toString('hex')).toEqual(publicPackage)
+
+            resp = await app.dkgGetIdentities()
+
+            const identitiesStr = resp.identities.map((i: any) => i.toString('hex'))
+            identities.forEach(i => expect(identitiesStr.includes(i)).toBeTruthy())
           } finally {
             await sim.close()
           }

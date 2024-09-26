@@ -7,6 +7,7 @@ pub enum Instruction {
     GetVersion,
     DkgGetIdentity { review: bool },
     DkgGetPublicPackage,
+    DkgGetIdentities,
     DkgRound1 { chunk: u8 },
     DkgRound2 { chunk: u8 },
     DkgRound3Min { chunk: u8 },
@@ -49,15 +50,15 @@ impl TryFrom<ApduHeader> for Instruction {
                 review: value.p1 == 1,
                 key_type: value.p2,
             }),
-            (0x18, 0..=2, 0) => Ok(Instruction::DkgGetPublicPackage),
+            (0x17, 0, 0) => Ok(Instruction::DkgGetIdentities),
+            (0x18, 0, 0) => Ok(Instruction::DkgGetPublicPackage),
             (0x19, 0, 0) => Ok(Instruction::DkgBackupKeys),
             (0x1a, 0..=2, 0) => Ok(Instruction::DkgRestoreKeys { chunk: value.p1 }),
             (0x1b, 0..=255, 0) => Ok(Instruction::GetResult { chunk: value.p1 }),
             (0x1c, 0..=2, 0) => Ok(Instruction::ReviewTx { chunk: value.p1 }),
             // Any supported ins with wrong p1 p2 should fall here
             (0x00, _, _) => Err(AppSW::WrongP1P2),
-            (0x11..=0x16, _, _) => Err(AppSW::WrongP1P2),
-            (0x18..=0x1c, _, _) => Err(AppSW::WrongP1P2),
+            (0x11..=0x1c, _, _) => Err(AppSW::WrongP1P2),
             // Any other value (unsupported ins) should fall here
             (_, _, _) => Err(AppSW::InsNotSupported),
         }
