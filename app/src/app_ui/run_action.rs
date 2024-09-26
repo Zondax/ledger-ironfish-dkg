@@ -144,6 +144,72 @@ pub fn ui_review_get_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
 }
 
 #[inline(never)]
+pub fn ui_review_get_keys<'a>(data: &Vec<u8>, key_type: u8) -> Result<bool, AppSW> {
+    zlog_stack("s ui_review_get_keys\0");
+    app_canary();
+
+    let title = "Get Keys";
+    let finish_title = "Accept operation?";
+
+    match key_type {
+        0 => {
+            let mut public_address_hex_str = hex::encode(data);
+            public_address_hex_str.insert_str(0, "0x");
+            let fields: [Field; 1] = [Field {
+                name: "Public Address",
+                value: public_address_hex_str.as_str(),
+            }];
+            ui_review(title, "", finish_title, &fields, true)
+        }
+        1 => {
+            let data_slice = data.as_slice();
+            let mut view_key_hex_str = hex::encode(data_slice[0..64].as_ref());
+            view_key_hex_str.insert_str(0, "0x");
+            let mut ivk_hex_str = hex::encode(data_slice[64..96].as_ref());
+            ivk_hex_str.insert_str(0, "0x");
+            let mut ovk_hex_str = hex::encode(data_slice[96..128].as_ref());
+            ovk_hex_str.insert_str(0, "0x");
+
+            let fields: [Field; 3] = [
+                Field {
+                    name: "ViewKey",
+                    value: view_key_hex_str.as_str(),
+                },
+                Field {
+                    name: "IVK",
+                    value: ivk_hex_str.as_str(),
+                },
+                Field {
+                    name: "OVK",
+                    value: ovk_hex_str.as_str(),
+                },
+            ];
+            ui_review(title, "", finish_title, &fields, true)
+        }
+        2 => {
+            let data_slice = data.as_slice();
+            let mut auth_key_hex_str = hex::encode(data_slice[0..32].as_ref());
+            auth_key_hex_str.insert_str(0, "0x");
+            let mut proof_auth_key_hex_str = hex::encode(data_slice[32..64].as_ref());
+            proof_auth_key_hex_str.insert_str(0, "0x");
+
+            let fields: [Field; 2] = [
+                Field {
+                    name: "AuthKey",
+                    value: auth_key_hex_str.as_str(),
+                },
+                Field {
+                    name: "ProofAuthKey",
+                    value: proof_auth_key_hex_str.as_str(),
+                },
+            ];
+            ui_review(title, "", finish_title, &fields, true)
+        }
+        _ => Err(AppSW::InvalidKeyType),
+    }
+}
+
+#[inline(never)]
 pub fn ui_review_get_current_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
     zlog_stack("s review_current_identity\0");
     app_canary();
