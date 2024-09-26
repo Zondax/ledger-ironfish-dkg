@@ -3,10 +3,12 @@ mod encryption_keys;
 mod epk;
 mod keys;
 // mod ovk;
+mod guards;
 mod utils;
 
 pub use encryption_keys::*;
 pub use epk::Epk;
+pub use guards::KeyPackageGuard;
 #[cfg(feature = "ledger")]
 pub(crate) use keys::compute_dkg_secret;
 #[cfg(feature = "ledger")]

@@ -1,3 +1,4 @@
+use crate::crypto::guards::EncryptionKeyGuard;
 use crate::{bolos::zlog_stack, rand::LedgerRng, AppSW};
 use alloc::vec;
 use alloc::vec::Vec;
@@ -69,7 +70,7 @@ pub fn encrypt(key: &[u8; SECRET_KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, Ap
 
 #[cfg(feature = "ledger")]
 #[inline(never)]
-pub fn compute_key() -> [u8; SECRET_KEY_LEN] {
+pub fn compute_key() -> EncryptionKeyGuard {
     let path_0: Vec<u32> = vec![
         (0x80000000 | 0x2c),
         (0x80000000 | 0x53a),
@@ -89,7 +90,7 @@ pub fn compute_key() -> [u8; SECRET_KEY_LEN] {
         Some(cc.value.as_mut()),
     );
 
-    let key = secret_key_0.as_ref()[0..SECRET_KEY_LEN].try_into().unwrap();
+    let key = EncryptionKeyGuard::from_secret_keys(secret_key_0.as_ref());
 
     // Zero out the memory of secret_key_0 and secret_key_1
     unsafe {
