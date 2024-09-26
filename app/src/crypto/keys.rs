@@ -39,14 +39,14 @@ pub enum ConstantKey {
 
 #[cfg(feature = "ledger")]
 pub(crate) fn derive_multisig_account(
-    reader: Option<&DkgKeysReader>,
+    data: Option<&[u8]>,
 ) -> Result<MultisigAccountKeys, AppSW> {
     zlog_stack("start derive_multisig_account\0");
 
-    let (group_secret_key, frost_public_key_package) = match reader {
+    let (group_secret_key, frost_public_key_package) = match data {
         Some(r) => {
-            let gsk = r.load_group_secret_key()?;
-            let frost_package = r.load_frost_public_key_package()?;
+            let gsk = DkgKeysReader::load_group_secret_key(r)?;
+            let frost_package = DkgKeysReader::load_frost_public_key_package(r)?;
             (gsk, frost_package)
         }
         None => {
