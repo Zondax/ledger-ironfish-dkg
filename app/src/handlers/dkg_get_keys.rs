@@ -23,12 +23,13 @@ use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec::Vec;
 use ledger_device_sdk::io::Comm;
+use core::ptr;
 
 #[inline(never)]
 pub fn handler_dkg_get_keys(comm: &mut Comm, review: bool, key_type: u8) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 
-    let resp: Vec<u8>;
+    let mut resp: Vec<u8>;
 
     if key_type == 3 {
         let identity_index = DkgKeys.load_identity_index()?;
@@ -49,5 +50,11 @@ pub fn handler_dkg_get_keys(comm: &mut Comm, review: bool, key_type: u8) -> Resu
     }
 
     comm.append(resp.as_slice().as_ref());
+
+    // Zero out memory for the response data
+    unsafe {
+        ptr::write_bytes(&mut resp as *mut Vec<u8>, 0, 1);
+    }
+
     Ok(())
 }
