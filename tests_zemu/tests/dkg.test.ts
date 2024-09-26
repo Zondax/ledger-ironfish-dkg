@@ -426,7 +426,7 @@ describe.each(models)('DKG', function (m) {
 
   describe.each(restoreKeysTestCases)(
     `${m.name} - restore keys`,
-    ({ index, encrypted, publicAddress, proofKeys, viewKeys, publicPackage }) => {
+    ({ index, encrypted, publicAddress, identity, proofKeys, viewKeys, publicPackage }) => {
       test.concurrent(index + '', async () => {
         for (let e of encrypted) {
           const sim = new Zemu(m.path)
@@ -455,20 +455,41 @@ describe.each(models)('DKG', function (m) {
             await sim.deleteEvents()
 
             // Generate keys from the restored package to check we are generating the same keys when they were generated
-            resp = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+            respReq = app.dkgRetrieveKeys(IronfishKeys.ViewKey, true)
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-${index}-view-keys`)
+            resp = await respReq
+            await sim.deleteEvents()
 
+            console.log(JSON.stringify(resp))
             expect(resp.viewKey.toString('hex')).toEqual(viewKeys.viewKey)
             expect(resp.ovk.toString('hex')).toEqual(viewKeys.ovk)
             expect(resp.ivk.toString('hex')).toEqual(viewKeys.ivk)
 
-            resp = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
+            respReq = app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey, true)
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-${index}-proof-keys`)
+            resp = await respReq
+            await sim.deleteEvents()
 
             expect(resp.ak.toString('hex')).toEqual(proofKeys.ak)
             expect(resp.nsk.toString('hex')).toEqual(proofKeys.nsk)
 
-            resp = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
+            respReq = app.dkgRetrieveKeys(IronfishKeys.PublicAddress, true)
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-${index}-public-addr`)
+            resp = await respReq
+            await sim.deleteEvents()
 
             expect(resp.publicAddress.toString('hex')).toEqual(publicAddress)
+
+            respReq = app.dkgRetrieveKeys(IronfishKeys.DkgIdentity, true)
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-${index}-identity`)
+            resp = await respReq
+            await sim.deleteEvents()
+
+            expect(resp.identity.toString('hex')).toEqual(identity)
 
             resp = await app.dkgGetPublicPackage()
 
