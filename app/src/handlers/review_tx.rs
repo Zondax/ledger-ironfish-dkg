@@ -20,7 +20,7 @@ use crate::context::TxContext;
 use core::mem::MaybeUninit;
 
 use crate::app_ui::run_action::ui_review_transaction;
-use crate::crypto::get_dkg_keys;
+use crate::crypto::derive_multisig_account;
 use crate::utils::response::save_result;
 use crate::{AppSW, FromBytes, Transaction};
 use ledger_device_sdk::io::Comm;
@@ -49,7 +49,7 @@ pub fn handler_review_tx(comm: &mut Comm, chunk: u8, ctx: &mut TxContext) -> Res
     let hash = tx.hash();
 
     // Get outgoing viewing key
-    let account_keys = get_dkg_keys()?;
+    let account_keys = derive_multisig_account(None)?;
 
     // review transaction
     if !ui_review_transaction(&tx, &account_keys.outgoing_viewing_key)? {

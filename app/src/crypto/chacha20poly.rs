@@ -5,13 +5,15 @@ use chacha20poly1305::{
     aead::{Aead, KeyInit},
     ChaCha20Poly1305, Key, Nonce,
 };
+use core::ptr;
 #[cfg(feature = "ledger")]
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 // #[cfg(feature = "ledger")]
 // use ledger_device_sdk::random::LedgerRng;
 
 pub const NONCE_LEN: usize = 12;
-pub const KEY_LEN: usize = 32;
+const SECRET_KEY_LEN: usize = 32;
+const ED25519_KEY_LEN: usize = 64;
 
 #[inline(never)]
 pub fn decrypt(key: &[u8; 32], payload: &[u8], nonce: &[u8]) -> Result<Vec<u8>, AppSW> {
@@ -37,7 +39,7 @@ pub fn decrypt(key: &[u8; 32], payload: &[u8], nonce: &[u8]) -> Result<Vec<u8>, 
 }
 
 #[inline(never)]
-pub fn encrypt(key: &[u8; KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
+pub fn encrypt(key: &[u8; SECRET_KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
     let mut rng = LedgerRng::new();
     let v1 = rng.next_u64();
     let v2 = rng.next_u64();
@@ -67,7 +69,7 @@ pub fn encrypt(key: &[u8; KEY_LEN], payload: &[u8]) -> Result<Vec<u8>, AppSW> {
 
 #[cfg(feature = "ledger")]
 #[inline(never)]
-pub fn compute_key() -> [u8; KEY_LEN] {
+pub fn compute_key() -> [u8; SECRET_KEY_LEN] {
     let path_0: Vec<u32> = vec![
         (0x80000000 | 0x2c),
         (0x80000000 | 0x53a),
@@ -76,7 +78,7 @@ pub fn compute_key() -> [u8; KEY_LEN] {
         (0x80000000 | 0x0),
     ];
 
-    let mut secret_key_0 = Secret::<64>::new();
+    let mut secret_key_0 = Secret::<ED25519_KEY_LEN>::new();
     let mut cc: ChainCode = Default::default();
 
     // Ignoring 'Result' here because known to be valid
@@ -87,5 +89,12 @@ pub fn compute_key() -> [u8; KEY_LEN] {
         Some(cc.value.as_mut()),
     );
 
-    secret_key_0.as_ref()[0..KEY_LEN].try_into().unwrap()
+    let key = secret_key_0.as_ref()[0..SECRET_KEY_LEN].try_into().unwrap();
+
+    // Zero out the memory of secret_key_0 and secret_key_1
+    unsafe {
+        ptr::write_bytes(&mut secret_key_0 as *mut Secret<ED25519_KEY_LEN>, 0, 1);
+    }
+
+    key
 }

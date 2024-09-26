@@ -144,6 +144,27 @@ pub fn ui_review_get_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
 }
 
 #[inline(never)]
+pub fn ui_review_get_current_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
+    zlog_stack("s review_current_identity\0");
+    app_canary();
+
+    let i_index_str = int_to_str(i_index);
+    let fields: [Field; 1] = [Field {
+        name: "Identity Num.",
+        value: i_index_str.as_str(),
+    }];
+
+    app_canary();
+    ui_review(
+        "Get Current",
+        "Identity",
+        "Accept operation?",
+        &fields,
+        true,
+    )
+}
+
+#[inline(never)]
 pub fn ui_review_dkg_round1<'a>(
     i_index: u8,
     min_signers: u8,
@@ -271,10 +292,35 @@ pub fn ui_review_dkg_round3<'a>(
 }
 
 #[inline(never)]
-pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
-    let review_message = &["Restore Keys", ""];
+pub fn ui_review_restore_keys<'a>(
+    public_address: Vec<u8>,
+    participants: u8,
+    min_signers: u8,
+) -> Result<bool, AppSW> {
+    zlog_stack("s review_restore_keys\0");
+    app_canary();
 
-    ui_run_action(review_message)
+    let participants_str = int_to_str(participants);
+    let min_signers_str = int_to_str(min_signers);
+    let mut public_address_hex_str = hex::encode(public_address);
+    public_address_hex_str.insert_str(0, "0x");
+
+    let fields: [Field; 3] = [
+        Field {
+            name: "Public Address",
+            value: public_address_hex_str.as_str(),
+        },
+        Field {
+            name: "Participants",
+            value: participants_str.as_str(),
+        },
+        Field {
+            name: "Min. Signers",
+            value: min_signers_str.as_str(),
+        },
+    ];
+
+    ui_review("Restore Keys", "", "Accept operation?", &fields, true)
 }
 
 #[inline(never)]
