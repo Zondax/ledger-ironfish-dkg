@@ -17,7 +17,7 @@
 
 use crate::bolos::zlog_stack;
 use crate::context::TxContext;
-use crate::crypto::{get_dkg_keys, multisig_to_key_type};
+use crate::crypto::{derive_multisig_account, multisig_to_key_type};
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
@@ -39,7 +39,7 @@ pub fn handler_dkg_get_keys(
         let identity = compute_dkg_secret(identity_index as u8).to_identity();
         resp = identity.serialize().as_slice().to_vec();
     } else {
-        let account_keys = get_dkg_keys()?;
+        let account_keys = derive_multisig_account(None)?;
         resp = multisig_to_key_type(&account_keys, key_type)?;
         drop(account_keys);
     }
