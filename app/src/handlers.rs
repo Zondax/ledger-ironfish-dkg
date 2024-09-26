@@ -64,7 +64,9 @@ pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> R
         Instruction::DkgRound3Min { chunk } => handler_dkg_round_3_min(comm, *chunk, ctx),
         Instruction::DkgCommitments { chunk } => handler_dkg_commitments(comm, *chunk, ctx),
         Instruction::DkgSign { chunk } => handler_dkg_sign(comm, *chunk, ctx),
-        Instruction::DkgGetKeys { key_type } => handler_dkg_get_keys(comm, *key_type, ctx),
+        Instruction::DkgGetKeys { key_type, review } => {
+            handler_dkg_get_keys(comm, *review, *key_type)
+        }
         Instruction::DkgGetPublicPackage => handler_dkg_get_public_package(comm, ctx),
         Instruction::DkgBackupKeys => handler_dkg_backup_keys(comm, ctx),
         Instruction::DkgRestoreKeys { chunk } => handler_dkg_restore_keys(comm, *chunk, ctx),

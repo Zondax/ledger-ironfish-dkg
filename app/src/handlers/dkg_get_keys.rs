@@ -15,8 +15,9 @@
  *  limitations under the License.
  *****************************************************************************/
 
+use crate::app_ui::run_action::ui_review_get_identity;
+use crate::app_ui::ui_review_get_keys;
 use crate::bolos::zlog_stack;
-use crate::context::TxContext;
 use crate::crypto::{derive_multisig_account, multisig_to_key_type};
 use crate::handlers::dkg_get_identity::compute_dkg_secret;
 use crate::nvm::dkg_keys::DkgKeys;
@@ -25,11 +26,7 @@ use alloc::vec::Vec;
 use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
-pub fn handler_dkg_get_keys(
-    comm: &mut Comm,
-    key_type: u8,
-    _ctx: &mut TxContext,
-) -> Result<(), AppSW> {
+pub fn handler_dkg_get_keys(comm: &mut Comm, review: bool, key_type: u8) -> Result<(), AppSW> {
     zlog_stack("start handler_dkg_get_keys\0");
 
     let resp: Vec<u8>;
@@ -38,10 +35,18 @@ pub fn handler_dkg_get_keys(
         let identity_index = DkgKeys.load_identity_index()?;
         let identity = compute_dkg_secret(identity_index as u8).to_identity();
         resp = identity.serialize().as_slice().to_vec();
+
+        if review && !ui_review_get_identity(identity_index as u8)? {
+            return Err(AppSW::Deny);
+        }
     } else {
         let account_keys = derive_multisig_account(None)?;
         resp = multisig_to_key_type(&account_keys, key_type)?;
         drop(account_keys);
+
+        if review && !ui_review_get_keys(&resp, key_type)? {
+            return Err(AppSW::Deny);
+        }
     }
 
     comm.append(resp.as_slice().as_ref());
