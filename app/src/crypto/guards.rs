@@ -6,6 +6,9 @@ use crate::AppSW;
 use core::ops::{Deref, DerefMut};
 use core::ptr;
 use ironfish_frost::frost::keys::KeyPackage;
+use ironfish_frost::participant::Secret as IronfishSecret;
+
+const SECRET_KEY_LEN: usize = 32;
 
 pub struct KeyPackageGuard {
     secret: KeyPackage,
@@ -39,6 +42,42 @@ impl Deref for KeyPackageGuard {
 }
 
 impl DerefMut for KeyPackageGuard {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.secret
+    }
+}
+
+pub struct IronfishSecretGuard {
+    secret: IronfishSecret,
+}
+
+impl IronfishSecretGuard {
+    pub fn from_secret_keys(secret_key_0: &[u8], secret_key_1: &[u8]) -> Self {
+        let secret = IronfishSecret::from_secret_keys(
+            secret_key_0[0..SECRET_KEY_LEN].try_into().unwrap(),
+            secret_key_1[0..SECRET_KEY_LEN].try_into().unwrap(),
+        );
+        IronfishSecretGuard { secret }
+    }
+}
+
+impl Drop for IronfishSecretGuard {
+    fn drop(&mut self) {
+        unsafe {
+            ptr::write_bytes(&mut self.secret as *mut IronfishSecret, 0, 1);
+        }
+    }
+}
+
+impl Deref for IronfishSecretGuard {
+    type Target = IronfishSecret;
+
+    fn deref(&self) -> &Self::Target {
+        &self.secret
+    }
+}
+
+impl DerefMut for IronfishSecretGuard {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.secret
     }

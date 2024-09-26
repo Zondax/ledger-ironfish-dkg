@@ -15,6 +15,7 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::bolos::zlog_stack;
+use crate::crypto::guards::IronfishSecretGuard;
 use crate::ironfish::multisig::{derive_account_keys, MultisigAccountKeys};
 #[cfg(feature = "ledger")]
 use crate::nvm::dkg_keys::DkgKeys;
@@ -24,12 +25,10 @@ use crate::AppSW;
 use alloc::vec;
 use alloc::vec::Vec;
 use core::ptr;
-use ironfish_frost::participant::Secret as ironfishSecret;
 #[cfg(feature = "ledger")]
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
 
 const ED25519_KEY_LEN: usize = 64;
-const SECRET_KEY_LEN: usize = 32;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConstantKey {
@@ -107,7 +106,7 @@ pub(crate) fn multisig_to_key_type(
 
 #[cfg(feature = "ledger")]
 #[inline(never)]
-pub(crate) fn compute_dkg_secret(index: u8) -> ironfishSecret {
+pub(crate) fn compute_dkg_secret(index: u8) -> IronfishSecretGuard {
     let index_1 = (index * 2) as u32;
     let index_2 = index_1 + 1;
 
@@ -144,10 +143,8 @@ pub(crate) fn compute_dkg_secret(index: u8) -> ironfishSecret {
         Some(cc.value.as_mut()),
     );
 
-    let dkg_secret = ironfishSecret::from_secret_keys(
-        secret_key_0.as_ref()[0..SECRET_KEY_LEN].try_into().unwrap(),
-        secret_key_1.as_ref()[0..SECRET_KEY_LEN].try_into().unwrap(),
-    );
+    let dkg_secret =
+        IronfishSecretGuard::from_secret_keys(secret_key_0.as_ref(), secret_key_1.as_ref());
 
     // Zero out the memory of secret_key_0 and secret_key_1
     unsafe {
