@@ -22,8 +22,8 @@ use crate::crypto::{compute_dkg_secret, derive_multisig_account, multisig_to_key
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec::Vec;
-use ledger_device_sdk::io::Comm;
 use core::ptr;
+use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
 pub fn handler_dkg_get_keys(comm: &mut Comm, review: bool, key_type: u8) -> Result<(), AppSW> {
