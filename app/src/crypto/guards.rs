@@ -47,6 +47,10 @@ impl DerefMut for KeyPackageGuard {
     }
 }
 
+/////////
+/////////
+/////////
+
 pub struct IronfishSecretGuard {
     secret: IronfishSecret,
 }
@@ -78,6 +82,44 @@ impl Deref for IronfishSecretGuard {
 }
 
 impl DerefMut for IronfishSecretGuard {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.secret
+    }
+}
+
+/////////
+/////////
+/////////
+
+pub struct EncryptionKeyGuard {
+    secret: [u8; SECRET_KEY_LEN],
+}
+
+impl EncryptionKeyGuard {
+    pub fn from_secret_keys(secret_key_0: &[u8]) -> Self {
+        let secret = secret_key_0[0..SECRET_KEY_LEN].try_into().unwrap();
+
+        EncryptionKeyGuard { secret }
+    }
+}
+
+impl Drop for EncryptionKeyGuard {
+    fn drop(&mut self) {
+        unsafe {
+            ptr::write_bytes(&mut self.secret as *mut [u8; SECRET_KEY_LEN], 0, 1);
+        }
+    }
+}
+
+impl Deref for EncryptionKeyGuard {
+    type Target = [u8; SECRET_KEY_LEN];
+
+    fn deref(&self) -> &Self::Target {
+        &self.secret
+    }
+}
+
+impl DerefMut for EncryptionKeyGuard {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.secret
     }
