@@ -1,4 +1,5 @@
 use crate::bolos::zlog_stack;
+use crate::crypto::KeyPackageGuard;
 use crate::AppSW;
 use alloc::vec::Vec;
 use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
@@ -315,7 +316,7 @@ impl DkgKeys {
     }
 
     #[inline(never)]
-    pub fn load_key_package(&self) -> Result<KeyPackage, AppSW> {
+    pub fn load_key_package(&self) -> Result<KeyPackageGuard, AppSW> {
         zlog_stack("start load_key_package\0");
 
         let status = self.get_keys_status()?;
@@ -331,7 +332,7 @@ impl DkgKeys {
         start += 2;
 
         let data = self.get_slice(start, start + len);
-        let package = KeyPackage::deserialize(data).map_err(|_| AppSW::InvalidKeyPackage)?;
+        let package = KeyPackageGuard::deserialize(data)?;
 
         Ok(package)
     }
@@ -517,7 +518,7 @@ impl<'a> DkgKeysReader<'a> {
     }
 
     #[inline(never)]
-    pub fn load_key_package(&self) -> Result<KeyPackage, AppSW> {
+    pub fn load_key_package(&self) -> Result<KeyPackageGuard, AppSW> {
         zlog_stack("start load_key_package\0");
 
         let status = self.get_keys_status()?;
@@ -533,7 +534,8 @@ impl<'a> DkgKeysReader<'a> {
         start += 2;
 
         let data = self.get_slice(start, start + len);
-        let package = KeyPackage::deserialize(data).map_err(|_| AppSW::InvalidKeyPackage)?;
+
+        let package = KeyPackageGuard::deserialize(data)?;
 
         Ok(package)
     }
