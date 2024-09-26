@@ -55,7 +55,6 @@ impl Default for DkgKeys {
 }
 
 impl DkgKeys {
-
     #[allow(unused)]
     pub fn is_valid_write(&self) -> Result<(), AppSW> {
         let buffer = unsafe { DATA.get_mut() };
@@ -256,7 +255,7 @@ impl DkgKeys {
     }
 
     #[inline(never)]
-    pub fn backup_keys<>(&self) -> Result<Vec<u8>, AppSW> {
+    pub fn backup_keys(&self) -> Result<Vec<u8>, AppSW> {
         let buffer_ref: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
 
         DkgKeysReader::backup_keys(&buffer_ref)
@@ -310,7 +309,6 @@ impl DkgKeys {
 pub struct DkgKeysReader;
 
 impl DkgKeysReader {
-
     #[inline(never)]
     pub fn get_element(data: &[u8], index: usize) -> u8 {
         data[index]

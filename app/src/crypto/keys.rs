@@ -38,9 +38,7 @@ pub enum ConstantKey {
 }
 
 #[cfg(feature = "ledger")]
-pub(crate) fn derive_multisig_account(
-    data: Option<&[u8]>,
-) -> Result<MultisigAccountKeys, AppSW> {
+pub(crate) fn derive_multisig_account(data: Option<&[u8]>) -> Result<MultisigAccountKeys, AppSW> {
     zlog_stack("start derive_multisig_account\0");
 
     let (group_secret_key, frost_public_key_package) = match data {
