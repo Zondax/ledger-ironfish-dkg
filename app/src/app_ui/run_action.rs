@@ -25,7 +25,7 @@ use ledger_device_sdk::ui::{
 };
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
-use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, TransactionType};
+use ledger_device_sdk::nbgl::{Field, NbglGlyph, NbglReview, TransactionType};
 
 use crate::bolos::app_canary;
 use crate::utils::int_to_str;
