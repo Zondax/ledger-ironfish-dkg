@@ -1,8 +1,8 @@
 use crate::bolos::zlog_stack;
-use crate::crypto::KeyPackageGuard;
+use crate::crypto::{GroupSecretKeyGuard, KeyPackageGuard};
 use crate::AppSW;
 use alloc::vec::Vec;
-use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
+use ironfish_frost::dkg::group_key::GroupSecretKey;
 use ironfish_frost::frost::keys::KeyPackage;
 use ironfish_frost::frost::keys::PublicKeyPackage as FrostPublicKeyPackage;
 use ironfish_frost::participant::{Identity, IDENTITY_LEN};
@@ -207,9 +207,9 @@ impl DkgKeys {
     #[inline(never)]
     pub fn save_keys(
         &mut self,
-        key_package: KeyPackage,
+        key_package: &KeyPackage,
         public_key_package: FrostPublicKeyPackage,
-        group_secret_key: GroupSecretKey,
+        group_secret_key: &GroupSecretKey,
     ) -> Result<(), AppSW> {
         zlog_stack("start save_keys\0");
 
@@ -262,7 +262,7 @@ impl DkgKeys {
     }
 
     #[inline(never)]
-    pub fn load_group_secret_key(&mut self) -> Result<GroupSecretKey, AppSW> {
+    pub fn load_group_secret_key(&mut self) -> Result<GroupSecretKeyGuard, AppSW> {
         let buffer_ref: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
 
         DkgKeysReader::load_group_secret_key(&buffer_ref)
@@ -338,7 +338,7 @@ impl DkgKeysReader {
     }
 
     #[inline(never)]
-    pub fn load_group_secret_key(data: &[u8]) -> Result<GroupSecretKey, AppSW> {
+    pub fn load_group_secret_key(data: &[u8]) -> Result<GroupSecretKeyGuard, AppSW> {
         zlog_stack("start load_group_secret_key\0");
 
         let status = DkgKeysReader::get_keys_status(data)?;
@@ -354,10 +354,9 @@ impl DkgKeysReader {
         start += 2;
 
         let raw = DkgKeysReader::get_slice(data, start, start + len);
-        let parsed = <&[u8; GROUP_SECRET_KEY_LEN]>::try_from(raw)
-            .map_err(|_| AppSW::InvalidGroupSecretKey)?;
+        let parsed = GroupSecretKeyGuard::from_raw(raw)?;
 
-        Ok(*parsed)
+        Ok(parsed)
     }
 
     #[inline(never)]

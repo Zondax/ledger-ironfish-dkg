@@ -8,6 +8,7 @@ mod utils;
 
 pub use encryption_keys::*;
 pub use epk::Epk;
+pub use guards::GroupSecretKeyGuard;
 pub use guards::KeyPackageGuard;
 #[cfg(feature = "ledger")]
 pub(crate) use keys::compute_dkg_secret;
