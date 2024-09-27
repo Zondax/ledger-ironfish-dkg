@@ -144,6 +144,93 @@ pub fn ui_review_get_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
 }
 
 #[inline(never)]
+pub fn ui_review_get_keys<'a>(data: &Vec<u8>, key_type: u8) -> Result<bool, AppSW> {
+    zlog_stack("s ui_review_get_keys\0");
+    app_canary();
+
+    let title = "Get Keys";
+    let finish_title = "Accept operation?";
+
+    match key_type {
+        0 => {
+            let mut public_address_hex_str = hex::encode(data);
+            public_address_hex_str.insert_str(0, "0x");
+            let fields: [Field; 1] = [Field {
+                name: "Public Address",
+                value: public_address_hex_str.as_str(),
+            }];
+            ui_review(title, "", finish_title, &fields, true)
+        }
+        1 => {
+            let data_slice = data.as_slice();
+            let mut view_key_hex_str = hex::encode(data_slice[0..64].as_ref());
+            view_key_hex_str.insert_str(0, "0x");
+            let mut ivk_hex_str = hex::encode(data_slice[64..96].as_ref());
+            ivk_hex_str.insert_str(0, "0x");
+            let mut ovk_hex_str = hex::encode(data_slice[96..128].as_ref());
+            ovk_hex_str.insert_str(0, "0x");
+
+            let fields: [Field; 3] = [
+                Field {
+                    name: "ViewKey",
+                    value: view_key_hex_str.as_str(),
+                },
+                Field {
+                    name: "IVK",
+                    value: ivk_hex_str.as_str(),
+                },
+                Field {
+                    name: "OVK",
+                    value: ovk_hex_str.as_str(),
+                },
+            ];
+            ui_review(title, "", finish_title, &fields, true)
+        }
+        2 => {
+            let data_slice = data.as_slice();
+            let mut auth_key_hex_str = hex::encode(data_slice[0..32].as_ref());
+            auth_key_hex_str.insert_str(0, "0x");
+            let mut proof_auth_key_hex_str = hex::encode(data_slice[32..64].as_ref());
+            proof_auth_key_hex_str.insert_str(0, "0x");
+
+            let fields: [Field; 2] = [
+                Field {
+                    name: "AuthKey",
+                    value: auth_key_hex_str.as_str(),
+                },
+                Field {
+                    name: "ProofAuthKey",
+                    value: proof_auth_key_hex_str.as_str(),
+                },
+            ];
+            ui_review(title, "", finish_title, &fields, true)
+        }
+        _ => Err(AppSW::InvalidKeyType),
+    }
+}
+
+#[inline(never)]
+pub fn ui_review_get_current_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
+    zlog_stack("s review_current_identity\0");
+    app_canary();
+
+    let i_index_str = int_to_str(i_index);
+    let fields: [Field; 1] = [Field {
+        name: "Identity Num.",
+        value: i_index_str.as_str(),
+    }];
+
+    app_canary();
+    ui_review(
+        "Get Current",
+        "Identity",
+        "Accept operation?",
+        &fields,
+        true,
+    )
+}
+
+#[inline(never)]
 pub fn ui_review_dkg_round1<'a>(
     i_index: u8,
     min_signers: u8,
@@ -271,10 +358,35 @@ pub fn ui_review_dkg_round3<'a>(
 }
 
 #[inline(never)]
-pub fn ui_review_restore_keys<'a>() -> Result<bool, AppSW> {
-    let review_message = &["Restore Keys", ""];
+pub fn ui_review_restore_keys<'a>(
+    public_address: Vec<u8>,
+    participants: u8,
+    min_signers: u8,
+) -> Result<bool, AppSW> {
+    zlog_stack("s review_restore_keys\0");
+    app_canary();
 
-    ui_run_action(review_message)
+    let participants_str = int_to_str(participants);
+    let min_signers_str = int_to_str(min_signers);
+    let mut public_address_hex_str = hex::encode(public_address);
+    public_address_hex_str.insert_str(0, "0x");
+
+    let fields: [Field; 3] = [
+        Field {
+            name: "Public Address",
+            value: public_address_hex_str.as_str(),
+        },
+        Field {
+            name: "Participants",
+            value: participants_str.as_str(),
+        },
+        Field {
+            name: "Min. Signers",
+            value: min_signers_str.as_str(),
+        },
+    ];
+
+    ui_review("Restore Keys", "", "Accept operation?", &fields, true)
 }
 
 #[inline(never)]

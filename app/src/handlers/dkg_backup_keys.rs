@@ -18,7 +18,7 @@ use crate::app_ui::run_action::ui_review_backup_keys;
 use crate::bolos::zlog;
 use crate::context::TxContext;
 use crate::crypto::chacha20poly::{compute_key, encrypt};
-use crate::crypto::{get_dkg_keys, multisig_to_key_type};
+use crate::crypto::{derive_multisig_account, multisig_to_key_type};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::utils::response::save_result;
 use crate::AppSW;
@@ -28,7 +28,7 @@ use ledger_device_sdk::io::Comm;
 pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {
     zlog("start handler_dkg_backup_keys\0");
 
-    let account_keys = get_dkg_keys()?;
+    let account_keys = derive_multisig_account(None)?;
     let public_address = multisig_to_key_type(&account_keys, 0u8)?;
     drop(account_keys);
 
@@ -42,7 +42,7 @@ pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(
     let data = DkgKeys.backup_keys()?;
     let key = compute_key();
 
-    let resp = encrypt(&key, data)?;
+    let resp = encrypt(&key, data.as_slice().as_ref())?;
 
     let total_chunks = save_result(ctx, resp.as_slice())?;
     comm.append(&total_chunks);

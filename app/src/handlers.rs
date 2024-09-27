@@ -3,6 +3,7 @@ use ledger_device_sdk::io::Comm;
 
 mod dkg_backup_keys;
 mod dkg_commitments;
+mod dkg_get_identitites;
 mod dkg_get_identity;
 mod dkg_get_keys;
 mod dkg_get_public_package;
@@ -19,6 +20,7 @@ use crate::nvm::buffer::BufferMode;
 use crate::nvm::get_and_clear_tx_hash;
 use dkg_backup_keys::handler_dkg_backup_keys;
 use dkg_commitments::handler_dkg_commitments;
+use dkg_get_identitites::handler_dkg_get_identities;
 use dkg_get_identity::handler_dkg_get_identity;
 use dkg_get_keys::handler_dkg_get_keys;
 use dkg_get_public_package::handler_dkg_get_public_package;
@@ -64,11 +66,14 @@ pub fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> R
         Instruction::DkgRound3Min { chunk } => handler_dkg_round_3_min(comm, *chunk, ctx),
         Instruction::DkgCommitments { chunk } => handler_dkg_commitments(comm, *chunk, ctx),
         Instruction::DkgSign { chunk } => handler_dkg_sign(comm, *chunk, ctx),
-        Instruction::DkgGetKeys { key_type } => handler_dkg_get_keys(comm, *key_type, ctx),
+        Instruction::DkgGetKeys { key_type, review } => {
+            handler_dkg_get_keys(comm, *review, *key_type)
+        }
         Instruction::DkgGetPublicPackage => handler_dkg_get_public_package(comm, ctx),
         Instruction::DkgBackupKeys => handler_dkg_backup_keys(comm, ctx),
         Instruction::DkgRestoreKeys { chunk } => handler_dkg_restore_keys(comm, *chunk, ctx),
         Instruction::GetResult { chunk } => handler_get_result(comm, ctx, *chunk),
         Instruction::ReviewTx { chunk } => handler_review_tx(comm, *chunk, ctx),
+        Instruction::DkgGetIdentities => handler_dkg_get_identities(comm, ctx),
     }
 }
