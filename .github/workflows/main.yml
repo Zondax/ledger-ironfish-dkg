@@ -18,18 +18,12 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl protobuf-compiler build-essential git wget unzip python3 python3-pip \
-            libssl-dev libffi-dev libreadline-dev zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
-            libgdbm-dev libnss3-dev liblzma-dev libxml2-dev libxmlsec1-dev libffi-dev libyaml-dev \
-            clang gcc-arm-none-eabi gcc-multilib llvm-dev llvm jq libc6-dev
+          sudo apt-get install -y curl build-essential git wget unzip
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly-2023-11-10
           components: rust-src
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -39,25 +33,18 @@ jobs:
         with:
           node-version: 18
       - name: Install yarn
-        run: |
-          npm install -g yarn
-      - name: Install ledger deps
-        run: |
-          cargo install cargo-ledger
-          cargo ledger setup
-          pip install ledgerwallet
+        run: npm install -g yarn
+      - name: Run rust tests
+        run: make rust_tests
       - name: Build app
         run: |
           export PATH=/home/runner/.local/bin:$PATH
+          sudo rm -rf app/target
           make all
       - name: Install zemu deps
         run: make zemu_install
       - name: Run tests
         run: make zemu_test
-      - name: Run rust tests
-        run: |
-          rm -rf app/target
-          make rust_tests
 
   build_package_nanosp:
     needs: [configure, build_and_test]
