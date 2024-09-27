@@ -5,6 +5,7 @@
 use crate::AppSW;
 use core::ops::{Deref, DerefMut};
 use core::ptr;
+use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
 use ironfish_frost::frost::keys::KeyPackage;
 use ironfish_frost::participant::Secret as IronfishSecret;
 
@@ -82,6 +83,45 @@ impl Deref for IronfishSecretGuard {
 }
 
 impl DerefMut for IronfishSecretGuard {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.secret
+    }
+}
+
+/////////
+/////////
+/////////
+
+pub struct GroupSecretKeyGuard {
+    secret: GroupSecretKey,
+}
+
+impl GroupSecretKeyGuard {
+    pub fn from_raw(data: &[u8]) -> Result<Self, AppSW> {
+        let secret = <&[u8; GROUP_SECRET_KEY_LEN]>::try_from(data)
+            .map_err(|_| AppSW::InvalidGroupSecretKey)?;
+
+        Ok(GroupSecretKeyGuard { secret: *secret })
+    }
+}
+
+impl Drop for GroupSecretKeyGuard {
+    fn drop(&mut self) {
+        unsafe {
+            ptr::write_bytes(&mut self.secret as *mut GroupSecretKey, 0, 1);
+        }
+    }
+}
+
+impl Deref for GroupSecretKeyGuard {
+    type Target = GroupSecretKey;
+
+    fn deref(&self) -> &Self::Target {
+        &self.secret
+    }
+}
+
+impl DerefMut for GroupSecretKeyGuard {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.secret
     }
