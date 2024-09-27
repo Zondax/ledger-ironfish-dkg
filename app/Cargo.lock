@@ -841,7 +841,7 @@ dependencies = [
 [[package]]
 name = "include_gif"
 version = "1.2.0"
-source = "git+https://github.com/Zondax/ledger-device-rust-sdk?rev=04d487441b806506bf0bb16a87e2aa378d956c2b#04d487441b806506bf0bb16a87e2aa378d956c2b"
+source = "git+https://github.com/Zondax/ledger-device-rust-sdk?rev=b35720546c1ff20e347c7cb31047aa486e8ff877#b35720546c1ff20e347c7cb31047aa486e8ff877"
 dependencies = [
  "flate2",
  "image",
@@ -978,11 +978,11 @@ dependencies = [
 
 [[package]]
 name = "ledger_device_sdk"
-version = "1.15.0"
-source = "git+https://github.com/Zondax/ledger-device-rust-sdk?rev=04d487441b806506bf0bb16a87e2aa378d956c2b#04d487441b806506bf0bb16a87e2aa378d956c2b"
+version = "1.17.0"
+source = "git+https://github.com/Zondax/ledger-device-rust-sdk?rev=b35720546c1ff20e347c7cb31047aa486e8ff877#b35720546c1ff20e347c7cb31047aa486e8ff877"
 dependencies = [
  "const-zero",
- "include_gif 1.2.0 (git+https://github.com/Zondax/ledger-device-rust-sdk?rev=04d487441b806506bf0bb16a87e2aa378d956c2b)",
+ "include_gif 1.2.0 (git+https://github.com/Zondax/ledger-device-rust-sdk?rev=b35720546c1ff20e347c7cb31047aa486e8ff877)",
  "ledger_secure_sdk_sys",
  "num-traits",
  "numtoa",
@@ -992,8 +992,8 @@ dependencies = [
 
 [[package]]
 name = "ledger_secure_sdk_sys"
-version = "1.4.4"
-source = "git+https://github.com/Zondax/ledger-device-rust-sdk?rev=04d487441b806506bf0bb16a87e2aa378d956c2b#04d487441b806506bf0bb16a87e2aa378d956c2b"
+version = "1.5.0"
+source = "git+https://github.com/Zondax/ledger-device-rust-sdk?rev=b35720546c1ff20e347c7cb31047aa486e8ff877#b35720546c1ff20e347c7cb31047aa486e8ff877"
 dependencies = [
  "bindgen",
  "cc",

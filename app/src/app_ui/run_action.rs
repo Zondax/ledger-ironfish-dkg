@@ -425,9 +425,10 @@ pub fn ui_review<'a>(
 
         let mut review = NbglReview::new()
             .tx_type(TransactionType::Operation)
+            .light()
             .titles(title, _subtitle, _finish_title)
             .glyph(&ICON);
 
-        Ok(review.show(&fields, true))
+        Ok(review.show(&fields))
     }
 }
