@@ -276,7 +276,7 @@ impl DkgKeys {
     }
 
     #[inline(never)]
-    pub fn load_key_package(&mut self) -> Result<KeyPackage, AppSW> {
+    pub fn load_key_package(&mut self) -> Result<KeyPackageGuard, AppSW> {
         let buffer_ref: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
 
         DkgKeysReader::load_key_package(&buffer_ref)
