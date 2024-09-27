@@ -50,12 +50,14 @@ jobs:
         run: |
           export PATH=/home/runner/.local/bin:$PATH
           make all
-      - name: Run rust tests
-        run: make rust_tests
       - name: Install zemu deps
         run: make zemu_install
       - name: Run tests
         run: make zemu_test
+      - name: Run rust tests
+        run: |
+          rm -rf app/target
+          make rust_tests
 
   build_package_nanosp:
     needs: [configure, build_and_test]
