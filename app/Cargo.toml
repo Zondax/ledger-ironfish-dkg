@@ -9,7 +9,7 @@ test = false
 path = "bin-app/app.rs"
 
 [dependencies]
-ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "5f30ab03747a52ecc84fcf85e9e12c6bf0cf583b", optional = true }
+ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "9408c1ffc278a363e1903b4cc0b765a31c4eeace", optional = true }
 # ledger_device_sdk = { version="1.14.0" , optional = true}
 # ledger_device_sdk = { path="../../ledger-device-rust-sdk/ledger_device_sdk" , optional = true}
 include_gif = "1.2.0"
