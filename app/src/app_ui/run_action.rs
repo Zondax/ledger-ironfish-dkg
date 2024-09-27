@@ -92,7 +92,7 @@ pub fn ui_review_transaction<'a>(
             .titles("Review", "Transaction", "Approve Transaction?")
             .glyph(&FERRIS);
 
-        Ok(review.show(&fields, false))
+        Ok(review.show(&fields))
     }
 }
 
