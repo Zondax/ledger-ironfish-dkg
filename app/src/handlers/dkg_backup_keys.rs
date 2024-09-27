@@ -42,7 +42,7 @@ pub fn handler_dkg_backup_keys(comm: &mut Comm, ctx: &mut TxContext) -> Result<(
     let data = DkgKeys.backup_keys()?;
     let key = compute_key();
 
-    let resp = encrypt(&key, data)?;
+    let resp = encrypt(&key, data.as_slice().as_ref())?;
 
     let total_chunks = save_result(ctx, resp.as_slice())?;
     comm.append(&total_chunks);

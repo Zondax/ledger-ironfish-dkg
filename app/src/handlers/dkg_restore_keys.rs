@@ -57,14 +57,12 @@ pub fn handler_dkg_restore_keys(
 
 #[inline(never)]
 fn review_restore_keys(data: &[u8]) -> Result<(), AppSW> {
-    let dkg_keys_reader = DkgKeysReader::new(data);
-
-    let account_keys = derive_multisig_account(Some(&dkg_keys_reader))?;
+    let account_keys = derive_multisig_account(Some(data))?;
     let public_address = multisig_to_key_type(&account_keys, 0u8)?;
     drop(account_keys);
 
-    let min_signers = dkg_keys_reader.load_min_signers()?;
-    let participants = dkg_keys_reader.load_identities()?.len();
+    let min_signers = DkgKeysReader::load_min_signers(data)?;
+    let participants = DkgKeysReader::load_identities(data)?.len();
 
     if !ui_review_restore_keys(public_address, participants as u8, min_signers as u8)? {
         return Err(AppSW::Deny);
