@@ -25,44 +25,12 @@ use ledger_device_sdk::ui::{
 };
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
-use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, TransactionType};
+use ledger_device_sdk::nbgl::{Field, NbglGlyph, NbglReview, TransactionType};
 
 use crate::bolos::app_canary;
 use crate::utils::int_to_str;
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use include_gif::include_gif;
-
-#[inline(never)]
-pub fn ui_run_action<'a>(review_message: &'a [&'a str]) -> Result<bool, AppSW> {
-    #[cfg(not(any(target_os = "stax", target_os = "flex")))]
-    {
-        let fields: [Field; 0] = [];
-
-        let my_review = MultiFieldReview::new(
-            &fields,
-            review_message,
-            Some(&EYE),
-            "Approve",
-            Some(&VALIDATE_14),
-            "Reject",
-            Some(&CROSSMARK),
-        );
-
-        Ok(my_review.show())
-    }
-
-    #[cfg(any(target_os = "stax", target_os = "flex"))]
-    {
-        #[cfg(target_os = "stax")]
-        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
-        #[cfg(target_os = "flex")]
-        const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
-
-        Ok(NbglChoice::new()
-            .glyph(&FERRIS)
-            .show(review_message[0], "", "Approve", "Reject"))
-    }
-}
 
 #[inline(never)]
 pub fn ui_review_transaction<'a>(
@@ -124,7 +92,7 @@ pub fn ui_review_transaction<'a>(
             .titles("Review", "Transaction", "Approve Transaction?")
             .glyph(&FERRIS);
 
-        Ok(review.show(&fields, false))
+        Ok(review.show(&fields))
     }
 }
 
@@ -425,9 +393,10 @@ pub fn ui_review<'a>(
 
         let mut review = NbglReview::new()
             .tx_type(TransactionType::Operation)
+            .light()
             .titles(title, _subtitle, _finish_title)
             .glyph(&ICON);
 
-        Ok(review.show(&fields, true))
+        Ok(review.show(&fields))
     }
 }
