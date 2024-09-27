@@ -407,7 +407,7 @@ describe.each(models)('DKG', function (m) {
           })
 
           signatures.push(
-            multisig.SignatureShare.fromFrost(result.signature, Buffer.from(identities[i], 'hex')).frostSignatureShare().toString('hex'),
+            multisig.SignatureShare.fromFrost(result.signature, Buffer.from(identities[i], 'hex')).serialize().toString('hex'),
           )
         }
 
@@ -635,7 +635,7 @@ describe.each(models)('DKG', function (m) {
           })
 
           signatures.push(
-            multisig.SignatureShare.fromFrost(result.signature, Buffer.from(identities[i], 'hex')).frostSignatureShare().toString('hex'),
+            multisig.SignatureShare.fromFrost(result.signature, Buffer.from(identities[i], 'hex')).serialize().toString('hex'),
           )
         }
 
@@ -652,7 +652,7 @@ describe.each(models)('DKG', function (m) {
           ).rejects.toThrow()
         }
 
-        let signedTxRaw = aggregateSignatureShares(publicPackages[0], signingPackage.frostSigningPackage().toString('hex'), signatures)
+        let signedTxRaw = aggregateSignatureShares(publicPackages[0], signingPackageHex, signatures)
         expect(verifyTransactions([signedTxRaw])).toBeTruthy()
 
         const signedTx = new Transaction(signedTxRaw)
