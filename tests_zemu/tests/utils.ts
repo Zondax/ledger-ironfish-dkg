@@ -1,8 +1,8 @@
-import { Asset, LATEST_TRANSACTION_VERSION, Note, Transaction, makeTestWitness } from '@ironfish/rust-nodejs'
+import { Asset, LATEST_TRANSACTION_VERSION, Note, Transaction } from '@ironfish/rust-nodejs'
 import { deserializePublicPackage, deserializeRound2CombinedPublicPackage } from '@ironfish/rust-nodejs'
+import { devUtils } from '@ironfish/sdk'
 
 export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any) => {
-  console.log('here')
   // create raw/proposed transaction
   let in_note = new Note(publicAddress, BigInt(42), Buffer.from(''), Asset.nativeId(), publicAddress)
   let out_note = new Note(publicAddress, BigInt(40), Buffer.from(''), Asset.nativeId(), publicAddress)
@@ -11,7 +11,7 @@ export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any) => 
   let value = BigInt(5)
   let mint_out_note = new Note(publicAddress, value, Buffer.from(''), asset.id(), publicAddress)
 
-  let witness = makeTestWitness(in_note)
+  let witness = devUtils.makeFakeWitness(in_note)
 
   let transaction = new Transaction(LATEST_TRANSACTION_VERSION)
   transaction.spendNative(in_note, witness)
