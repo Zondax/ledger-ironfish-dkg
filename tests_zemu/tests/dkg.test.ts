@@ -411,7 +411,7 @@ describe.each(models)('DKG', function (m) {
           )
         }
 
-        let signedTxRaw = aggregateSignatureShares(publicPackages[0], signingPackage.frostSigningPackage().toString('hex'), signatures)
+        let signedTxRaw = aggregateSignatureShares(publicPackages[0], signingPackageHex, signatures)
         expect(verifyTransactions([signedTxRaw])).toBeTruthy()
 
         const signedTx = new Transaction(signedTxRaw)
