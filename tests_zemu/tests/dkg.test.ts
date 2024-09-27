@@ -615,7 +615,11 @@ describe.each(models)('DKG', function (m) {
             return result
           })
 
-          commitments.push(multisig.SigningCommitment.fromRaw(identities[i], result.commitments, unsignedTx.hash(), identities))
+          commitments.push(
+            multisig.SigningCommitment.fromRaw(identities[i], result.commitments, unsignedTx.hash(), identities)
+              .serialize()
+              .toString('hex'),
+          )
         }
 
         const signingPackageHex = unsignedTx.signingPackage(commitments)
