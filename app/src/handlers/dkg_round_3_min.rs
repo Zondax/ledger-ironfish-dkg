@@ -24,6 +24,7 @@ use crate::nvm::buffer::Buffer;
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::AppSW;
 use alloc::vec::Vec;
+use core::ptr;
 use ironfish_frost::dkg;
 use ironfish_frost::dkg::group_key::GroupSecretKey;
 use ironfish_frost::error::IronfishFrostError;
@@ -68,11 +69,19 @@ pub fn handler_dkg_round_3_min(
         return Err(AppSW::Deny);
     }
 
-    let (key_package, public_key_package, group_secret_key) =
+    let (mut key_package, public_key_package, mut group_secret_key) =
         compute_dkg_round_3_min(&min_tx).map_err(|_| AppSW::DkgRound3Fail)?;
     drop(min_tx);
 
-    DkgKeys.save_keys(key_package, public_key_package, group_secret_key)
+    DkgKeys.save_keys(&key_package, public_key_package, &group_secret_key)?;
+
+    // Zero out memory for the response data
+    unsafe {
+        ptr::write_bytes(&mut group_secret_key as *mut GroupSecretKey, 0, 1);
+        ptr::write_bytes(&mut key_package as *mut KeyPackage, 0, 1);
+    }
+
+    Ok(())
 }
 
 #[inline(never)]

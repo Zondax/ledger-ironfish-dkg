@@ -207,9 +207,9 @@ impl DkgKeys {
     #[inline(never)]
     pub fn save_keys(
         &mut self,
-        key_package: KeyPackage,
+        key_package: &KeyPackage,
         public_key_package: FrostPublicKeyPackage,
-        group_secret_key: GroupSecretKey,
+        group_secret_key: &GroupSecretKey,
     ) -> Result<(), AppSW> {
         zlog_stack("start save_keys\0");
 
