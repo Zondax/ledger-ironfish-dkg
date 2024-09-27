@@ -14,7 +14,7 @@ export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any) => 
   let witness = devUtils.makeFakeWitness(in_note)
 
   let transaction = new Transaction(LATEST_TRANSACTION_VERSION)
-  transaction.spendNative(in_note, witness)
+  transaction.spend(in_note, witness)
   transaction.output(out_note)
   transaction.mint(asset, value)
   transaction.output(mint_out_note)
