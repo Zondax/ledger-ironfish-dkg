@@ -568,10 +568,10 @@ describe.each(models)('DKG', function (m) {
           return result.publicAddress.toString('hex')
         })
 
-        let publicPackages = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+        let publicPackage = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
           let result = await app.dkgGetPublicPackage()
 
-          return result.publicPackage
+          return result.publicPackage.toString('hex')
         })
 
         for (let i = 0; i < participants; i++) {
@@ -656,7 +656,7 @@ describe.each(models)('DKG', function (m) {
           ).rejects.toThrow()
         }
 
-        let signedTxRaw = aggregateSignatureShares(publicPackages[0], signingPackageHex, signatures)
+        let signedTxRaw = aggregateSignatureShares(publicPackage, signingPackageHex, signatures)
         expect(verifyTransactions([signedTxRaw])).toBeTruthy()
 
         const signedTx = new Transaction(signedTxRaw)
