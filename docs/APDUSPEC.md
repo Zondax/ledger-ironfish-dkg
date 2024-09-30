@@ -196,13 +196,13 @@ All other packets/chunks contain data chunks that are described below
 
 ##### Other Chunks/Packets
 
-| Field                       | Type     | Content         | Expected |
-| --------------------------- | -------- | --------------- | -------- |
-| FrostSigningPackage Len     | bytes... | Message to Sign |          |
-| FrostSigningPackage Content | bytes... | Message to Sign |          |
-| Tx Randomizer Len           | bytes... | Message to Sign |          |
-| Tx Randomizer Content       | bytes... | Message to Sign |          |
-| Tx Hash                     | bytes... | Message to Sign |          |
+| Field                       | Type      | Content                               | Expected |
+| --------------------------- | --------- | ------------------------------------- | -------- |
+| TxRandomizer Len            | byte (2)  | Tx randomizer value len (u16 be)      |          |
+| TxRandomizer Content        | bytes...  | Tx randomizer value                   |          |
+| FrostSigningPackage Len     | byte (2)  | Tx frost signing package len (u16 be) |          |
+| FrostSigningPackage Content | bytes...  | Tx frost signing package              |          |
+| Tx Hash                     | byte (32) | Tx Hash                               |          |
 
 #### Response
 
@@ -210,3 +210,371 @@ All other packets/chunks contain data chunks that are described below
 | ------- | -------- | ------------------------------ | ------------------------ |
 | CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
 | SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+### INS_DKG_ROUND_1
+
+#### Command
+
+| Field | Type     | Content                | Expected  |
+| ----- | -------- | ---------------------- | --------- |
+| CLA   | byte (1) | Application Identifier | 0x63      |
+| INS   | byte (1) | Instruction ID         | 0x11      |
+| P1    | byte (1) | Payload desc           | 0 = init  |
+|       |          |                        | 1 = add   |
+|       |          |                        | 2 = last  |
+| P2    | byte (1) | ----                   | not used  |
+| L     | byte (1) | Bytes in payload       | (depends) |
+
+The first packet/chunk includes only the derivation path
+
+All other packets/chunks contain data chunks that are described below
+
+##### First Packet
+
+| Field   | Type     | Content              | Expected |
+| ------- | -------- | -------------------- | -------- |
+| Path[0] | byte (4) | Derivation Path Data | 44       |
+| Path[1] | byte (4) | Derivation Path Data | 434      |
+| Path[2] | byte (4) | Derivation Path Data | ?        |
+| Path[3] | byte (4) | Derivation Path Data | ?        |
+| Path[4] | byte (4) | Derivation Path Data | ?        |
+
+##### Other Chunks/Packets
+
+| Field               | Type     | Content                                    | Expected |
+| ------------------- | -------- | ------------------------------------------ | -------- |
+| Identity Index      | byte (1) | DKG Identities Index to derive secret from |          |
+| Identities Elements | byte (1) | Identities qty (u8)                        |          |
+| Identities          | bytes... | Identities involved on the DKG process     |          |
+| Min Signers         | byte (1) | Minimum signers for the DKG process        |          |
+
+#### Response
+
+| Field   | Type     | Content                        | Note                     |
+| ------- | -------- | ------------------------------ | ------------------------ |
+| CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
+| SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+### INS_DKG_ROUND_2
+
+#### Command
+
+| Field | Type     | Content                | Expected  |
+| ----- | -------- | ---------------------- | --------- |
+| CLA   | byte (1) | Application Identifier | 0x63      |
+| INS   | byte (1) | Instruction ID         | 0x12      |
+| P1    | byte (1) | Payload desc           | 0 = init  |
+|       |          |                        | 1 = add   |
+|       |          |                        | 2 = last  |
+| P2    | byte (1) | ----                   | not used  |
+| L     | byte (1) | Bytes in payload       | (depends) |
+
+The first packet/chunk includes only the derivation path
+
+All other packets/chunks contain data chunks that are described below
+
+##### First Packet
+
+| Field   | Type     | Content              | Expected |
+| ------- | -------- | -------------------- | -------- |
+| Path[0] | byte (4) | Derivation Path Data | 44       |
+| Path[1] | byte (4) | Derivation Path Data | 434      |
+| Path[2] | byte (4) | Derivation Path Data | ?        |
+| Path[3] | byte (4) | Derivation Path Data | ?        |
+| Path[4] | byte (4) | Derivation Path Data | ?        |
+
+##### Other Chunks/Packets
+
+| Field                      | Type     | Content                                                 | Expected  |
+| -------------------------- | -------- | ------------------------------------------------------- | --------- |
+| Identity Index             | byte (1) | DKG Identities Index to derive secret from              | (depends) |
+| Round 1 PP Qty             | byte (1) | Qty of round 1 public packages (u8)                     | (depends) |
+| Round 1 Package Len        | byte (1) | Length of each public package                           | (depends) |
+| Round 1 Packages           | bytes... | Round 1 public package from participants (concatenated) | (depends) |
+| Round 1 Secret Package Len | byte (1) | Length of the secret package                            | (depends) |
+| Round 1 Secret Package     | bytes... | Secret pakcage generated on round 1                     | (depends) |
+
+#### Response
+
+| Field   | Type     | Content                        | Note                     |
+| ------- | -------- | ------------------------------ | ------------------------ |
+| CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
+| SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+### INS_DKG_ROUND_3
+
+#### Command
+
+| Field | Type     | Content                | Expected  |
+| ----- | -------- | ---------------------- | --------- |
+| CLA   | byte (1) | Application Identifier | 0x63      |
+| INS   | byte (1) | Instruction ID         | 0x15      |
+| P1    | byte (1) | Payload desc           | 0 = init  |
+|       |          |                        | 1 = add   |
+|       |          |                        | 2 = last  |
+| P2    | byte (1) | ----                   | not used  |
+| L     | byte (1) | Bytes in payload       | (depends) |
+
+The first packet/chunk includes only the derivation path
+
+All other packets/chunks contain data chunks that are described below
+
+##### First Packet
+
+| Field   | Type     | Content              | Expected |
+| ------- | -------- | -------------------- | -------- |
+| Path[0] | byte (4) | Derivation Path Data | 44       |
+| Path[1] | byte (4) | Derivation Path Data | 434      |
+| Path[2] | byte (4) | Derivation Path Data | ?        |
+| Path[3] | byte (4) | Derivation Path Data | ?        |
+| Path[4] | byte (4) | Derivation Path Data | ?        |
+
+##### Other Chunks/Packets
+
+| Field                      | Type     | Content                                                 | Expected  |
+| -------------------------- | -------- | ------------------------------------------------------- | --------- |
+| Identity Index             | byte (1) | DKG Identities Index to derive secret from              | (depends) |
+| Round 1 PP Qty             | byte (1) | Qty of round 1 public packages (u8)                     | (depends) |
+| Round 1 Package Len        | byte (1) | Length of each public package                           | (depends) |
+| Round 1 Packages           | bytes... | Round 1 public package from participants (concatenated) | (depends) |
+| Round 2 PP Qty             | byte (1) | Qty of round 2 public packages (u8)                     | (depends) |
+| Round 2 Package Len        | byte (1) | Length of each public package                           | (depends) |
+| Round 2 Packages           | bytes... | Round 2 public package from participants (concatenated) | (depends) |
+| Round 2 Secret Package Len | byte (1) | Length of the secret package                            | (depends) |
+| Round 2 Secret Package     | bytes... | Secret pakcage generated on round 2                     | (depends) |
+| Identities Qty             | byte (1) | Identities qty (u8)                                     | (depends) |
+| Identities                 | bytes... | Identities involved on the DKG process                  | (depends) |
+| GSK Qty                    | byte (1) | Qty of group shared keys (u8)                           | (depends) |
+| GSK Len                    | byte (1) | Length of each group shared keys                        | (depends) |
+| GSK                        | bytes... | Group shared keys from participants (concatenated)      | (depends) |
+
+#### Response
+
+| Field   | Type     | Content                        | Note                     |
+| ------- | -------- | ------------------------------ | ------------------------ |
+| CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
+| SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+### INS_DKG_COMMITMETS
+
+#### Command
+
+| Field | Type     | Content                | Expected  |
+| ----- | -------- | ---------------------- | --------- |
+| CLA   | byte (1) | Application Identifier | 0x63      |
+| INS   | byte (1) | Instruction ID         | 0x14      |
+| P1    | byte (1) | Payload desc           | 0 = init  |
+|       |          |                        | 1 = add   |
+|       |          |                        | 2 = last  |
+| P2    | byte (1) | ----                   | not used  |
+| L     | byte (1) | Bytes in payload       | (depends) |
+
+The first packet/chunk includes only the derivation path
+
+All other packets/chunks contain data chunks that are described below
+
+##### First Packet
+
+| Field   | Type     | Content              | Expected |
+| ------- | -------- | -------------------- | -------- |
+| Path[0] | byte (4) | Derivation Path Data | 44       |
+| Path[1] | byte (4) | Derivation Path Data | 434      |
+| Path[2] | byte (4) | Derivation Path Data | ?        |
+| Path[3] | byte (4) | Derivation Path Data | ?        |
+| Path[4] | byte (4) | Derivation Path Data | ?        |
+
+##### Other Chunks/Packets
+
+| Field   | Type      | Content                            | Expected  |
+| ------- | --------- | ---------------------------------- | --------- |
+| Tx Hash | byte (32) | Tx hash to calculated commitmet to | (depends) |
+
+#### Response
+
+| Field   | Type     | Content                        | Note                     |
+| ------- | -------- | ------------------------------ | ------------------------ |
+| CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
+| SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+### INS_DKG_GET_IDENTITIES
+
+#### Command
+
+| Field | Type     | Content                | Expected |
+| ----- | -------- | ---------------------- | -------- |
+| CLA   | byte (1) | Application Identifier | 0x63     |
+| INS   | byte (1) | Instruction ID         | 0x17     |
+| P1    | byte (1) | Parameter 1            | ignored  |
+| P2    | byte (1) | Parameter 2            | ignored  |
+| L     | byte (1) | Bytes in payload       | 0        |
+
+#### Response
+
+| Field   | Type     | Content                        | Note                     |
+| ------- | -------- | ------------------------------ | ------------------------ |
+| CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
+| SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+### INS_DKG_GET_PUBLIC_PACKAGE
+
+#### Command
+
+| Field | Type     | Content                | Expected |
+| ----- | -------- | ---------------------- | -------- |
+| CLA   | byte (1) | Application Identifier | 0x63     |
+| INS   | byte (1) | Instruction ID         | 0x18     |
+| P1    | byte (1) | Parameter 1            | ignored  |
+| P2    | byte (1) | Parameter 2            | ignored  |
+| L     | byte (1) | Bytes in payload       | 0        |
+
+#### Response
+
+| Field   | Type     | Content                        | Note                     |
+| ------- | -------- | ------------------------------ | ------------------------ |
+| CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
+| SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+---
+
+### INS_DKG_BACKUP_KEYS
+
+#### Command
+
+| Field | Type     | Content                | Expected |
+| ----- | -------- | ---------------------- | -------- |
+| CLA   | byte (1) | Application Identifier | 0x63     |
+| INS   | byte (1) | Instruction ID         | 0x19     |
+| P1    | byte (1) | Parameter 1            | ignored  |
+| P2    | byte (1) | Parameter 2            | ignored  |
+| L     | byte (1) | Bytes in payload       | 0        |
+
+#### Response
+
+| Field   | Type     | Content                        | Note                     |
+| ------- | -------- | ------------------------------ | ------------------------ |
+| CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
+| SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+### INS_DKG_RESTORE_KEYS
+
+#### Command
+
+| Field | Type     | Content                | Expected  |
+| ----- | -------- | ---------------------- | --------- |
+| CLA   | byte (1) | Application Identifier | 0x63      |
+| INS   | byte (1) | Instruction ID         | 0x1a      |
+| P1    | byte (1) | Payload desc           | 0 = init  |
+|       |          |                        | 1 = add   |
+|       |          |                        | 2 = last  |
+| P2    | byte (1) | ----                   | not used  |
+| L     | byte (1) | Bytes in payload       | (depends) |
+
+The first packet/chunk includes only the derivation path
+
+All other packets/chunks contain data chunks that are described below
+
+##### First Packet
+
+| Field   | Type     | Content              | Expected |
+| ------- | -------- | -------------------- | -------- |
+| Path[0] | byte (4) | Derivation Path Data | 44       |
+| Path[1] | byte (4) | Derivation Path Data | 434      |
+| Path[2] | byte (4) | Derivation Path Data | ?        |
+| Path[3] | byte (4) | Derivation Path Data | ?        |
+| Path[4] | byte (4) | Derivation Path Data | ?        |
+
+##### Other Chunks/Packets
+
+| Field            | Type     | Content                                 | Expected  |
+| ---------------- | -------- | --------------------------------------- | --------- |
+| Encrypted Backup | bytes... | Encrypted data from backup keys command | (depends) |
+
+#### Response
+
+| Field   | Type     | Content     | Note                     |
+| ------- | -------- | ----------- | ------------------------ |
+| SW1-SW2 | byte (2) | Return code | see list of return codes |
+
+---
+
+### INS_REVIEW_TX
+
+#### Command
+
+| Field | Type     | Content                | Expected  |
+| ----- | -------- | ---------------------- | --------- |
+| CLA   | byte (1) | Application Identifier | 0x63      |
+| INS   | byte (1) | Instruction ID         | 0x1c      |
+| P1    | byte (1) | Payload desc           | 0 = init  |
+|       |          |                        | 1 = add   |
+|       |          |                        | 2 = last  |
+| P2    | byte (1) | ----                   | not used  |
+| L     | byte (1) | Bytes in payload       | (depends) |
+
+The first packet/chunk includes only the derivation path
+
+All other packets/chunks contain data chunks that are described below
+
+##### First Packet
+
+| Field   | Type     | Content              | Expected |
+| ------- | -------- | -------------------- | -------- |
+| Path[0] | byte (4) | Derivation Path Data | 44       |
+| Path[1] | byte (4) | Derivation Path Data | 434      |
+| Path[2] | byte (4) | Derivation Path Data | ?        |
+| Path[3] | byte (4) | Derivation Path Data | ?        |
+| Path[4] | byte (4) | Derivation Path Data | ?        |
+
+##### Other Chunks/Packets
+
+| Field         | Type     | Content                    | Expected  |
+| ------------- | -------- | -------------------------- | --------- |
+| Serialized Tx | bytes... | Serialized tx to be signed | (depends) |
+
+#### Response
+
+| Field   | Type     | Content                        | Note                     |
+| ------- | -------- | ------------------------------ | ------------------------ |
+| CHUNKS  | byte (1) | Chunks of data to be retrieved |                          |
+| SW1-SW2 | byte (2) | Return code                    | see list of return codes |
+
+---
+
+### INS_GET_RESULT
+
+#### Command
+
+| Field | Type     | Content                | Expected |
+| ----- | -------- | ---------------------- | -------- |
+| CLA   | byte (1) | Application Identifier | 0x63     |
+| INS   | byte (1) | Instruction ID         | 0x1b     |
+| P1    | byte (1) | Chunk index to fetch   | 0..255   |
+| P2    | byte (1) | ----                   | not used |
+| L     | byte (0) | Bytes in payload       | not used |
+
+Some instructions save the result on flash once executed. The response on those cases is the amount of pages/chunks (data len / 253) to fetch. This command allows to fetch those pages/chunks.
+
+#### Response
+
+| Field   | Type     | Content                 | Note                     |
+| ------- | -------- | ----------------------- | ------------------------ |
+| CHUNK   | bytes... | Chunk of data retrieved |                          |
+| SW1-SW2 | byte (2) | Return code             | see list of return codes |
+
+---
