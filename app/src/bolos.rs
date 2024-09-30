@@ -31,9 +31,9 @@ pub fn zlog_stack(_buf: &str) {
     std::println!("{_buf}")
 }
 
-pub fn zlog_num(buf: &str, num: u32) {
+pub fn zlog_num(_buf: &str, _num: u32) {
     #[cfg(feature = "ledger-debug")]
     unsafe {
-        zemu_log_num(buf.as_bytes().as_ptr(), num)
+        zemu_log_num(_buf.as_bytes().as_ptr(), _num)
     }
 }
