@@ -1,4 +1,4 @@
-#[cfg(feature = "ledger")]
+#[cfg(feature = "ledger-debug")]
 extern "C" {
     fn check_app_canary();
     fn zemu_log_stack(ctx: *const u8);
@@ -7,14 +7,14 @@ extern "C" {
 }
 
 pub fn app_canary() {
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger-debug")]
     unsafe {
         check_app_canary()
     }
 }
 
 pub fn zlog(_buf: &str) {
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger-debug")]
     unsafe {
         zemu_log(_buf.as_bytes().as_ptr())
     }
@@ -23,7 +23,7 @@ pub fn zlog(_buf: &str) {
 }
 
 pub fn zlog_stack(_buf: &str) {
-    #[cfg(feature = "ledger")]
+    #[cfg(feature = "ledger-debug")]
     unsafe {
         zemu_log_stack(_buf.as_bytes().as_ptr())
     }
@@ -31,9 +31,9 @@ pub fn zlog_stack(_buf: &str) {
     std::println!("{_buf}")
 }
 
-pub fn zlog_num(buf: &str, num: u32) {
-    #[cfg(feature = "ledger")]
+pub fn zlog_num(_buf: &str, _num: u32) {
+    #[cfg(feature = "ledger-debug")]
     unsafe {
-        zemu_log_num(buf.as_bytes().as_ptr(), num)
+        zemu_log_num(_buf.as_bytes().as_ptr(), _num)
     }
 }
