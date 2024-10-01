@@ -2,7 +2,9 @@ import { Asset, LATEST_TRANSACTION_VERSION, Note, Transaction } from '@ironfish/
 import { deserializePublicPackage, deserializeRound2CombinedPublicPackage } from '@ironfish/rust-nodejs'
 import { devUtils, Note as NoteSDK } from '@ironfish/sdk'
 import { TModel } from '@zondax/zemu/dist/types'
-import { DEFAULT_START_OPTIONS, isTouchDevice } from '@zondax/zemu'
+import Zemu, { ButtonKind, DEFAULT_START_OPTIONS, IDeviceModel, isTouchDevice } from '@zondax/zemu'
+import IronfishApp from '@zondax/ledger-ironfish'
+import { defaultOptions } from './common'
 
 export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any) => {
   // create raw/proposed transaction
@@ -65,5 +67,52 @@ export const minimizeRound3Inputs = (index: number, round1PublicPackages: string
   }
 }
 
+// Not sure about the start text for flex and stax, so we go with what it always work, which is the app name.
 // That is always displayed on the main menu
 export const startTextFn = (model: TModel) => (isTouchDevice(model) ? 'Ironfish DKG' : DEFAULT_START_OPTIONS.startText)
+
+export const checkSimRequired = (m: IDeviceModel, sims: Zemu[], i: number): { sim: Zemu; created: boolean } => {
+  let created = false
+  let sim: Zemu | undefined
+
+  if (!sims.length) {
+    sim = new Zemu(m.path)
+    created = true
+  } else if (sims.length === 1) {
+    sim = sims[0]
+  } else {
+    sim = sims[i]
+  }
+
+  if (!sim) throw new Error('sim should have a value here')
+  return { sim, created }
+}
+
+export const runMethod = async (
+  m: IDeviceModel,
+  rcvSims: Zemu[],
+  i: number,
+  fn: (sim: Zemu, app: IronfishApp) => Promise<any>,
+): Promise<any> => {
+  const { sim, created } = checkSimRequired(m, rcvSims, i)
+
+  try {
+    if (created)
+      await sim.start({
+        ...defaultOptions,
+        model: m.name,
+        startText: startTextFn(m.name),
+        approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+        approveAction: ButtonKind.ApproveTapButton,
+      })
+    const app = new IronfishApp(sim.getTransport(), true)
+    const resp = await fn(sim, app)
+
+    // Clean events from previous commands as each sim lives for many commands (DKG generation + signing)
+    await sim.deleteEvents()
+
+    return resp
+  } finally {
+    if (created) await sim.close()
+  }
+}
