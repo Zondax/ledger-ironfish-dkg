@@ -87,7 +87,7 @@ pub fn ui_review_transaction<'a>(
             .map(|(name, value)| Field { name, value })
             .collect();
 
-        let mut review = NbglReview::new()
+        let review = NbglReview::new()
             .tx_type(TransactionType::Transaction)
             .titles("Review", "Transaction", "Approve Transaction?")
             .glyph(&FERRIS);
