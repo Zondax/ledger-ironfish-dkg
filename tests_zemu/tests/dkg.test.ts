@@ -19,15 +19,13 @@ import { defaultOptions, identities, models, restoreKeysTestCases } from './comm
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions } from '@ironfish/rust-nodejs'
 import { Transaction } from '@ironfish/sdk'
-import { buildTx, minimizeRound3Inputs } from './utils'
+import { buildTx, minimizeRound3Inputs, startTextFn } from './utils'
 import { TModel } from '@zondax/zemu/dist/types'
 import aggregateSignatureShares = multisig.aggregateSignatureShares
 
 jest.setTimeout(4500000)
 
 // Not sure about the start text for flex and stax, so we go with what it always work, which is the app name.
-// That is always displayed on the main menu
-const startTextFn = (model: TModel) => (isTouchDevice(model) ? 'Ironfish DKG' : DEFAULT_START_OPTIONS.startText)
 
 // ONE_GLOBAL_APP: Use this flag if the whole DKG process will run in only one app (all participants, all rounds). This takes precedence over ONE_APP_PER_PARTICIPANT.
 // ONE_APP_PER_PARTICIPANT: Use this flag if the whole DKG process will run in one app per participant
@@ -943,30 +941,4 @@ describe.each(models)('DKG', function (m) {
     }
   })
   */
-
-  describe.each(identities)(`${m.name} - generate identities`, function ({ i, v }) {
-    test.concurrent(i + '', async function () {
-      const sim = new Zemu(m.path)
-      try {
-        await sim.start({
-          ...defaultOptions,
-          model: m.name,
-          startText: startTextFn(m.name),
-          approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
-          approveAction: ButtonKind.ApproveTapButton,
-        })
-        const app = new IronfishApp(sim.getTransport(), true)
-        const identityReq = app.dkgGetIdentity(i, true)
-
-        await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
-        await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-identity-${i}`)
-
-        let identity = await identityReq
-
-        expect(identity.identity.toString('hex')).toEqual(v)
-      } finally {
-        await sim.close()
-      }
-    })
-  })
 })

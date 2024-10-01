@@ -1,6 +1,8 @@
 import { Asset, LATEST_TRANSACTION_VERSION, Note, Transaction } from '@ironfish/rust-nodejs'
 import { deserializePublicPackage, deserializeRound2CombinedPublicPackage } from '@ironfish/rust-nodejs'
 import { devUtils, Note as NoteSDK } from '@ironfish/sdk'
+import { TModel } from '@zondax/zemu/dist/types'
+import { DEFAULT_START_OPTIONS, isTouchDevice } from '@zondax/zemu'
 
 export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any) => {
   // create raw/proposed transaction
@@ -62,3 +64,6 @@ export const minimizeRound3Inputs = (index: number, round1PublicPackages: string
     gskBytes,
   }
 }
+
+// That is always displayed on the main menu
+export const startTextFn = (model: TModel) => (isTouchDevice(model) ? 'Ironfish DKG' : DEFAULT_START_OPTIONS.startText)
