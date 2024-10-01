@@ -45,6 +45,12 @@ jobs:
         run: make zemu_install
       - name: Run tests
         run: make zemu_test
+      - name: Upload Snapshots (only failure)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: snapshots-tmp
+          path: tests_zemu/snapshots-tmp/
 
   build_package_nanosp:
     needs: [configure, build_and_test]

@@ -87,7 +87,7 @@ pub fn ui_review_transaction<'a>(
             .map(|(name, value)| Field { name, value })
             .collect();
 
-        let mut review = NbglReview::new()
+        let review = NbglReview::new()
             .tx_type(TransactionType::Transaction)
             .titles("Review", "Transaction", "Approve Transaction?")
             .glyph(&FERRIS);
@@ -391,7 +391,7 @@ pub fn ui_review<'a>(
         #[cfg(target_os = "flex")]
         const ICON: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
 
-        let mut review = NbglReview::new()
+        let review = NbglReview::new()
             .tx_type(TransactionType::Operation)
             .light()
             .titles(title, _subtitle, _finish_title)
