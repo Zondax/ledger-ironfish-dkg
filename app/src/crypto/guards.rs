@@ -147,7 +147,7 @@ impl EncryptionKeyGuard {
 impl Drop for EncryptionKeyGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut [u8; SECRET_KEY_LEN], 0, 1);
+            ptr::write_bytes(self.secret.as_mut_ptr(), 0, self.secret.len());
         }
     }
 }
