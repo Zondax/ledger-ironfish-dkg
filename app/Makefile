@@ -151,15 +151,15 @@ lint-stax:
 
 .PHONY: lint-nanosplus-fix
 lint-nanosplus-fix:
-	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target nanosplus -- --fix
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target nanosplus --fix
 
 .PHONY: lint-nanox-fix
 lint-nanox-fix:
-	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target nanox -- --fix
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target nanox --fix
 
 .PHONY: lint-flex-fix
 lint-flex-fix:
-	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target flex -- --fix
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target flex --fix
 
 .PHONY: lint-stax-fix
 lint-stax-fix:
