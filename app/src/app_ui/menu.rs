@@ -80,6 +80,7 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
         name = "Ironfish DKG";
     }
 
+
     // Display the home screen.
     NbglHomeAndSettings::new()
         .glyph(&FERRIS)
