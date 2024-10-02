@@ -30,7 +30,8 @@ impl KeyPackageGuard {
 impl Drop for KeyPackageGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut KeyPackage, 0, 1);
+            let ptr = &mut self.secret as *mut KeyPackage as *mut u8;
+            ptr::write_bytes(ptr, 0, core::mem::size_of::<KeyPackage>());
         }
     }
 }
@@ -70,7 +71,8 @@ impl IronfishSecretGuard {
 impl Drop for IronfishSecretGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut IronfishSecret, 0, 1);
+            let ptr = &mut self.secret as *mut IronfishSecret as *mut u8;
+            ptr::write_bytes(ptr, 0, core::mem::size_of::<IronfishSecret>());
         }
     }
 }
