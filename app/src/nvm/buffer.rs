@@ -33,18 +33,15 @@ impl Default for Buffer {
 }
 
 impl Buffer {
-    #[allow(unused)]
     pub fn new() -> Self {
         Buffer::default()
     }
 
-    #[allow(unused)]
     pub fn reset(&mut self, mode: BufferMode) {
         self.pos = 0;
         self.mode = mode;
     }
 
-    #[allow(unused)]
     #[inline(never)]
     pub fn is_valid_write(&self) -> Result<(), AppSW> {
         let buffer = unsafe { DATA.get_mut() };
@@ -56,13 +53,11 @@ impl Buffer {
     }
 
     #[inline(never)]
-    #[allow(unused)]
     pub fn get_mut_ref(&mut self) -> &mut SafeStorage<[u8; BUFFER_SIZE]> {
         unsafe { DATA.get_mut() }
     }
 
     #[inline(never)]
-    #[allow(unused)]
     pub fn get_element(&self, index: usize) -> Result<u8, AppSW> {
         let buffer = unsafe { DATA.get_mut() };
         buffer
@@ -73,7 +68,6 @@ impl Buffer {
     }
 
     #[inline(never)]
-    #[allow(unused)]
     pub fn set_element(&self, index: usize, value: u8) -> Result<(), AppSW> {
         let mut updated_data: [u8; BUFFER_SIZE] = unsafe { *DATA.get_mut().get_ref() };
 
@@ -91,7 +85,6 @@ impl Buffer {
     }
 
     #[inline(never)]
-    #[allow(unused)]
     pub fn set_slice(&mut self, index: usize, value: &[u8]) -> Result<(), AppSW> {
         let end_index = index + value.len();
         self.check_write_pos(end_index - 1)?;
@@ -110,7 +103,6 @@ impl Buffer {
     }
 
     #[inline(never)]
-    #[allow(unused)]
     pub fn get_slice(&self, start_pos: usize, end_pos: usize) -> Result<&[u8], AppSW> {
         self.check_read_pos_slice(end_pos)?;
         let buffer = unsafe { DATA.get_mut() };
@@ -119,7 +111,6 @@ impl Buffer {
     }
 
     #[inline(never)]
-    #[allow(unused)]
     pub fn get_u16(&self, start_pos: usize) -> Result<usize, AppSW> {
         let buffer = unsafe { DATA.get_mut() };
         let buffer_ref = buffer.get_ref();

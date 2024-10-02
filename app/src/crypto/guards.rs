@@ -3,6 +3,7 @@
 /////////
 
 use crate::AppSW;
+use alloc::vec::Vec;
 use core::ops::{Deref, DerefMut};
 use core::ptr;
 use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
@@ -29,7 +30,8 @@ impl KeyPackageGuard {
 impl Drop for KeyPackageGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut KeyPackage, 0, 1);
+            let ptr = &mut self.secret as *mut KeyPackage as *mut u8;
+            ptr::write_bytes(ptr, 0, core::mem::size_of::<KeyPackage>());
         }
     }
 }
@@ -69,7 +71,8 @@ impl IronfishSecretGuard {
 impl Drop for IronfishSecretGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut IronfishSecret, 0, 1);
+            let ptr = &mut self.secret as *mut IronfishSecret as *mut u8;
+            ptr::write_bytes(ptr, 0, core::mem::size_of::<IronfishSecret>());
         }
     }
 }
@@ -108,7 +111,7 @@ impl GroupSecretKeyGuard {
 impl Drop for GroupSecretKeyGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut GroupSecretKey, 0, 1);
+            ptr::write_bytes(self.secret.as_mut_ptr(), 0, GROUP_SECRET_KEY_LEN);
         }
     }
 }
@@ -146,7 +149,7 @@ impl EncryptionKeyGuard {
 impl Drop for EncryptionKeyGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut [u8; SECRET_KEY_LEN], 0, 1);
+            ptr::write_bytes(self.secret.as_mut_ptr(), 0, self.secret.len());
         }
     }
 }
@@ -162,5 +165,41 @@ impl Deref for EncryptionKeyGuard {
 impl DerefMut for EncryptionKeyGuard {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.secret
+    }
+}
+
+/////////
+/////////
+/////////
+
+pub struct KeysDataGuard {
+    secret: Vec<u8>,
+}
+
+impl KeysDataGuard {
+    pub fn new(secret: Vec<u8>) -> Self {
+        KeysDataGuard { secret }
+    }
+}
+
+impl Drop for KeysDataGuard {
+    fn drop(&mut self) {
+        unsafe {
+            ptr::write_bytes(self.secret.as_mut_ptr(), 0, self.secret.len());
+        }
+    }
+}
+
+impl Deref for KeysDataGuard {
+    type Target = [u8];
+
+    fn deref(&self) -> &Self::Target {
+        self.secret.as_slice()
+    }
+}
+
+impl DerefMut for KeysDataGuard {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.secret.as_mut_slice()
     }
 }
