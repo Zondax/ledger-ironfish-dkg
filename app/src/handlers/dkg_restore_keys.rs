@@ -47,11 +47,11 @@ pub fn handler_dkg_restore_keys(
     let nonce = ctx.buffer.get_slice(split_pos, ctx.buffer.pos)?;
 
     let decryption_key = compute_key();
-    let keys_data = decrypt(&decryption_key, encrypted_data, nonce)?;
+    let keys_data_guard = decrypt(&decryption_key, encrypted_data, nonce)?;
 
-    review_restore_keys((&keys_data).as_slice().as_ref())?;
+    review_restore_keys(&keys_data_guard)?;
 
-    DkgKeys.restore_keys((&keys_data).as_slice())
+    DkgKeys.restore_keys(&keys_data_guard)
 }
 
 #[inline(never)]

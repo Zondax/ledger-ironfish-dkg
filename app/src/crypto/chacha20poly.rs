@@ -34,18 +34,11 @@ pub fn decrypt(key: &[u8; 32], payload: &[u8], nonce: &[u8]) -> Result<KeysDataG
     let nonce = Nonce::clone_from_slice(nonce_slice); // 96-bits; unique per message
 
     // Encrypt the message with associated data
-    let mut ciphertext = cipher
+    let ciphertext = cipher
         .decrypt(&nonce, payload)
         .map_err(|_| AppSW::DecryptionFail)?;
 
-    let keys_data = KeysDataGuard::new(ciphertext.clone());
-
-    // Zero out memory for the response data
-    unsafe {
-        ptr::write_bytes(&mut ciphertext as *mut Vec<u8>, 0, 1);
-    }
-
-    Ok(keys_data)
+    Ok(KeysDataGuard::new(ciphertext))
 }
 
 #[inline(never)]

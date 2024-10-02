@@ -183,21 +183,21 @@ impl KeysDataGuard {
 impl Drop for KeysDataGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut Vec<u8>, 0, 1);
+            ptr::write_bytes(self.secret.as_mut_ptr(), 0, self.secret.len());
         }
     }
 }
 
 impl Deref for KeysDataGuard {
-    type Target = Vec<u8>;
+    type Target = [u8];
 
     fn deref(&self) -> &Self::Target {
-        &self.secret
+        self.secret.as_slice()
     }
 }
 
 impl DerefMut for KeysDataGuard {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.secret
+        self.secret.as_mut_slice()
     }
 }
