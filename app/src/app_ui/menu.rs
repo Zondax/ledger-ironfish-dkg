@@ -35,7 +35,10 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 
     let mut _first_page_label: [&str; 2];
 
-    if env!("PRODUCTION_BUILD") == "0" {
+    let production_build = option_env!("PRODUCTION_BUILD").unwrap_or("1");
+    let app_version = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
+    
+    if production_build == "0" {
         _first_page_label = ["Ironfish DKG DEMO", "DO NOT USE"];
     } else {
         _first_page_label = ["Ironfish DKG", "Ready"];
@@ -43,7 +46,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 
     let pages = [
         &Page::from((_first_page_label, &APP_ICON)),
-        &Page::from((["Ironfish DKG", env!("APPVERSION_STR")], true, true)),
+        &Page::from((["Ironfish DKG", v], true, true)),
         &Page::from((["Developed by", "Zondax.ch"], true, true)),
         &Page::from((["License", "Apache 2.0"], true, true)),
         &Page::from(("Quit", &DASHBOARD)),
@@ -67,16 +70,20 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     #[cfg(target_os = "flex")]
     const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
 
+    let production_build = option_env!("PRODUCTION_BUILD").unwrap_or("1");
+    let app_version = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
+
     let name: &str;
-    if env!("PRODUCTION_BUILD") == "0" {
+    if production_build == "0" {
         name = "Ironfish DKG DEMO";
     } else {
         name = "Ironfish DKG";
     }
 
+
     // Display the home screen.
     NbglHomeAndSettings::new()
         .glyph(&FERRIS)
-        .infos(name, env!("APPVERSION_STR"), "Zondax AG")
+        .infos(name, app_version, "Zondax AG")
         .show()
 }

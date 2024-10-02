@@ -20,7 +20,8 @@ use ledger_device_sdk::io;
 
 #[inline(never)]
 pub fn handler_get_version(comm: &mut io::Comm) -> Result<(), AppSW> {
-    if let Some((major, minor, patch)) = parse_version_string(env!("APPVERSION_STR")) {
+    let v = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
+    if let Some((major, minor, patch)) = parse_version_string(v) {
         let mut resp: [u8; 8] = [0u8; 8];
 
         // APP TESTING
