@@ -9,6 +9,8 @@ use chacha20poly1305::{
 use core::ptr;
 #[cfg(feature = "ledger")]
 use ledger_device_sdk::ecc::{bip32_derive, ChainCode, CurvesId, Secret};
+
+use super::guards::KeysDataGuard;
 // #[cfg(feature = "ledger")]
 // use ledger_device_sdk::random::LedgerRng;
 
@@ -17,7 +19,7 @@ const SECRET_KEY_LEN: usize = 32;
 const ED25519_KEY_LEN: usize = 64;
 
 #[inline(never)]
-pub fn decrypt(key: &[u8; 32], payload: &[u8], nonce: &[u8]) -> Result<Vec<u8>, AppSW> {
+pub fn decrypt(key: &[u8; 32], payload: &[u8], nonce: &[u8]) -> Result<KeysDataGuard, AppSW> {
     zlog_stack("start decrypt\0");
 
     // Generate a random key
@@ -36,7 +38,7 @@ pub fn decrypt(key: &[u8; 32], payload: &[u8], nonce: &[u8]) -> Result<Vec<u8>, 
         .decrypt(&nonce, payload)
         .map_err(|_| AppSW::DecryptionFail)?;
 
-    Ok(ciphertext)
+    Ok(KeysDataGuard::new(ciphertext))
 }
 
 #[inline(never)]

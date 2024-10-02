@@ -55,7 +55,6 @@ impl Default for DkgKeys {
 }
 
 impl DkgKeys {
-    #[allow(unused)]
     pub fn is_valid_write(&self) -> Result<(), AppSW> {
         let buffer = unsafe { DATA.get_mut() };
         if !buffer.is_valid() {

@@ -14,8 +14,8 @@ jest.setTimeout(450000)
 const ONE_GLOBAL_APP = 0
 const ONE_APP_PER_PARTICIPANT = 1
 
-describe.each(models)('restore keys', function (m) {
-  describe.each(restoreKeysTestCases)(`${m.name} - sign transaction`, ({ index, encrypted }) => {
+describe.each(models)('sign transaction', function (m) {
+  describe.each(restoreKeysTestCases)(`${m.name}`, ({ index, encrypted }) => {
     test(index + '', async () => {
       const participants = encrypted.length
       const globalSims: Zemu[] = []
