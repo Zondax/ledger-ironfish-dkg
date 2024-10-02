@@ -109,7 +109,7 @@ impl GroupSecretKeyGuard {
 impl Drop for GroupSecretKeyGuard {
     fn drop(&mut self) {
         unsafe {
-            ptr::write_bytes(&mut self.secret as *mut GroupSecretKey, 0, 1);
+            ptr::write_bytes(self.secret.as_mut_ptr(), 0, GROUP_SECRET_KEY_LEN);
         }
     }
 }
