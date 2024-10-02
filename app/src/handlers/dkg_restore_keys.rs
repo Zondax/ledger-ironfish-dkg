@@ -49,9 +49,9 @@ pub fn handler_dkg_restore_keys(
     let decryption_key = compute_key();
     let keys_data = decrypt(&decryption_key, encrypted_data, nonce)?;
 
-    review_restore_keys(keys_data.as_slice())?;
+    review_restore_keys((&keys_data).as_slice().as_ref())?;
 
-    DkgKeys.restore_keys(keys_data.as_slice())
+    DkgKeys.restore_keys((&keys_data).as_slice())
 }
 
 #[inline(never)]
