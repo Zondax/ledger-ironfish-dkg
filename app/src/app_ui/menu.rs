@@ -37,7 +37,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 
     let production_build = option_env!("PRODUCTION_BUILD").unwrap_or("1");
     let app_version = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
-    
+
     if production_build == "0" {
         _first_page_label = ["Ironfish DKG DEMO", "DO NOT USE"];
     } else {
@@ -46,7 +46,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 
     let pages = [
         &Page::from((_first_page_label, &APP_ICON)),
-        &Page::from((["Ironfish DKG", v], true, true)),
+        &Page::from((["Ironfish DKG", app_version], true, true)),
         &Page::from((["Developed by", "Zondax.ch"], true, true)),
         &Page::from((["License", "Apache 2.0"], true, true)),
         &Page::from(("Quit", &DASHBOARD)),
