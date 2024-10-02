@@ -23,7 +23,6 @@ use crate::crypto::{derive_multisig_account, multisig_to_key_type};
 use crate::nvm::dkg_keys::DkgKeys;
 use crate::nvm::DkgKeysReader;
 use crate::AppSW;
-use alloc::vec::Vec;
 use ledger_device_sdk::io::Comm;
 
 #[inline(never)]
@@ -48,7 +47,7 @@ pub fn handler_dkg_restore_keys(
     let nonce = ctx.buffer.get_slice(split_pos, ctx.buffer.pos)?;
 
     let decryption_key = compute_key();
-    let keys_data: Vec<u8> = decrypt(&decryption_key, encrypted_data, nonce)?;
+    let keys_data = decrypt(&decryption_key, encrypted_data, nonce)?;
 
     review_restore_keys(keys_data.as_slice().as_ref())?;
 

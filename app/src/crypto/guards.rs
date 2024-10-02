@@ -3,6 +3,7 @@
 /////////
 
 use crate::AppSW;
+use alloc::vec::Vec;
 use core::ops::{Deref, DerefMut};
 use core::ptr;
 use ironfish_frost::dkg::group_key::{GroupSecretKey, GROUP_SECRET_KEY_LEN};
@@ -160,6 +161,42 @@ impl Deref for EncryptionKeyGuard {
 }
 
 impl DerefMut for EncryptionKeyGuard {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.secret
+    }
+}
+
+/////////
+/////////
+/////////
+
+pub struct KeysDataGuard {
+    secret: Vec<u8>,
+}
+
+impl KeysDataGuard {
+    pub fn new(secret: Vec<u8>) -> Self {
+        KeysDataGuard { secret }
+    }
+}
+
+impl Drop for KeysDataGuard {
+    fn drop(&mut self) {
+        unsafe {
+            ptr::write_bytes(&mut self.secret as *mut Vec<u8>, 0, 1);
+        }
+    }
+}
+
+impl Deref for KeysDataGuard {
+    type Target = Vec<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.secret
+    }
+}
+
+impl DerefMut for KeysDataGuard {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.secret
     }
