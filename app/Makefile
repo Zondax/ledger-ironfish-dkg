@@ -43,14 +43,14 @@ endif
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.app_testing
 
 ifndef COIN
-COIN=IRON
+COIN=IRON_DKG
 endif
 
 include $(CURDIR)/Makefile.version
 
 $(info COIN  = [$(COIN)])
 
-ifeq ($(COIN),IRON)
+ifeq ($(COIN),IRON_DKG)
 # Main app configuration
 APPNAME = "Ironfish DKG"
 APPPATH = "44'/1338'"
