@@ -26,4 +26,4 @@ copy-files:
 
 .PHONY: rust_tests
 rust_tests:
-	cd app && cargo test --no-default-features 
+	cd app && cargo +stable test --no-default-features
