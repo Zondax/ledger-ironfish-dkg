@@ -3,36 +3,6 @@
 version = 3
 
 [[package]]
-name = "IRON_DKG"
-version = "0.0.0"
-dependencies = [
- "aead",
- "arrayref",
- "blake2b_simd",
- "blake2s_simd",
- "chacha20poly1305",
- "educe",
- "ff 0.12.1",
- "getrandom",
- "group 0.12.1",
- "hex",
- "include_gif",
- "insta",
- "ironfish-frost",
- "jubjub",
- "lazy_static",
- "ledger_device_sdk",
- "lexical-core",
- "nom",
- "numtoa",
- "rand",
- "serde",
- "serde-json-core",
- "serde_json",
- "spin",
-]
-
-[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -889,6 +859,36 @@ dependencies = [
  "linked-hash-map",
  "similar",
  "walkdir",
+]
+
+[[package]]
+name = "iron_dkg"
+version = "0.0.0"
+dependencies = [
+ "aead",
+ "arrayref",
+ "blake2b_simd",
+ "blake2s_simd",
+ "chacha20poly1305",
+ "educe",
+ "ff 0.12.1",
+ "getrandom",
+ "group 0.12.1",
+ "hex",
+ "include_gif",
+ "insta",
+ "ironfish-frost",
+ "jubjub",
+ "lazy_static",
+ "ledger_device_sdk",
+ "lexical-core",
+ "nom",
+ "numtoa",
+ "rand",
+ "serde",
+ "serde-json-core",
+ "serde_json",
+ "spin",
 ]
 
 [[package]]
