@@ -45,8 +45,7 @@ impl<'a> MintList<'a> {
             let rem = Mint::parse_into(remaining, version, &mut mint)?;
             let obj_ptr = mint.as_mut_ptr();
             unsafe {
-                if !version.has_mint_transfer_ownership_to()
-                    && (*obj_ptr).has_transfer_ownership_to
+                if !version.has_mint_transfer_ownership_to() && (*obj_ptr).has_transfer_ownership_to
                 {
                     return Err(ParserError::InvalidMint.into());
                 }

@@ -199,11 +199,7 @@ pub fn ui_review_get_current_identity(i_index: u8) -> Result<bool, AppSW> {
 }
 
 #[inline(never)]
-pub fn ui_review_dkg_round1(
-    i_index: u8,
-    min_signers: u8,
-    participants: u8,
-) -> Result<bool, AppSW> {
+pub fn ui_review_dkg_round1(i_index: u8, min_signers: u8, participants: u8) -> Result<bool, AppSW> {
     zlog_stack("s review_dkg_round1\0");
 
     let i_index_str = int_to_str(i_index);

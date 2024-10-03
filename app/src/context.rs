@@ -27,8 +27,7 @@ impl TxContext {
 }
 
 impl Default for TxContext {
-         fn default() -> Self {
-                Self::new()
-            }
-     }
-
+    fn default() -> Self {
+        Self::new()
+    }
+}
