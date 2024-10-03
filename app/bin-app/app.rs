@@ -18,8 +18,8 @@
 #![no_std]
 #![no_main]
 
-use ledger_device_sdk::io::{Comm, Event};
 use ironfish_dkg::{context::TxContext, AppSW};
+use ledger_device_sdk::io::{Comm, Event};
 
 use ironfish_dkg::ledger::*;
 
