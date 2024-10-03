@@ -393,6 +393,6 @@ pub fn ui_review<'a>(
             .titles(title, _subtitle, _finish_title)
             .glyph(&ICON);
 
-        Ok(review.show(&fields))
+        Ok(review.show(fields))
     }
 }

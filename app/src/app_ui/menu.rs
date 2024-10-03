@@ -73,12 +73,11 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     let production_build = option_env!("PRODUCTION_BUILD").unwrap_or("1");
     let app_version = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
 
-    let name: &str;
-    if production_build == "0" {
-        name = "Ironfish DKG DEMO";
+    let name: &str = if production_build == "0" {
+        "Ironfish DKG DEMO"
     } else {
-        name = "Ironfish DKG";
-    }
+        "Ironfish DKG"
+    };
 
     // Display the home screen.
     NbglHomeAndSettings::new()
