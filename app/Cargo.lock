@@ -862,7 +862,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "iron_dkg"
+name = "ironfish-dkg"
 version = "0.0.0"
 dependencies = [
  "aead",
