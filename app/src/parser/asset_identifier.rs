@@ -23,7 +23,7 @@ impl AssetIdentifier {
 
 impl Display for AssetIdentifier {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", hex::encode(&self.0))
+        write!(f, "{}", hex::encode(self.0))
     }
 }
 

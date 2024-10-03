@@ -16,7 +16,7 @@ on:
 jobs:
   check_linting:
     name: Check linting using the reusable workflow
-    uses: Zondax/ledger-app-workflows/.github/workflows/reusable_lint.yml@v1
+    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_lint.yml@v1
     with:
       source: './app'
 

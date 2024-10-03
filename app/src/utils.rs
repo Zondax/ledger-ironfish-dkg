@@ -18,11 +18,11 @@ pub fn str_to_array<const SIZE: usize>(string: &str) -> [u8; SIZE] {
 }
 
 #[inline(never)]
-pub fn int_to_str<'a>(num: u8) -> String {
+pub fn int_to_str(num: u8) -> String {
     use lexical_core::BUFFER_SIZE as INT_BUFFER_SIZE;
 
     zlog_stack("start int_to_str\0");
-    let mut buffer = [b'0'; INT_BUFFER_SIZE as usize];
+    let mut buffer = [b'0'; INT_BUFFER_SIZE];
     let raw = lexical_core::write(num, &mut buffer);
     let num_str = core::str::from_utf8(raw).unwrap();
     zlog_stack("after int_to_str\0");

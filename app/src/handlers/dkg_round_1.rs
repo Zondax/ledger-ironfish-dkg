@@ -102,13 +102,13 @@ fn parse_tx(buffer: &Buffer) -> Result<Tx, AppSW> {
 fn compute_dkg_round_1(_comm: &mut Comm, secret: &Secret, tx: &mut Tx) -> Result<Vec<u8>, AppSW> {
     zlog("start compute_dkg_round_1\n\0");
 
-    let mut rng = LedgerRng {};
+    let rng = LedgerRng {};
 
     let (mut round1_secret_package_vec, round1_public_package) = dkg::round1::round1(
         &secret.to_identity(),
         tx.min_signers as u16,
         &tx.identities,
-        &mut rng,
+        rng,
     )
     .unwrap();
 

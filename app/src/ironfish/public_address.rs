@@ -44,7 +44,7 @@ impl PublicAddress {
     pub fn new(bytes: &[u8; PUBLIC_ADDRESS_SIZE]) -> Result<Self, IronfishError> {
         Option::from(AffinePoint::from_bytes(*bytes))
             .map(PublicAddress)
-            .ok_or_else(|| IronfishError::InvalidPaymentAddress)
+            .ok_or(IronfishError::InvalidPaymentAddress)
     }
 
     /// Initialize a public address from a sapling key. Typically constructed from

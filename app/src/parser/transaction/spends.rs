@@ -34,7 +34,7 @@ impl<'a> FromBytes<'a> for Spend<'a> {
 
 impl<'a> Spend<'a> {
     #[inline(never)]
-    pub fn hash(&self, hasher: &mut State) {
+    pub fn run_hash(&self, hasher: &mut State) {
         const PUBLIC_KEY_RANDOMNESS_LEN: usize = 32;
         const AUTHORIZING_SIGNATURE_LEN: usize = 64;
 

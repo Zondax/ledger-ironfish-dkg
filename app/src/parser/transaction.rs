@@ -146,7 +146,7 @@ impl<'a> Transaction<'a> {
         zlog_stack("Transaction::review_fields\n");
 
         let mut fields = Vec::new();
-        let mut buffer = [b'0'; INT_BUFFER_SIZE as usize];
+        let mut buffer = [b'0'; INT_BUFFER_SIZE];
 
         // Add transaction version
         fields.push((
@@ -210,26 +210,26 @@ impl<'a> Transaction<'a> {
         hasher.update(&[self.tx_version as u8]);
 
         let expiration = self.expiration.to_le_bytes();
-        let fee = (self.fee as i64).to_le_bytes();
+        let fee = (self.fee).to_le_bytes();
         hasher.update(&expiration);
         hasher.update(&fee);
 
         hasher.update(self.random_pubkey);
 
         for spend in self.spends.iter() {
-            spend.hash(&mut hasher);
+            spend.run_hash(&mut hasher);
         }
 
         for output in self.outputs.iter() {
-            output.hash(&mut hasher);
+            output.run_hash(&mut hasher);
         }
 
         for mint in self.mints.iter() {
-            mint.hash(&mut hasher);
+            mint.run_hash(&mut hasher);
         }
 
         for burn in self.burns.iter() {
-            burn.hash(&mut hasher);
+            burn.run_hash(&mut hasher);
         }
 
         let mut hash_result = [0; 32];
