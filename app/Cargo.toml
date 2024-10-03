@@ -4,7 +4,7 @@ version = "0.0.0"            # The version is being taken from Makefile.version 
 edition = "2021"
 
 [[bin]]
-name = "ledger-ironfish-dkg"
+name = "ironfish-dkg"
 test = false
 path = "bin-app/app.rs"
 

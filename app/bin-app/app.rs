@@ -19,9 +19,9 @@
 #![no_main]
 
 use ledger_device_sdk::io::{Comm, Event};
-use ledger_ironfish_dkg::{context::TxContext, AppSW};
+use ironfish_dkg::{context::TxContext, AppSW};
 
-use ledger_ironfish_dkg::ledger::*;
+use ironfish_dkg::ledger::*;
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::init_comm;
