@@ -44,7 +44,7 @@ pub fn derive_account_keys(
         .expect("failied to derive authorizing key");
 
     // Nullifier keys (nsk and nk), derived from the gsk
-    let proof_authorizing_key = Fr::from(group_secret_key.sapling_proof_generation_key().nsk);
+    let proof_authorizing_key = group_secret_key.sapling_proof_generation_key().nsk;
     let nullifier_deriving_key_ep =
         PROOF_GENERATION_KEY_GENERATOR.multiply_bits(&proof_authorizing_key.to_bytes());
     let nullifier_deriving_key = AffinePoint::from(&nullifier_deriving_key_ep);

@@ -112,7 +112,7 @@ impl<'a> MerkleNote<'a> {
         let encryption_key = calculate_key_for_encryption_keys(
             spender_key,
             &self.value_commitment,
-            &self.note_commitment,
+            self.note_commitment,
             &self.ephemeral_public_key.to_bytes(),
         );
 
@@ -125,7 +125,7 @@ impl<'a> MerkleNote<'a> {
             read_fr(&note_encryption_keys[32..]).map_err(|_| IronfishError::InvalidScalar)?;
         let shared_key = shared_secret(&secret_key, &public_address.0, &self.ephemeral_public_key);
         let note =
-            Note::from_spender_encrypted(public_address.0, &shared_key, &self.encrypted_note)?;
+            Note::from_spender_encrypted(public_address.0, &shared_key, self.encrypted_note)?;
 
         // FIXME: Verify the node commitment
         // note.verify_commitment(self.note_commitment)?;

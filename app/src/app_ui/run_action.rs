@@ -97,7 +97,7 @@ pub fn ui_review_transaction<'a>(
 }
 
 #[inline(never)]
-pub fn ui_review_get_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
+pub fn ui_review_get_identity(i_index: u8) -> Result<bool, AppSW> {
     zlog_stack("s review_get_identity\0");
     app_canary();
 
@@ -112,7 +112,7 @@ pub fn ui_review_get_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
 }
 
 #[inline(never)]
-pub fn ui_review_get_keys<'a>(data: &Vec<u8>, key_type: u8) -> Result<bool, AppSW> {
+pub fn ui_review_get_keys(data: &Vec<u8>, key_type: u8) -> Result<bool, AppSW> {
     zlog_stack("s ui_review_get_keys\0");
     app_canary();
 
@@ -178,7 +178,7 @@ pub fn ui_review_get_keys<'a>(data: &Vec<u8>, key_type: u8) -> Result<bool, AppS
 }
 
 #[inline(never)]
-pub fn ui_review_get_current_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
+pub fn ui_review_get_current_identity(i_index: u8) -> Result<bool, AppSW> {
     zlog_stack("s review_current_identity\0");
     app_canary();
 
@@ -199,7 +199,7 @@ pub fn ui_review_get_current_identity<'a>(i_index: u8) -> Result<bool, AppSW> {
 }
 
 #[inline(never)]
-pub fn ui_review_dkg_round1<'a>(
+pub fn ui_review_dkg_round1(
     i_index: u8,
     min_signers: u8,
     participants: u8,
@@ -229,7 +229,7 @@ pub fn ui_review_dkg_round1<'a>(
 }
 
 #[inline(never)]
-pub fn ui_review_dkg_round2<'a>(i_index: u8, round1_public_package_len: u8) -> Result<bool, AppSW> {
+pub fn ui_review_dkg_round2(i_index: u8, round1_public_package_len: u8) -> Result<bool, AppSW> {
     zlog_stack("s review_dkg_round2\0");
     app_canary();
 
@@ -251,7 +251,7 @@ pub fn ui_review_dkg_round2<'a>(i_index: u8, round1_public_package_len: u8) -> R
 }
 
 #[inline(never)]
-pub fn ui_review_backup_keys<'a>(
+pub fn ui_review_backup_keys(
     public_address: Vec<u8>,
     participants: u8,
     min_signers: u8,
@@ -283,7 +283,7 @@ pub fn ui_review_backup_keys<'a>(
 }
 
 #[inline(never)]
-pub fn ui_review_dkg_round3<'a>(
+pub fn ui_review_dkg_round3(
     i_index: u8,
     round1_public_package_len: u8,
     round2_public_package_len: u8,
@@ -326,7 +326,7 @@ pub fn ui_review_dkg_round3<'a>(
 }
 
 #[inline(never)]
-pub fn ui_review_restore_keys<'a>(
+pub fn ui_review_restore_keys(
     public_address: Vec<u8>,
     participants: u8,
     min_signers: u8,

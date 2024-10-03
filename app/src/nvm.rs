@@ -41,5 +41,5 @@ pub(crate) fn get_and_clear_tx_hash() -> Option<[u8; 32]> {
 pub(crate) fn get_tx_hash() -> Option<[u8; 32]> {
     zlog_stack("copy tx hash\0");
     let global = GLOBAL.lock();
-    global.clone()
+    *global
 }
