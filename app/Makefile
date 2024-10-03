@@ -134,36 +134,36 @@ format:
 
 .PHONY: lint-nanosplus
 lint-nanosplus:
-	APPVERSION=$(APPVERSION) cargo clippy --target nanosplus -- -Dwarnings
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target nanosplus -- -Dwarnings
 
 .PHONY: lint-nanox
 lint-nanox:
-	APPVERSION=$(APPVERSION) cargo clippy --target nanox -- -Dwarnings
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target nanox -- -Dwarnings
 
 .PHONY: lint-flex
 lint-flex:
-	APPVERSION=$(APPVERSION) cargo clippy --target flex -- -Dwarnings
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target flex -- -Dwarnings
 
 .PHONY: lint-stax
 lint-stax:
-	APPVERSION=$(APPVERSION) cargo clippy --target stax -- -Dwarnings
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target stax -- -Dwarnings
 
 
 .PHONY: lint-nanosplus-fix
 lint-nanosplus-fix:
-	APPVERSION=$(APPVERSION) cargo clippy --target nanosplus --fix
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target nanosplus --fix
 
 .PHONY: lint-nanox-fix
 lint-nanox-fix:
-	APPVERSION=$(APPVERSION) cargo clippy --target nanox --fix
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target nanox --fix
 
 .PHONY: lint-flex-fix
 lint-flex-fix:
-	APPVERSION=$(APPVERSION) cargo clippy --target flex --fix
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target flex --fix
 
 .PHONY: lint-stax-fix
 lint-stax-fix:
-	APPVERSION=$(APPVERSION) cargo clippy --target stax --fix
+	APPVERSION=$(APPVERSION) cargo +nightly-2023-11-10 clippy --target stax --fix
 
 .PHONY: post-build
 post-build: move-files-to-output read-params-from-json get-icon-hex create-install-script
