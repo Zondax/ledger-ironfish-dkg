@@ -44,7 +44,6 @@ pub fn handler_dkg_get_identity(comm: &mut Comm, require_review: bool) -> Result
         return Err(AppSW::Deny);
     }
 
-
     comm.append(identity.serialize().as_ref());
 
     Ok(())
