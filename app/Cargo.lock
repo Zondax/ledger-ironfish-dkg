@@ -885,7 +885,7 @@ dependencies = [
  "getrandom",
  "group 0.12.1",
  "hex",
- "include_gif",
+ "include_gif 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "insta",
  "ironfish-frost",
  "jubjub",
