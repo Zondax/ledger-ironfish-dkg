@@ -9,9 +9,9 @@ test = false
 path = "bin-app/app.rs"
 
 [dependencies]
-# ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "923e5cf53d09e0e81c64eecc92c26800fad4bf45", optional = true }
-ledger_device_sdk = { version = "1.17.1", optional = true }
-# ledger_device_sdk = { path="../../ledger-device-rust-sdk/ledger_device_sdk" , optional = true}
+ ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "dadcff9ff4dd79da02dc3e5277370dc587627913", optional = true }
+# ledger_device_sdk = { version = "1.17.1", optional = true }
+#ledger_device_sdk = { path="../ledger-device-rust-sdk/ledger_device_sdk" , optional = true}
 include_gif = "1.2.0"
 serde = { version = "1.0.192", default_features = false, features = ["derive"] }
 serde-json-core = { git = "https://github.com/rust-embedded-community/serde-json-core" }
