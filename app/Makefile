@@ -170,9 +170,9 @@ post-build: move-files-to-output read-params-from-json get-icon-hex create-insta
 
 .PHONY: move-files-to-output
 move-files-to-output:
-	cp target/$(FOLDER)/release/ledger-ironfish-dkg bin/app.elf
-	cp target/$(FOLDER)/release/ledger-ironfish-dkg.hex bin/app.hex
-	cp target/$(FOLDER)/release/ledger-ironfish-dkg.apdu bin/app.apdu
+	cp target/$(FOLDER)/release/ironfish-dkg bin/app.elf
+	cp target/$(FOLDER)/release/ironfish-dkg.hex bin/app.hex
+	cp target/$(FOLDER)/release/ironfish-dkg.apdu bin/app.apdu
 
 .PHONY: read-params-from-json
 read-params-from-json:
