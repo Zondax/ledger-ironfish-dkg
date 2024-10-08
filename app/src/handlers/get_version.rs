@@ -17,10 +17,19 @@
 use crate::AppSW;
 use core::str::FromStr;
 use ledger_device_sdk::io;
+use ledger_device_sdk::uxapp::UxEvent;
+
+// Value returned by os_ux to notify the application that the processed event must be discarded and
+// not processed by the application. Generally due to handling of power management/dim/locking (taken from C SDK)
+const BOLOS_UX_IGNORE: u32 = 0x97;
+
+// ux has not finished processing yet (not a final status) (taken from C SDK)
+const BOLOS_UX_CONTINUE: u32 = 0x00;
 
 #[inline(never)]
 pub fn handler_get_version(comm: &mut io::Comm) -> Result<(), AppSW> {
-    if let Some((major, minor, patch)) = parse_version_string(env!("APPVERSION_STR")) {
+    let v = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
+    if let Some((major, minor, patch)) = parse_version_string(v) {
         let mut resp: [u8; 8] = [0u8; 8];
 
         // APP TESTING
@@ -31,8 +40,12 @@ pub fn handler_get_version(comm: &mut io::Comm) -> Result<(), AppSW> {
         resp[3..5].copy_from_slice(minor.to_be_bytes().as_slice());
         resp[5..7].copy_from_slice(patch.to_be_bytes().as_slice());
 
-        // !IS_UX_ALLOWED
-        resp[7..8].copy_from_slice(&[0u8]);
+        // DEVICE LOCKED
+        let ux_params = UxEvent::Event.request(); // taken from ledger rust bindings (sdk)
+        let is_ux_allowed = ux_params != BOLOS_UX_IGNORE || ux_params != BOLOS_UX_CONTINUE; // taken from zondax C based apps
+        let device_lock = if !(is_ux_allowed) { 1 } else { 0 };
+
+        resp[7..8].copy_from_slice(&[device_lock]);
 
         comm.append(&resp);
         Ok(())

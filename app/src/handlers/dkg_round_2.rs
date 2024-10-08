@@ -112,21 +112,21 @@ fn compute_dkg_round_2(
 ) -> Result<(Vec<u8>, CombinedPublicPackage), AppSW> {
     zlog_stack("start compute_dkg_round_2\0");
 
-    let mut rng = LedgerRng {};
+    let rng = LedgerRng {};
     let secret = compute_dkg_secret(identity_index);
 
     dkg::round2::round2(
         &secret,
         round_1_secret_package,
         &round_1_public_packages,
-        &mut rng,
+        rng,
     )
     .map_err(|_| AppSW::DkgRound2Fail)
 }
 
 #[inline(never)]
 fn generate_response(
-    mut round2_secret_package_vec: &mut Vec<u8>,
+    round2_secret_package_vec: &mut Vec<u8>,
     round2_public_package: &CombinedPublicPackage,
 ) -> Vec<u8> {
     let mut resp: Vec<u8> = Vec::new();
@@ -141,7 +141,7 @@ fn generate_response(
         ]
         .to_vec(),
     );
-    resp.append(&mut round2_secret_package_vec);
+    resp.append(round2_secret_package_vec);
     resp.append(
         &mut [
             (round2_public_package_len >> 8) as u8,

@@ -1,17 +1,17 @@
 [package]
-name = "ledger-ironfish-dkg"
+name = "ironfish-dkg"
 version = "0.0.0"            # The version is being taken from Makefile.version file
 edition = "2021"
 
 [[bin]]
-name = "ledger-ironfish-dkg"
+name = "ironfish-dkg"
 test = false
 path = "bin-app/app.rs"
 
 [dependencies]
-# ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "923e5cf53d09e0e81c64eecc92c26800fad4bf45", optional = true }
-ledger_device_sdk = { version = "1.17.1", optional = true }
-# ledger_device_sdk = { path="../../ledger-device-rust-sdk/ledger_device_sdk" , optional = true}
+# ledger_device_sdk = { git = "https://github.com/Zondax/ledger-device-rust-sdk", rev = "0f07d2b2afae6e9b194573e84f99f68f8755084e", optional = true }
+ledger_device_sdk = { version = "1.17.3", optional = true }
+#ledger_device_sdk = { path="../ledger-device-rust-sdk/ledger_device_sdk" , optional = true}
 include_gif = "1.2.0"
 serde = { version = "1.0.192", default_features = false, features = ["derive"] }
 serde-json-core = { git = "https://github.com/rust-embedded-community/serde-json-core" }
@@ -91,7 +91,7 @@ icon = "nanox_icon.gif"
 icon = "stax_icon.gif"
 
 [package.metadata.ledger.flex]
-icon = "stax_icon.gif"
+icon = "flex_icon.gif"
 
 # TODO: This change shouldn't be necessary, the ledger targets clearly define atomics as only supporting 32 not 64 (as seen in /opt/rustup/toolchains/1.75.0-aarch64-unknown-linux-musl/lib/rustlib/nanosplus/target.json)
 # solve why this is happening rather than using modified radium

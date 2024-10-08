@@ -22,7 +22,7 @@ jobs:
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2023-11-10
+          toolchain: stable
           components: rust-src
       - name: Checkout
         uses: actions/checkout@v4

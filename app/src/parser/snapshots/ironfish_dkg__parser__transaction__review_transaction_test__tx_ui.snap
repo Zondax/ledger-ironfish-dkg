@@ -1,5 +1,6 @@
 ---
 source: src/parser/transaction.rs
+assertion_line: 355
 expression: reduced
 input_file: src/parser/testvectors/transaction_simple.json
 ---

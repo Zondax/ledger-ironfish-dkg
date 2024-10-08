@@ -40,10 +40,8 @@ pub fn handler_dkg_get_identity(comm: &mut Comm, require_review: bool) -> Result
     let secret = compute_dkg_secret(data[0]);
     let identity = secret.to_identity();
 
-    if require_review {
-        if !ui_review_get_identity(data[0])? {
-            return Err(AppSW::Deny);
-        }
+    if require_review && !ui_review_get_identity(data[0])? {
+        return Err(AppSW::Deny);
     }
 
     comm.append(identity.serialize().as_ref());

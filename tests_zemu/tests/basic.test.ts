@@ -59,7 +59,20 @@ describe('Basic', function () {
       expect(resp.testMode).toBe(false)
       expect(resp.major).toBe(0)
       expect(resp.minor).toBe(5)
-      expect(resp.patch).toBe(3)
+      expect(resp.patch).toBe(4)
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test.each(models)('get app info', async function (m) {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      const app = new IronfishApp(sim.getTransport(), true)
+
+      const resp = await app.appInfo()
+      console.log(resp)
     } finally {
       await sim.close()
     }

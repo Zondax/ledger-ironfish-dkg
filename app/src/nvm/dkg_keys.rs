@@ -172,7 +172,7 @@ impl DkgKeys {
         self.set_u16(pos, (identities.len() * IDENTITY_LEN) as u16)?;
         pos += 2;
 
-        for i in identities.into_iter() {
+        for i in identities.iter() {
             let slice = i.serialize();
             self.set_slice(pos, slice.as_slice())?;
             pos += IDENTITY_LEN;

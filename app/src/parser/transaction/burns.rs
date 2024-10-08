@@ -35,7 +35,7 @@ impl<'a> FromBytes<'a> for Burn<'a> {
 
 impl<'a> Burn<'a> {
     #[inline(never)]
-    pub fn hash(&self, hasher: &mut State) {
+    pub fn run_hash(&self, hasher: &mut State) {
         // both serialization and
         // hashing uses the same serialize_signature_fields
         // function so we can be sure inner data is correctly passed

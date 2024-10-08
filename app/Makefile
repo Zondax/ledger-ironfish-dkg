@@ -43,14 +43,14 @@ endif
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.app_testing
 
 ifndef COIN
-COIN=IRON
+COIN=IRON_DKG
 endif
 
 include $(CURDIR)/Makefile.version
 
 $(info COIN  = [$(COIN)])
 
-ifeq ($(COIN),IRON)
+ifeq ($(COIN),IRON_DKG)
 # Main app configuration
 APPNAME = "Ironfish DKG"
 APPPATH = "44'/1338'"
@@ -88,23 +88,23 @@ include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
 .PHONY: buildX
 buildX:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo +nightly-2023-11-10  ledger build nanox
+	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo ledger build nanox
 	FOLDER=nanox make post-build
 
 .PHONY: buildS2
 buildS2:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo +nightly-2023-11-10  ledger build nanosplus
+	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo ledger build nanosplus
 	FOLDER=nanosplus make post-build
 
 .PHONY: buildST
 buildST:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo +nightly-2023-11-10  ledger build stax
+	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo ledger build stax
 	FOLDER=stax make post-build
 
 
 .PHONY: buildFL
 buildFL:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo +nightly-2023-11-10  ledger build flex
+	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo ledger build flex
 	FOLDER=flex make post-build
 
 
@@ -170,9 +170,9 @@ post-build: move-files-to-output read-params-from-json get-icon-hex create-insta
 
 .PHONY: move-files-to-output
 move-files-to-output:
-	cp target/$(FOLDER)/release/ledger-ironfish-dkg bin/app.elf
-	cp target/$(FOLDER)/release/ledger-ironfish-dkg.hex bin/app.hex
-	cp target/$(FOLDER)/release/ledger-ironfish-dkg.apdu bin/app.apdu
+	cp target/$(FOLDER)/release/ironfish-dkg bin/app.elf
+	cp target/$(FOLDER)/release/ironfish-dkg.hex bin/app.hex
+	cp target/$(FOLDER)/release/ironfish-dkg.apdu bin/app.apdu
 
 .PHONY: read-params-from-json
 read-params-from-json:

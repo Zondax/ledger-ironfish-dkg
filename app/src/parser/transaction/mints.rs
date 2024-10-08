@@ -45,8 +45,7 @@ impl<'a> MintList<'a> {
             let rem = Mint::parse_into(remaining, version, &mut mint)?;
             let obj_ptr = mint.as_mut_ptr();
             unsafe {
-                if !version.has_mint_transfer_ownership_to()
-                    && (&*obj_ptr).has_transfer_ownership_to
+                if !version.has_mint_transfer_ownership_to() && (*obj_ptr).has_transfer_ownership_to
                 {
                     return Err(ParserError::InvalidMint.into());
                 }
@@ -140,7 +139,7 @@ impl<'a> Mint<'a> {
     }
 
     #[inline(never)]
-    pub fn hash(&self, hasher: &mut State) {
+    pub fn run_hash(&self, hasher: &mut State) {
         // both serialization and
         // hashing uses the same serialize_signature_fields
         // function so we can be sure inner data is correctly passed

@@ -25,3 +25,9 @@ impl TxContext {
         self.done = false;
     }
 }
+
+impl Default for TxContext {
+    fn default() -> Self {
+        Self::new()
+    }
+}
