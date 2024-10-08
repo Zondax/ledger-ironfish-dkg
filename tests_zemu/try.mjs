@@ -4,7 +4,7 @@ import IronfishApp from '@zondax/ledger-ironfish'
 async function main() {
   const transport = await TransportNodeHid.default.open()
 
-  const app = new IronfishApp.default(transport, false)
+  const app = new IronfishApp.default(transport, true)
 
   //const PATH = "m/44'/626'/0'/0/0"
   //const PATH_TESTNET = "m/44'/1'/0'/0'/0'"
