@@ -968,9 +968,9 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 
 [[package]]
 name = "ledger_device_sdk"
-version = "1.17.1"
+version = "1.17.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5994587541e97058c8acfac99dbd3130b65d7daba2221d4917f0be72de0ce5c"
+checksum = "875d400a3d2607741f0eb107471611622fb99b75e612231c42b3b9e039fd96c9"
 dependencies = [
  "const-zero",
  "include_gif",

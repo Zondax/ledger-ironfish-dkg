@@ -28,3 +28,7 @@ copy-files:
 rust_tests:
 	cd app && cargo +stable test --no-default-features
 
+
+.PHONY: try_device
+try_device:
+	cd tests_zemu && yarn try

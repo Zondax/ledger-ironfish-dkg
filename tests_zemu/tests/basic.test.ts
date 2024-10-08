@@ -64,4 +64,17 @@ describe('Basic', function () {
       await sim.close()
     }
   })
+
+  test.each(models)('get app info', async function (m) {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
+      const app = new IronfishApp(sim.getTransport(), true)
+
+      const resp = await app.appInfo()
+      console.log(resp)
+    } finally {
+      await sim.close()
+    }
+  })
 })
