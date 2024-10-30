@@ -109,6 +109,31 @@ impl From<ErrorKind> for AppSW {
     }
 }
 
+impl From<ParserError> for IronfishError {
+    fn from(error: ParserError) -> Self {
+        match error {
+            ParserError::Ok => IronfishError::InvalidData, // Ok shouldn't really be converted to an error, but we need to handle it
+            ParserError::UnexpectedBufferEnd => IronfishError::InvalidData,
+            ParserError::ValueOutOfRange => IronfishError::IllegalValue,
+            ParserError::OperationOverflows => IronfishError::IllegalValue,
+            ParserError::UnexpectedValue => IronfishError::InvalidData,
+            ParserError::UnexpectedType => IronfishError::InvalidData,
+            ParserError::InvalidTxVersion => IronfishError::InvalidTransactionVersion,
+            ParserError::InvalidKey => IronfishError::InvalidSigningKey,
+            ParserError::InvalidAffinePoint => IronfishError::InvalidDiversificationPoint,
+            ParserError::InvalidScalar => IronfishError::InvalidScalar,
+            ParserError::InvalidTypeId => IronfishError::InvalidData,
+            ParserError::InvalidSpend => IronfishError::InvalidSpendProof,
+            ParserError::InvalidOuptut => IronfishError::InvalidOutputProof,
+            ParserError::InvalidMint => IronfishError::InvalidMintProof,
+            ParserError::InvalidBurn => IronfishError::InvalidData,
+            ParserError::BufferFull => IronfishError::InvalidData,
+            ParserError::InvalidTokenList => IronfishError::InvalidAssetIdentifier,
+            ParserError::UnexpectedError => IronfishError::InvalidData,
+        }
+    }
+}
+
 impl<I> nom::error::ParseError<I> for AppSW {
     fn from_error_kind(_input: I, kind: ErrorKind) -> Self {
         Self::from(kind)

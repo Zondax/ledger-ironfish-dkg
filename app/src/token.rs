@@ -1,12 +1,12 @@
-use alloc::vec::Vec;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::parser::ParserError;
 use crate::token_info::TOKEN_LIST;
 #[derive(Debug, Deserialize)]
 #[serde(bound(deserialize = "'de: 'a"))]
 pub struct TokenList<'a> {
-    schema_version: u32,
+    #[serde(rename = "schemaVersion")]
+    _schema_version: u32,
     #[serde(bound(deserialize = "'de: 'a"))]
     assets: [TokenInfo<'a>; 3],
 }
@@ -20,9 +20,9 @@ pub struct TokenInfo<'a> {
     pub symbol: &'a str,
     pub decimals: u8,
     #[serde(skip)]
-    logo_uri: &'a str,
+    _logo_uri: &'a str,
     #[serde(skip)]
-    website: &'a str,
+    _website: &'a str,
 }
 
 pub fn get_token_list() -> Result<TokenList<'static>, ParserError> {
@@ -42,6 +42,12 @@ impl<'a> TokenList<'a> {
             }
         })
     }
+
+    pub fn token(&self, asset_id: &str) -> Option<&TokenInfo> {
+        self.assets
+            .iter()
+            .find(|asset| asset.identifier == asset_id)
+    }
 }
 
 #[cfg(test)]
@@ -52,6 +58,6 @@ mod token_list_test {
     fn parse_token_list() {
         let token_list = get_token_list().unwrap();
         assert_eq!(token_list.assets.len(), 3);
-        assert_eq!(token_list.schema_version, 2);
+        assert_eq!(token_list._schema_version, 2);
     }
 }

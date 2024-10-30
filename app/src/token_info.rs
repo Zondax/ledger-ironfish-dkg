@@ -1,5 +1,3 @@
-use serde::{Deserialize, Serialize};
-
 // An untrusted token information list provided by penumbra team
 // https://github.com/iron-fish/verified-assets/blob/main/mainnet.json
 // We were told to used this in the meantime while a trusted token metadata

@@ -61,10 +61,14 @@ pub fn intstr_to_fpstr_inplace(s: &mut [u8], decimals: usize) -> Result<&mut [u8
     let mut num_chars = strlen(s);
 
     if num_chars == s.len() {
+        #[cfg(test)]
+        std::println!("num_chars == s.len");
         return Err(ParserError::BufferFull);
     }
 
     if s.is_empty() {
+        #[cfg(test)]
+        std::println!("s.is_empty");
         return Err(ParserError::UnexpectedBufferEnd);
     }
 
@@ -78,9 +82,11 @@ pub fn intstr_to_fpstr_inplace(s: &mut [u8], decimals: usize) -> Result<&mut [u8
     let mut first_digit_idx = None;
     //check that all are ascii numbers
     // and first the first digit
-    let number_ascii_range = (b'0'..=b'9');
+    let number_ascii_range = b'0'..=b'9';
     for (i, c) in s[..num_chars].iter_mut().enumerate() {
         if !number_ascii_range.contains(c) {
+            #[cfg(test)]
+            std::println!("non_ascii number");
             return Err(ParserError::UnexpectedValue);
         }
 
@@ -111,6 +117,8 @@ pub fn intstr_to_fpstr_inplace(s: &mut [u8], decimals: usize) -> Result<&mut [u8
 
     //we can return early if we have no decimals
     if decimals == 0 {
+        #[cfg(test)]
+        std::println!("decimals == 0");
         num_chars = strlen(s);
         return Ok(&mut s[..num_chars]);
     }
@@ -124,6 +132,8 @@ pub fn intstr_to_fpstr_inplace(s: &mut [u8], decimals: usize) -> Result<&mut [u8
     //        0.00000000abcd    < add decimal point
 
     if num_chars < decimals + 1 {
+        #[cfg(test)]
+        std::println!("num_chars < decimals + 1");
         // Move to end
         let padding = decimals - num_chars + 1;
         s.copy_within(..num_chars, padding);
@@ -170,4 +180,19 @@ pub fn intstr_to_fpstr_inplace(s: &mut [u8], decimals: usize) -> Result<&mut [u8
     let len = num_chars - (num_chars - len);
 
     Ok(&mut s[..len])
+}
+
+pub fn token_to_fp_str(
+    value: u64,
+    out_str: &mut [u8],
+    decimals: usize,
+) -> Result<&mut [u8], ParserError> {
+    // the number plus '0.'
+    if out_str.len() < u64::FORMATTED_SIZE_DECIMAL + 2 {
+        return Err(ParserError::UnexpectedBufferEnd);
+    }
+
+    u64_to_str(value, &mut out_str[..])?;
+
+    intstr_to_fpstr_inplace(out_str, decimals).map_err(|_| ParserError::UnexpectedError)
 }
