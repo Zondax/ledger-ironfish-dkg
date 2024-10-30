@@ -1,6 +1,6 @@
 [package]
 name = "ironfish-dkg"
-version = "0.0.0"            # The version is being taken from Makefile.version file
+version = "0.0.0"     # The version is being taken from Makefile.version file
 edition = "2021"
 
 [[bin]]

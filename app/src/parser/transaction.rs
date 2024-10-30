@@ -19,6 +19,8 @@ use crate::{
     },
 };
 
+use lexical_core::FormattedSize;
+
 mod burns;
 mod mints;
 mod outputs;
@@ -141,12 +143,10 @@ impl<'a> Transaction<'a> {
         &self,
         ovk: &OutgoingViewKey,
     ) -> Result<Vec<(String, String)>, IronfishError> {
-        use lexical_core::BUFFER_SIZE as INT_BUFFER_SIZE;
-
         zlog_stack("Transaction::review_fields\n");
 
         let mut fields = Vec::new();
-        let mut buffer = [b'0'; INT_BUFFER_SIZE];
+        let mut buffer = [b'0'; u64::FORMATTED_SIZE_DECIMAL];
 
         // Add transaction version
         fields.push((

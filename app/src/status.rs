@@ -85,6 +85,8 @@ impl From<ParserError> for AppSW {
             ParserError::InvalidBurn => AppSW::TxParsingFail,
             ParserError::UnexpectedError => AppSW::Deny,
             ParserError::InvalidScalar => AppSW::InvalidScalar,
+            ParserError::BufferFull => AppSW::BufferOutOfBounds,
+            ParserError::InvalidTokenList => AppSW::InvalidPublicPackage,
         }
     }
 }
