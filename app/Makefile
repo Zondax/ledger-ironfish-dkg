@@ -64,9 +64,7 @@ endif
 
 $(info PATHS LIST = $(APPPATH))
 
-APPVERSION=$(shell sed -n 's/^APPVERSION = "\(.*\)"/\1/p' $(CURDIR)/.config/appconfig.toml)
-
-APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion $(APPVERSION)
+APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME)
 APP_DELETE_PARAMS = --appName $(APPNAME)
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.devices
@@ -177,8 +175,9 @@ read-params-from-json:
 	$(eval T_ID := $(shell jq -r '.targetId' target/$(FOLDER)/release/app_$(FOLDER).json))
 	$(eval DATA_SIZE := $(shell jq -r '.dataSize' target/$(FOLDER)/release/app_$(FOLDER).json))
 	$(eval API_LEVEL := $(shell jq -r '.apiLevel' target/$(FOLDER)/release/app_$(FOLDER).json))
+	$(eval APPVERSION := $(shell sed -n 's/^APPVERSION = "\(.*\)"/\1/p' .cargo/config.toml))
 
-	$(eval APP_LOAD_PARAMS := $(APP_LOAD_PARAMS) --targetId $(T_ID) --dataSize $(DATA_SIZE) --apiLevel $(API_LEVEL))
+	$(eval APP_LOAD_PARAMS := $(APP_LOAD_PARAMS)  --appVersion $(APPVERSION) --targetId $(T_ID) --dataSize $(DATA_SIZE) --apiLevel $(API_LEVEL))
 	$(eval APP_DELETE_PARAMS := $(APP_DELETE_PARAMS) --targetId $(T_ID))
 
 
