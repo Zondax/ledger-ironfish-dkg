@@ -17,7 +17,11 @@ use crate::{
         constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
         SIGNATURE_HASH_PERSONALIZATION, TRANSACTION_SIGNATURE_VERSION, TX_HASH_LEN,
     },
+    token::{get_token_list, TokenList},
+    utils::int_format::{intstr_to_fpstr_inplace, token_to_fp_str, u64_to_str},
 };
+
+use lexical_core::FormattedSize;
 
 mod burns;
 mod mints;
@@ -26,7 +30,7 @@ mod spends;
 
 use self::mints::MintList;
 
-use super::{FromBytes, ObjectList, TransactionVersion};
+use super::{FromBytes, Note, ObjectList, ParserError, TransactionVersion};
 use crate::utils::int_to_str;
 pub use burns::Burn;
 pub use mints::Mint;
@@ -60,7 +64,6 @@ impl<'a> FromBytes<'a> for Transaction<'a> {
 
         let (rem, raw_version) = le_u8(input)?;
         let version = TransactionVersion::try_from(raw_version)?;
-        zlog_stack("Transaction::version ok\n");
         // now read the number of spends, outputs, mints and burns
         let (rem, num_spends) = le_u64(rem)?;
         let (rem, num_outputs) = le_u64(rem)?;
@@ -141,18 +144,17 @@ impl<'a> Transaction<'a> {
         &self,
         ovk: &OutgoingViewKey,
     ) -> Result<Vec<(String, String)>, IronfishError> {
-        use lexical_core::BUFFER_SIZE as INT_BUFFER_SIZE;
-
         zlog_stack("Transaction::review_fields\n");
 
         let mut fields = Vec::new();
-        let mut buffer = [b'0'; INT_BUFFER_SIZE];
 
         // Add transaction version
         fields.push((
             "Tx Version".to_string(),
             self.tx_version.as_str().to_string(),
         ));
+
+        let token_list = get_token_list()?;
 
         for (i, output) in self.outputs.iter().enumerate() {
             let output_number = i + 1;
@@ -166,29 +168,15 @@ impl<'a> Transaction<'a> {
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
 
             let owner_value = hex::encode(note.owner.public_address());
-            let raw = lexical_core::write(note.value, &mut buffer);
-            let amount = core::str::from_utf8(raw).unwrap();
-            let amount_value = String::from(amount);
-            let asset_value = hex::encode(note.asset_id.as_bytes());
-
+            let mut owner_label = String::from("To ");
             let output_num_str = int_to_str(output_number as u8);
-
-            let mut owner_label = String::from("Owner ");
             owner_label.push_str(output_num_str.as_str());
-            let mut amount_label = String::from("Amount ");
-            amount_label.push_str(output_num_str.as_str());
-            let mut asset_id_label = String::from("AssetID ");
-            asset_id_label.push_str(output_num_str.as_str());
-
             fields.push((owner_label, owner_value));
-            fields.push((amount_label, amount_value));
-            fields.push((asset_id_label, asset_value));
-        }
 
-        // Add fee
-        let raw = lexical_core::write(self.fee, &mut buffer);
-        let fee = core::str::from_utf8(raw).unwrap();
-        fields.push(("Fee".to_string(), String::from(fee)));
+            // Now process amount and fees
+            self.format_output(&token_list, &note, &mut fields)?;
+        }
+        let mut buffer = [0; lexical_core::BUFFER_SIZE];
 
         // Add expiration
         let raw = lexical_core::write(self.expiration, &mut buffer);
@@ -196,6 +184,60 @@ impl<'a> Transaction<'a> {
         fields.push(("Expiration".to_string(), String::from(expiration)));
 
         Ok(fields)
+    }
+
+    fn format_output(
+        &self,
+        // token_list: &TokenList<'_>,
+        token_list: &TokenList<'_>,
+        note: &Note,
+        fields: &mut Vec<(String, String)>,
+    ) -> Result<(), ParserError> {
+        let mut buffer = [0; u64::FORMATTED_SIZE_DECIMAL + 2];
+
+        if let Some(token) = token_list.token(note.asset_id.to_string().as_str()) {
+            #[cfg(test)]
+            std::println!("asset_known");
+            let mut amount_label = String::from("Amount(");
+            amount_label.push_str(token.symbol);
+            amount_label.push_str(") ");
+            // value
+            let amount_formatted =
+                token_to_fp_str(note.value, &mut buffer[..], token.decimals as usize)?;
+            let amount_formatted =
+                core::str::from_utf8(amount_formatted).map_err(|_| ParserError::UnexpectedValue)?;
+
+            // push values
+            fields.push((amount_label, amount_formatted.to_string()));
+
+            buffer.fill(0u8);
+            // Add fee
+            lexical_core::write(self.fee, &mut buffer[..]);
+            let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
+            let fee = core::str::from_utf8(raw).unwrap();
+            let mut fee_label = String::from("Fee(");
+            fee_label.push_str(token.symbol);
+            fee_label.push_str(") ");
+            fields.push((fee_label, String::from(fee)));
+        } else {
+            let amount_label = String::from("Raw Amount ");
+            let value_str = u64_to_str(note.value, &mut buffer)?;
+
+            let value_str =
+                core::str::from_utf8(value_str).map_err(|_| ParserError::UnexpectedValue)?;
+
+            // push values
+            fields.push((amount_label, value_str.to_string()));
+
+            buffer.fill(0u8);
+
+            // Add fee
+            let raw = lexical_core::write(self.fee, &mut buffer);
+            let fee = core::str::from_utf8(raw).unwrap();
+            fields.push(("Raw Fee".to_string(), String::from(fee)));
+        }
+
+        Ok(())
     }
 
     #[inline(never)]
