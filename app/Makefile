@@ -88,23 +88,23 @@ include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
 .PHONY: buildX
 buildX:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo ledger build nanox
+	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanox
 	FOLDER=nanox make post-build
 
 .PHONY: buildS2
 buildS2:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo ledger build nanosplus
+	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanosplus
 	FOLDER=nanosplus make post-build
 
 .PHONY: buildST
 buildST:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo ledger build stax
+	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build stax
 	FOLDER=stax make post-build
 
 
 .PHONY: buildFL
 buildFL:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo ledger build flex
+	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build flex
 	FOLDER=flex make post-build
 
 
