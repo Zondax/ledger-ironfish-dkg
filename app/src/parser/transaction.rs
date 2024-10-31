@@ -1,7 +1,6 @@
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
 
 use alloc::{
-    format,
     string::{String, ToString},
     vec::Vec,
 };
@@ -65,7 +64,6 @@ impl<'a> FromBytes<'a> for Transaction<'a> {
 
         let (rem, raw_version) = le_u8(input)?;
         let version = TransactionVersion::try_from(raw_version)?;
-        zlog_stack("Transaction::version ok\n");
         // now read the number of spends, outputs, mints and burns
         let (rem, num_spends) = le_u64(rem)?;
         let (rem, num_outputs) = le_u64(rem)?;
@@ -214,7 +212,7 @@ impl<'a> Transaction<'a> {
 
             buffer.fill(0u8);
             // Add fee
-            let raw = lexical_core::write(self.fee, &mut buffer[..]);
+            lexical_core::write(self.fee, &mut buffer[..]);
             let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
             let fee = core::str::from_utf8(raw).unwrap();
             let mut fee_label = String::from("Fee(");
