@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-
+use alloc::string::String;
 use include_gif::include_gif;
 use ledger_device_sdk::io::{Comm, Event};
 
@@ -36,7 +36,10 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     let mut _first_page_label: [&str; 2];
 
     let production_build = option_env!("PRODUCTION_BUILD").unwrap_or("1");
-    let app_version = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
+
+    let app_version_value = option_env!("APPVERSION").unwrap_or("0.0.0");
+    let mut app_version = String::from("v");
+    app_version.push_str(app_version_value);
 
     if production_build == "0" {
         _first_page_label = ["Ironfish DKG DEMO", "DO NOT USE"];
@@ -46,7 +49,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 
     let pages = [
         &Page::from((_first_page_label, &APP_ICON)),
-        &Page::from((["Ironfish DKG", app_version], true, true)),
+        &Page::from((["Ironfish DKG", app_version.as_str()], true, true)),
         &Page::from((["Developed by", "Zondax.ch"], true, true)),
         &Page::from((["License", "Apache 2.0"], true, true)),
         &Page::from(("Quit", &DASHBOARD)),
@@ -71,7 +74,10 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
 
     let production_build = option_env!("PRODUCTION_BUILD").unwrap_or("1");
-    let app_version = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
+
+    let app_version_value = option_env!("APPVERSION").unwrap_or("0.0.0");
+    let mut app_version = String::from("v");
+    app_version.push_str(app_version_value);
 
     let name: &str = if production_build == "0" {
         "Ironfish DKG DEMO"
@@ -82,6 +88,6 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     // Display the home screen.
     NbglHomeAndSettings::new()
         .glyph(&FERRIS)
-        .infos(name, app_version, "Zondax AG")
+        .infos(name, app_version.as_str(), "Zondax AG")
         .show()
 }

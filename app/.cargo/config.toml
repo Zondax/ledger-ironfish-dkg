@@ -1,6 +1,33 @@
 [env]
-HEAP_SIZE = "16300"
+HEAP_SIZE = "16384"
+APPVERSION = "0.6.0"
 
 [unstable]
 build-std = ["core", "alloc"]
 build-std-features = ["compiler-builtins-mem"]
+
+
+# The opt-level is set based on the device model because stack and binary size. While flex and stax has
+# 44K of SRAM, Nanos2 and NanoX have 40K. That difference makes necessary an opt-level s for nano x and nano s2,
+# because stack size is not enough otherwise.
+# In the other hand, stax and flex should use z. They have more stack, but the app won't fit otherwise. The screen libs
+# are heavier, and the app with clear signing won't fit.
+
+# Opt-leve z optimize the size more, making the app less performant (consumes more stack)
+# Opt-leve s optimize the size, but not that much, making the app a bit more performant (consumes less stack)
+
+# From testing on Nano S2...
+# heap 15k, opt-level=z -> 3 participants fail on signing because of heap fragmentation, app size XXX
+# heap 16.3k, opt-level=s -> 3 participants work, app size 680K
+
+[target.nanox]
+rustflags = ["-C", "opt-level=s"]
+
+[target.nanosplus]
+rustflags = ["-C", "opt-level=s"]
+
+[target.stax]
+rustflags = ["-C", "opt-level=z"]
+
+[target.flex]
+rustflags = ["-C", "opt-level=z"]

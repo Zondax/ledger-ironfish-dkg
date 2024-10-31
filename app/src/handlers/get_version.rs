@@ -28,7 +28,7 @@ const BOLOS_UX_CONTINUE: u32 = 0x00;
 
 #[inline(never)]
 pub fn handler_get_version(comm: &mut io::Comm) -> Result<(), AppSW> {
-    let v = option_env!("APPVERSION_STR").unwrap_or("v0.0.0");
+    let v = option_env!("APPVERSION").unwrap_or("0.0.0");
     if let Some((major, minor, patch)) = parse_version_string(v) {
         let mut resp: [u8; 8] = [0u8; 8];
 
@@ -59,7 +59,7 @@ fn parse_version_string(input: &str) -> Option<(u16, u16, u16)> {
     // Input should be of the form "major.minor.patch",
     // where "major", "minor", and "patch" are integers.
 
-    let mut parts = input[1..].split('.');
+    let mut parts = input[0..].split('.');
     let major = u16::from_str(parts.next()?).ok()?;
     let minor = u16::from_str(parts.next()?).ok()?;
     let patch = u16::from_str(parts.next()?).ok()?;

@@ -46,8 +46,6 @@ ifndef COIN
 COIN=IRON_DKG
 endif
 
-include $(CURDIR)/Makefile.version
-
 $(info COIN  = [$(COIN)])
 
 ifeq ($(COIN),IRON_DKG)
@@ -66,10 +64,7 @@ endif
 
 $(info PATHS LIST = $(APPPATH))
 
-APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
-APPVERSION_STR=v$(APPVERSION)
-
-APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion $(APPVERSION)
+APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME)
 APP_DELETE_PARAMS = --appName $(APPNAME)
 
 include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.devices
@@ -88,23 +83,23 @@ include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
 .PHONY: buildX
 buildX:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo ledger build nanox
+	BOLOS_SDK= PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanox
 	FOLDER=nanox make post-build
 
 .PHONY: buildS2
 buildS2:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=s" cargo ledger build nanosplus
+	BOLOS_SDK= PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanosplus
 	FOLDER=nanosplus make post-build
 
 .PHONY: buildST
 buildST:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo ledger build stax
+	BOLOS_SDK= PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build stax
 	FOLDER=stax make post-build
 
 
 .PHONY: buildFL
 buildFL:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) RUSTFLAGS="-C opt-level=z" cargo ledger build flex
+	BOLOS_SDK= PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build flex
 	FOLDER=flex make post-build
 
 
@@ -180,8 +175,9 @@ read-params-from-json:
 	$(eval T_ID := $(shell jq -r '.targetId' target/$(FOLDER)/release/app_$(FOLDER).json))
 	$(eval DATA_SIZE := $(shell jq -r '.dataSize' target/$(FOLDER)/release/app_$(FOLDER).json))
 	$(eval API_LEVEL := $(shell jq -r '.apiLevel' target/$(FOLDER)/release/app_$(FOLDER).json))
+	$(eval APPVERSION := $(shell sed -n 's/^APPVERSION = "\(.*\)"/\1/p' .cargo/config.toml))
 
-	$(eval APP_LOAD_PARAMS := $(APP_LOAD_PARAMS) --targetId $(T_ID) --dataSize $(DATA_SIZE) --apiLevel $(API_LEVEL))
+	$(eval APP_LOAD_PARAMS := $(APP_LOAD_PARAMS)  --appVersion $(APPVERSION) --targetId $(T_ID) --dataSize $(DATA_SIZE) --apiLevel $(API_LEVEL))
 	$(eval APP_DELETE_PARAMS := $(APP_DELETE_PARAMS) --targetId $(T_ID))
 
 
