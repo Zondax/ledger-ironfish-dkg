@@ -58,8 +58,8 @@ describe('Basic', function () {
 
       expect(resp.testMode).toBe(false)
       expect(resp.major).toBe(0)
-      expect(resp.minor).toBe(5)
-      expect(resp.patch).toBe(4)
+      expect(resp.minor).toBe(6)
+      expect(resp.patch).toBe(0)
     } finally {
       await sim.close()
     }
