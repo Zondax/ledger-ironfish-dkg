@@ -193,11 +193,10 @@ impl<'a> Transaction<'a> {
         note: &Note,
         fields: &mut Vec<(String, String)>,
     ) -> Result<(), ParserError> {
+        zlog_stack("Transaction::format_output\n");
         let mut buffer = [0; u64::FORMATTED_SIZE_DECIMAL + 2];
 
         if let Some(token) = token_list.token(note.asset_id.to_string().as_str()) {
-            #[cfg(test)]
-            std::println!("asset_known");
             let mut amount_label = String::from("Amount(");
             amount_label.push_str(token.symbol);
             amount_label.push_str(") ");
