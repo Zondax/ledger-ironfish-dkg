@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use alloc::string::{String, ToString};
+use alloc::string::{String};
 use include_gif::include_gif;
 use ledger_device_sdk::io::{Comm, Event};
 
@@ -49,7 +49,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 
     let pages = [
         &Page::from((_first_page_label, &APP_ICON)),
-        &Page::from((["Ironfish DKG", app_version], true, true)),
+        &Page::from((["Ironfish DKG", app_version.as_str()], true, true)),
         &Page::from((["Developed by", "Zondax.ch"], true, true)),
         &Page::from((["License", "Apache 2.0"], true, true)),
         &Page::from(("Quit", &DASHBOARD)),
@@ -88,6 +88,6 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     // Display the home screen.
     NbglHomeAndSettings::new()
         .glyph(&FERRIS)
-        .infos(name, app_version, "Zondax AG")
+        .infos(name, app_version.as_str(), "Zondax AG")
         .show()
 }
