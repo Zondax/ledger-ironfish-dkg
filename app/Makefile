@@ -67,7 +67,6 @@ endif
 $(info PATHS LIST = $(APPPATH))
 
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
-APPVERSION_STR=v$(APPVERSION)
 
 APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion $(APPVERSION)
 APP_DELETE_PARAMS = --appName $(APPNAME)
@@ -88,23 +87,23 @@ include $(CURDIR)/../deps/ledger-zxlib/makefiles/Makefile.side_loading
 
 .PHONY: buildX
 buildX:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanox
+	BOLOS_SDK= PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanox
 	FOLDER=nanox make post-build
 
 .PHONY: buildS2
 buildS2:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanosplus
+	BOLOS_SDK= PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build nanosplus
 	FOLDER=nanosplus make post-build
 
 .PHONY: buildST
 buildST:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build stax
+	BOLOS_SDK= PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build stax
 	FOLDER=stax make post-build
 
 
 .PHONY: buildFL
 buildFL:
-	BOLOS_SDK= APPVERSION_STR=$(APPVERSION_STR) PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build flex
+	BOLOS_SDK= PRODUCTION_BUILD=$(PRODUCTION_BUILD) cargo ledger build flex
 	FOLDER=flex make post-build
 
 
