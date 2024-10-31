@@ -46,8 +46,6 @@ ifndef COIN
 COIN=IRON_DKG
 endif
 
-include $(CURDIR)/Makefile.version
-
 $(info COIN  = [$(COIN)])
 
 ifeq ($(COIN),IRON_DKG)
@@ -66,7 +64,7 @@ endif
 
 $(info PATHS LIST = $(APPPATH))
 
-APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
+APPVERSION=$(shell sed -n 's/^APPVERSION = "\(.*\)"/\1/p' $(CURDIR)/.config/appconfig.toml)
 
 APP_LOAD_PARAMS = --curve ed25519 --appName $(APPNAME) --appVersion $(APPVERSION)
 APP_DELETE_PARAMS = --appName $(APPNAME)
