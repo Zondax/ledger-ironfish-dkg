@@ -1,5 +1,6 @@
 pub mod buffer;
 pub mod dkg_keys;
+pub mod settings;
 
 pub use buffer::*;
 pub use dkg_keys::*;
