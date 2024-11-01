@@ -1,6 +1,8 @@
 mod bip32;
 #[cfg(feature = "ledger")]
 pub mod response;
+#[macro_use]
+pub mod int_format;
 
 use crate::bolos::zlog_stack;
 use alloc::string::{String, ToString};

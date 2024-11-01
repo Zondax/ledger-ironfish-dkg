@@ -85,6 +85,8 @@ impl From<ParserError> for AppSW {
             ParserError::InvalidBurn => AppSW::TxParsingFail,
             ParserError::UnexpectedError => AppSW::Deny,
             ParserError::InvalidScalar => AppSW::InvalidScalar,
+            ParserError::BufferFull => AppSW::BufferOutOfBounds,
+            ParserError::InvalidTokenList => AppSW::InvalidPublicPackage,
         }
     }
 }
@@ -103,6 +105,31 @@ impl From<ErrorKind> for AppSW {
             ErrorKind::TooLarge => AppSW::BufferOutOfBounds,
             ErrorKind::Tag => AppSW::TxParsingFail,
             _ => AppSW::Deny,
+        }
+    }
+}
+
+impl From<ParserError> for IronfishError {
+    fn from(error: ParserError) -> Self {
+        match error {
+            ParserError::Ok => IronfishError::InvalidData, // Ok shouldn't really be converted to an error, but we need to handle it
+            ParserError::UnexpectedBufferEnd => IronfishError::InvalidData,
+            ParserError::ValueOutOfRange => IronfishError::IllegalValue,
+            ParserError::OperationOverflows => IronfishError::IllegalValue,
+            ParserError::UnexpectedValue => IronfishError::InvalidData,
+            ParserError::UnexpectedType => IronfishError::InvalidData,
+            ParserError::InvalidTxVersion => IronfishError::InvalidTransactionVersion,
+            ParserError::InvalidKey => IronfishError::InvalidSigningKey,
+            ParserError::InvalidAffinePoint => IronfishError::InvalidDiversificationPoint,
+            ParserError::InvalidScalar => IronfishError::InvalidScalar,
+            ParserError::InvalidTypeId => IronfishError::InvalidData,
+            ParserError::InvalidSpend => IronfishError::InvalidSpendProof,
+            ParserError::InvalidOuptut => IronfishError::InvalidOutputProof,
+            ParserError::InvalidMint => IronfishError::InvalidMintProof,
+            ParserError::InvalidBurn => IronfishError::InvalidData,
+            ParserError::BufferFull => IronfishError::InvalidData,
+            ParserError::InvalidTokenList => IronfishError::InvalidAssetIdentifier,
+            ParserError::UnexpectedError => IronfishError::InvalidData,
         }
     }
 }
