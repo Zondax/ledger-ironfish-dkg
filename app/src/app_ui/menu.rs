@@ -69,12 +69,10 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
-    // Load glyph from 64x64 4bpp gif file with include_gif macro. Creates an NBGL compatible glyph.
-
     #[cfg(target_os = "stax")]
-    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
+    const APP_ICON: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
     #[cfg(target_os = "flex")]
-    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
+    const APP_ICON: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
 
     let settings_strings = [["Expert Mode", ""]];
     let mut settings: Settings = Default::default();
@@ -93,7 +91,7 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
 
     // Display the home screen.
     NbglHomeAndSettings::new()
-        .glyph(&FERRIS)
+        .glyph(&APP_ICON)
         .settings(settings.get_mut(), &settings_strings)
         .infos(name, app_version.as_str(), "Zondax AG")
         .show()
