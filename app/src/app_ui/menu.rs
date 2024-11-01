@@ -18,9 +18,6 @@ use alloc::string::String;
 use include_gif::include_gif;
 use ledger_device_sdk::io::{Comm, Event};
 
-#[cfg(any(target_os = "stax", target_os = "flex"))]
-use crate::nvm::settings::Settings;
-
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
     bitmaps::{Glyph, DASHBOARD},
@@ -30,6 +27,7 @@ use ledger_device_sdk::ui::{
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::{NbglGlyph, NbglHomeAndSettings};
 
+use crate::nvm::settings::Settings;
 use crate::Instruction;
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
@@ -50,19 +48,33 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
         _first_page_label = ["Ironfish DKG", "Ready"];
     }
 
-    let pages = [
-        &Page::from((_first_page_label, &APP_ICON)),
-        &Page::from((["Ironfish DKG", app_version.as_str()], true, true)),
-        &Page::from((["Developed by", "Zondax.ch"], true, true)),
-        &Page::from((["License", "Apache 2.0"], true, true)),
-        &Page::from(("Quit", &DASHBOARD)),
-    ];
-
+    let mut last_page = 0;
     loop {
-        match MultiPageMenu::new(comm, &pages).show() {
+        let expert_mode_label = match Settings.app_expert_mode() {
+            true => "Enabled",
+            false => "Disabled",
+        };
+
+        let pages = [
+            &Page::from((_first_page_label, &APP_ICON)),
+            &Page::from((["Expert Mode", expert_mode_label], true, true)),
+            &Page::from((["Ironfish DKG", app_version.as_str()], true, true)),
+            &Page::from((["Developed by", "Zondax.ch"], true, true)),
+            &Page::from((["License", "Apache 2.0"], true, true)),
+            &Page::from(("Quit", &DASHBOARD)),
+        ];
+
+        match MultiPageMenu::new(comm, &pages).show_from(last_page) {
             EventOrPageIndex::Event(e) => return e,
-            EventOrPageIndex::Index(4) => ledger_device_sdk::exit_app(0),
-            EventOrPageIndex::Index(_) => (),
+            EventOrPageIndex::Index(page_index) => {
+                match page_index {
+                    1 => Settings.toggle_expert_mode(),
+                    5 => ledger_device_sdk::exit_app(0),
+                    _ => (),
+                }
+
+                last_page = page_index
+            }
         }
     }
 }
