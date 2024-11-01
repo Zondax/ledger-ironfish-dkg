@@ -8,7 +8,7 @@ pub struct TokenList<'a> {
     #[serde(rename = "schemaVersion")]
     _schema_version: u32,
     #[serde(bound(deserialize = "'de: 'a"))]
-    assets: [TokenInfo<'a>; 3],
+    assets: [TokenInfo<'a>; 1],
 }
 
 #[derive(Debug, Deserialize)]
@@ -19,16 +19,13 @@ pub struct TokenInfo<'a> {
     #[serde(borrow)]
     pub symbol: &'a str,
     pub decimals: u8,
-    #[serde(skip)]
-    _logo_uri: &'a str,
-    #[serde(skip)]
-    _website: &'a str,
 }
 
 pub fn get_token_list() -> Result<TokenList<'static>, ParserError> {
     let t = serde_json_core::from_str::<TokenList>(TOKEN_LIST)
         .map(|(t, _)| t)
-        .map_err(|_| ParserError::InvalidTokenList)?;
+        .unwrap();
+    // .map_err(|_| ParserError::InvalidTokenList)?;
     Ok(t)
 }
 
@@ -57,7 +54,7 @@ mod token_list_test {
     #[test]
     fn parse_token_list() {
         let token_list = get_token_list().unwrap();
-        assert_eq!(token_list.assets.len(), 3);
+        assert_eq!(token_list.assets.len(), 1);
         assert_eq!(token_list._schema_version, 2);
     }
 }

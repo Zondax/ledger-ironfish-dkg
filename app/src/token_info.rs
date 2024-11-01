@@ -12,20 +12,6 @@ pub static TOKEN_LIST: &str = r#"
             "decimals": 8,
             "logoURI": "https://ironfish.network/favicon.ico",
             "website": "https://ironfish.network"
-        },
-        {
-            "identifier": "2cabe0bddf475a478f4b3903f8fc2d2c70b52526f991bacea8267793da63f44b",
-            "symbol": "TINI",
-            "decimals": 8,
-            "logoURI": "https://chainport-public-files-prod.s3.amazonaws.com/61bb7212-13ab-4a9a-a7c2-16a9583d2342.svg",
-            "website": "https://app.chainport.io"
-        },
-        {
-            "identifier": "5d43c6f2bbd70ae658661ab58f138b4d54276dd9102966b486bcc0d6e3ab89a3",
-            "symbol": "TINE",
-            "decimals": 8,
-            "logoURI": "https://chainport-public-files-prod.s3.amazonaws.com/61bb7212-13ab-4a9a-a7c2-16a9583d2342.svg",
-            "website": "https://app.chainport.io"
         }
     ]
 }"#;
