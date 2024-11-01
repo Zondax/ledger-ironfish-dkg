@@ -196,3 +196,91 @@ pub fn token_to_fp_str(
 
     intstr_to_fpstr_inplace(out_str, decimals).map_err(|_| ParserError::UnexpectedError)
 }
+
+#[cfg(test)]
+mod int_format_tests {
+    use super::{intstr_to_fpstr_inplace, u64_to_str};
+    use lexical_core::FormattedSize;
+    use rand::Rng;
+    use std::{format, string::String, vec::Vec};
+
+    const SUITE: &[(&[u8], usize, &str)] = &[
+        //NORMAL
+        (b"1", 0, "1"),
+        (b"123", 0, "123"),
+        (b"123", 5, "0.00123"),
+        (b"100000", 9, "0.0001"),
+        (b"1234", 5, "0.01234"),
+        (b"12345", 5, "0.12345"),
+        (b"123456", 5, "1.23456"),
+        (b"1234567", 5, "12.34567"),
+        //EXTRA
+        (b"12345", 2, "123.45"),
+        (b"12", 0, "12"),
+        (b"12", 1, "1.2"),
+        (b"012", 1, "1.2"),
+        (b"0012345", 3, "12.345"),
+        (b"9", 6, "0.000009"),
+        // TRIM LEADING
+        (b"0", 0, "0"),
+        (b"00", 0, "0"),
+        (b"0000", 0, "0"),
+        (b"00001", 0, "1"),
+        (b"000011", 0, "11"),
+        (b"10000", 0, "10000"),
+        (b"2000000000000", 9, "2000"),
+        //EMPTY
+        (b"", 0, "0"),
+        (b"", 1, "0"),
+        (b"", 2, "0"),
+        (b"", 5, "0"),
+        (b"", 10, "0"),
+    ];
+
+    fn create_number_table() -> std::vec::Vec<(u64, String)> {
+        let mut rng = rand::thread_rng();
+        (0..200)
+            .map(|_| {
+                let num = rng.gen_range(0..u64::MAX);
+                let string = format!("{}", num);
+                (num, string)
+            })
+            .collect::<Vec<(u64, String)>>()
+    }
+
+    #[test]
+    fn int_to_str() {
+        let mut output = [0; u64::FORMATTED_SIZE_DECIMAL];
+        let test = create_number_table();
+        for (number, dat) in test {
+            let res = {
+                let res = u64_to_str(number as _, &mut output[..]).unwrap();
+                core::str::from_utf8(res).unwrap()
+            };
+            assert_eq!(dat, res);
+            output.iter_mut().for_each(|v| *v = 0);
+        }
+    }
+
+    #[test]
+    fn intstr_to_fpstr_inplace_test() {
+        for &(input, decimals, expected_output) in SUITE.iter() {
+            std::dbg!(
+                "SUITE:",
+                (
+                    core::str::from_utf8(input).unwrap(),
+                    decimals,
+                    expected_output
+                )
+            );
+
+            let mut input = std::vec::Vec::from(input);
+            input.resize(input.len() + decimals + 2, 0);
+
+            let out = intstr_to_fpstr_inplace(&mut input, decimals).unwrap();
+            let out = core::str::from_utf8(out).unwrap();
+
+            assert_eq!(out, expected_output)
+        }
+    }
+}
