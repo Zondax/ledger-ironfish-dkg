@@ -1,4 +1,3 @@
-use core::fmt::{self, Display, Formatter};
 use core::ptr::addr_of_mut;
 
 use arrayref::array_ref;
