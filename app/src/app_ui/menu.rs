@@ -18,6 +18,9 @@ use alloc::string::String;
 use include_gif::include_gif;
 use ledger_device_sdk::io::{Comm, Event};
 
+#[cfg(any(target_os = "stax", target_os = "flex"))]
+use crate::nvm::settings::Settings;
+
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
     bitmaps::{Glyph, DASHBOARD},
@@ -73,6 +76,9 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     #[cfg(target_os = "flex")]
     const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
 
+    let settings_strings = [["Expert Mode", ""]];
+    let mut settings: Settings = Default::default();
+
     let production_build = option_env!("PRODUCTION_BUILD").unwrap_or("1");
 
     let app_version_value = option_env!("APPVERSION").unwrap_or("0.0.0");
@@ -88,6 +94,7 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
     // Display the home screen.
     NbglHomeAndSettings::new()
         .glyph(&FERRIS)
+        .settings(settings.get_mut(), &settings_strings)
         .infos(name, app_version.as_str(), "Zondax AG")
         .show()
 }
