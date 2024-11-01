@@ -195,8 +195,10 @@ impl<'a> Transaction<'a> {
     ) -> Result<(), ParserError> {
         zlog_stack("Transaction::format_output\n");
         let mut buffer = [0; u64::FORMATTED_SIZE_DECIMAL + 2];
+        let asset_id = hex::encode(note.asset_id.as_bytes());
 
-        if let Some(token) = token_list.token(note.asset_id.to_string().as_str()) {
+        if let Some(token) = token_list.token(&asset_id) {
+            zlog_stack("Transaction::token_found\n");
             let mut amount_label = String::from("Amount(");
             amount_label.push_str(token.symbol);
             amount_label.push_str(") ");
@@ -219,6 +221,7 @@ impl<'a> Transaction<'a> {
             fee_label.push_str(") ");
             fields.push((fee_label, String::from(fee)));
         } else {
+            zlog_stack("Transaction::unknown_token\n");
             let amount_label = String::from("Raw Amount ");
             let value_str = u64_to_str(note.value, &mut buffer)?;
 
