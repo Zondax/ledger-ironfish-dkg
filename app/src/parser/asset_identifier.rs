@@ -21,12 +21,6 @@ impl AssetIdentifier {
     }
 }
 
-impl Display for AssetIdentifier {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.0))
-    }
-}
-
 impl<'a> FromBytes<'a> for AssetIdentifier {
     #[inline(never)]
     fn from_bytes_into(
