@@ -1,8 +1,12 @@
 use ledger_device_sdk::nvm::*;
 use ledger_device_sdk::NVMData;
 
-// This is necessary to store the object in NVM and not in RAM
+const OFF_STATE: u8 = 0;
+const ON_STATE: u8 = 1;
+
 const SETTINGS_SIZE: usize = 10;
+const EXPERT_MODE_FLAG: usize = 0;
+
 #[link_section = ".nvm_data"]
 static mut DATA: NVMData<AtomicStorage<[u8; SETTINGS_SIZE]>> =
     NVMData::new(AtomicStorage::new(&[0u8; SETTINGS_SIZE]));
@@ -31,5 +35,23 @@ impl Settings {
         let storage = unsafe { DATA.get_ref() };
         let settings = storage.get_ref();
         settings[index]
+    }
+
+    pub fn set_element(&self, index: usize, value: u8) {
+        let storage = unsafe { DATA.get_mut() };
+        let mut updated_data = *storage.get_ref();
+        updated_data[index] = value;
+        storage.update(&updated_data);
+    }
+
+    pub fn app_expert_mode(&self) -> bool {
+        self.get_element(EXPERT_MODE_FLAG) == ON_STATE
+    }
+
+    pub fn toggle_expert_mode(&self) {
+        match self.get_element(EXPERT_MODE_FLAG) {
+            OFF_STATE => Settings.set_element(EXPERT_MODE_FLAG, ON_STATE),
+            _ => Settings.set_element(EXPERT_MODE_FLAG, OFF_STATE),
+        }
     }
 }
