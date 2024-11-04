@@ -28,7 +28,6 @@ impl TxContext {
 
     pub fn reset_to_result(&mut self) {
         self.buffer.reset(BufferMode::Result);
-        self.done = false;
     }
 }
 
