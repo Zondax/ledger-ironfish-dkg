@@ -16,7 +16,9 @@
  *****************************************************************************/
 use alloc::string::String;
 use include_gif::include_gif;
-use ledger_device_sdk::io::{Comm, Event};
+use ledger_device_sdk::io::Comm;
+#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+use ledger_device_sdk::io::Event;
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
@@ -28,6 +30,7 @@ use ledger_device_sdk::ui::{
 use ledger_device_sdk::nbgl::{NbglGlyph, NbglHomeAndSettings};
 
 use crate::nvm::settings::Settings;
+#[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use crate::Instruction;
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
@@ -80,7 +83,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 }
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
-pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
+pub fn ui_menu_main(_: &mut Comm) -> NbglHomeAndSettings {
     #[cfg(target_os = "stax")]
     const APP_ICON: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
     #[cfg(target_os = "flex")]
@@ -106,5 +109,4 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
         .glyph(&APP_ICON)
         .settings(settings.get_mut(), &settings_strings)
         .infos(name, app_version.as_str(), "Zondax AG")
-        .show()
 }

@@ -14,8 +14,6 @@ export const models: IDeviceModel[] = [
   // Nano S device is not supported
   // TODO enable nanox
   // { name: 'nanox', prefix: 'X', path: APP_PATH_X },
-  { name: 'nanosp', prefix: 'SP', path: APP_PATH_SP },
-  { name: 'stax', prefix: 'ST', path: APP_PATH_ST },
   { name: 'flex', prefix: 'FL', path: APP_PATH_FL },
 ]
 
