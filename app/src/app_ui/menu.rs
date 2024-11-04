@@ -16,7 +16,9 @@
  *****************************************************************************/
 use alloc::string::String;
 use include_gif::include_gif;
-use ledger_device_sdk::io::{Comm, Event};
+use ledger_device_sdk::io::Comm;
+#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+use ledger_device_sdk::io::Event;
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use ledger_device_sdk::ui::{
@@ -27,6 +29,8 @@ use ledger_device_sdk::ui::{
 #[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::{NbglGlyph, NbglHomeAndSettings};
 
+use crate::nvm::settings::Settings;
+#[cfg(not(any(target_os = "stax", target_os = "flex")))]
 use crate::Instruction;
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
@@ -47,31 +51,46 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
         _first_page_label = ["Ironfish DKG", "Ready"];
     }
 
-    let pages = [
-        &Page::from((_first_page_label, &APP_ICON)),
-        &Page::from((["Ironfish DKG", app_version.as_str()], true, true)),
-        &Page::from((["Developed by", "Zondax.ch"], true, true)),
-        &Page::from((["License", "Apache 2.0"], true, true)),
-        &Page::from(("Quit", &DASHBOARD)),
-    ];
-
+    let mut last_page = 0;
     loop {
-        match MultiPageMenu::new(comm, &pages).show() {
+        let expert_mode_label = match Settings.app_expert_mode() {
+            true => "Enabled",
+            false => "Disabled",
+        };
+
+        let pages = [
+            &Page::from((_first_page_label, &APP_ICON)),
+            &Page::from((["Expert Mode", expert_mode_label], true, true)),
+            &Page::from((["Ironfish DKG", app_version.as_str()], true, true)),
+            &Page::from((["Developed by", "Zondax.ch"], true, true)),
+            &Page::from((["License", "Apache 2.0"], true, true)),
+            &Page::from(("Quit", &DASHBOARD)),
+        ];
+
+        match MultiPageMenu::new(comm, &pages).show_from(last_page) {
             EventOrPageIndex::Event(e) => return e,
-            EventOrPageIndex::Index(4) => ledger_device_sdk::exit_app(0),
-            EventOrPageIndex::Index(_) => (),
+            EventOrPageIndex::Index(page_index) => {
+                match page_index {
+                    1 => Settings.toggle_expert_mode(),
+                    5 => ledger_device_sdk::exit_app(0),
+                    _ => (),
+                }
+
+                last_page = page_index
+            }
         }
     }
 }
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
-pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
-    // Load glyph from 64x64 4bpp gif file with include_gif macro. Creates an NBGL compatible glyph.
-
+pub fn ui_menu_main(_: &mut Comm) -> NbglHomeAndSettings {
     #[cfg(target_os = "stax")]
-    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
+    const APP_ICON: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
     #[cfg(target_os = "flex")]
-    const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
+    const APP_ICON: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
+
+    let settings_strings = [["Expert Mode", ""]];
+    let mut settings: Settings = Default::default();
 
     let production_build = option_env!("PRODUCTION_BUILD").unwrap_or("1");
 
@@ -87,7 +106,7 @@ pub fn ui_menu_main(_: &mut Comm) -> Event<Instruction> {
 
     // Display the home screen.
     NbglHomeAndSettings::new()
-        .glyph(&FERRIS)
+        .glyph(&APP_ICON)
+        .settings(settings.get_mut(), &settings_strings)
         .infos(name, app_version.as_str(), "Zondax AG")
-        .show()
 }

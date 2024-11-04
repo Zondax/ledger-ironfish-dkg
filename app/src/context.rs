@@ -1,8 +1,12 @@
 use crate::nvm::buffer::{Buffer, BufferMode};
+#[cfg(any(target_os = "stax", target_os = "flex"))]
+use ledger_device_sdk::nbgl::NbglHomeAndSettings;
 
 pub struct TxContext {
     pub buffer: Buffer,
     pub done: bool,
+    #[cfg(any(target_os = "stax", target_os = "flex"))]
+    pub home: NbglHomeAndSettings,
 }
 
 // Implement constructor for TxInfo with default values
@@ -12,6 +16,8 @@ impl TxContext {
         TxContext {
             buffer: Buffer::new(),
             done: false,
+            #[cfg(any(target_os = "stax", target_os = "flex"))]
+            home: Default::default(),
         }
     }
 
@@ -22,7 +28,6 @@ impl TxContext {
 
     pub fn reset_to_result(&mut self) {
         self.buffer.reset(BufferMode::Result);
-        self.done = false;
     }
 }
 

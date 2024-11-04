@@ -14,13 +14,12 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import Zemu, { ButtonKind, DEFAULT_START_OPTIONS, IDeviceModel, isTouchDevice } from '@zondax/zemu'
-import { defaultOptions, identities, models, restoreKeysTestCases } from './common'
+import Zemu, { ButtonKind, isTouchDevice } from '@zondax/zemu'
+import { defaultOptions, models } from './common'
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions } from '@ironfish/rust-nodejs'
 import { Transaction } from '@ironfish/sdk'
 import { buildTx, minimizeRound3Inputs, runMethod, startTextFn } from './utils'
-import { TModel } from '@zondax/zemu/dist/types'
 import aggregateSignatureShares = multisig.aggregateSignatureShares
 
 jest.setTimeout(4500000)
