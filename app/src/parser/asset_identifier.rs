@@ -1,4 +1,3 @@
-use core::fmt::{self, Display, Formatter};
 use core::ptr::addr_of_mut;
 
 use arrayref::array_ref;
@@ -18,12 +17,6 @@ pub struct AssetIdentifier([u8; ASSET_ID_LENGTH]);
 impl AssetIdentifier {
     pub fn as_bytes(&self) -> &[u8; ASSET_ID_LENGTH] {
         &self.0
-    }
-}
-
-impl Display for AssetIdentifier {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.0))
     }
 }
 
