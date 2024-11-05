@@ -23,14 +23,17 @@ describe.each(models)('wrong actions', function (m) {
       if (ONE_GLOBAL_APP) globalSims.push(new Zemu(m.path))
       else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
 
-      for (let i = 0; i < globalSims.length; i++)
-        await globalSims[i].start({
+      for (let i = 0; i < globalSims.length; i++) {
+        let sim = globalSims[i]
+        await sim.start({
           ...defaultOptions,
           model: m.name,
           startText: startTextFn(m.name),
           approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
           approveAction: ButtonKind.ApproveTapButton,
         })
+        await sim.toggleExpertMode()
+      }
 
       try {
         const reqs = []
