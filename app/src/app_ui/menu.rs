@@ -34,6 +34,7 @@ use crate::nvm::settings::Settings;
 use crate::Instruction;
 
 #[cfg(not(any(target_os = "stax", target_os = "flex")))]
+#[inline(never)]
 pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     const APP_ICON: Glyph = Glyph::from_include(include_gif!("nanox_icon.gif"));
 
@@ -58,6 +59,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
             false => "Disabled",
         };
 
+        app_version = String::from("x");
         let pages = [
             &Page::from((_first_page_label, &APP_ICON)),
             &Page::from((["Expert Mode", expert_mode_label], true, true)),
@@ -83,6 +85,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
 }
 
 #[cfg(any(target_os = "stax", target_os = "flex"))]
+#[inline(never)]
 pub fn ui_menu_main(_: &mut Comm) -> NbglHomeAndSettings {
     #[cfg(target_os = "stax")]
     const APP_ICON: NbglGlyph = NbglGlyph::from_include(include_gif!("stax_icon.gif", NBGL));
