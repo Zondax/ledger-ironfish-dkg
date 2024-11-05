@@ -65,13 +65,3 @@ pub mod ledger {
     pub use super::nvm;
     pub use crate::context::TxContext;
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_core_functionality() {
-        // Add tests for core functionality
-    }
-}

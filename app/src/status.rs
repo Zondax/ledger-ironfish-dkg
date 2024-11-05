@@ -42,6 +42,7 @@ pub enum AppSW {
     InvalidDkgKeysVersion = 0xB023,
     TooManyParticipants = 0xB024,
     InvalidTxHash = 0xB025,
+    InvalidToken = 0xB026,
     #[cfg(feature = "ledger")]
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,
@@ -87,6 +88,7 @@ impl From<ParserError> for AppSW {
             ParserError::InvalidScalar => AppSW::InvalidScalar,
             ParserError::BufferFull => AppSW::BufferOutOfBounds,
             ParserError::InvalidTokenList => AppSW::InvalidPublicPackage,
+            ParserError::UnknownToken => AppSW::InvalidToken,
         }
     }
 }
@@ -130,6 +132,7 @@ impl From<ParserError> for IronfishError {
             ParserError::BufferFull => IronfishError::InvalidData,
             ParserError::InvalidTokenList => IronfishError::InvalidAssetIdentifier,
             ParserError::UnexpectedError => IronfishError::InvalidData,
+            ParserError::UnknownToken => IronfishError::InvalidData,
         }
     }
 }
