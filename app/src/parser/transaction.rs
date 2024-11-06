@@ -7,7 +7,7 @@ use alloc::{
 
 use nom::{
     bytes::complete::take,
-    number::complete::{le_i64, le_u128, le_u32, le_u64, le_u8},
+    number::complete::{le_i64, le_u32, le_u64, le_u8},
 };
 
 use crate::{
@@ -17,11 +17,9 @@ use crate::{
         constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
         SIGNATURE_HASH_PERSONALIZATION, TRANSACTION_SIGNATURE_VERSION, TX_HASH_LEN,
     },
-    token::{get_token_list, TokenList},
+    token::get_token_list,
     utils::int_format::intstr_to_fpstr_inplace,
 };
-
-use lexical_core::FormattedSize;
 
 mod burns;
 mod mints;
@@ -30,7 +28,7 @@ mod spends;
 
 use self::mints::MintList;
 
-use super::{FromBytes, ObjectList, ParserError, TransactionVersion};
+use super::{FromBytes, ObjectList, TransactionVersion};
 pub use burns::Burn;
 pub use mints::Mint;
 pub use outputs::Output;

@@ -11,10 +11,7 @@ use crate::{
     ironfish::{errors::IronfishError, public_address::PublicAddress},
     parser::AssetIdentifier,
     token::TokenList,
-    utils::{
-        int_format::{token_to_fp_str, u64_to_str},
-        int_to_str,
-    },
+    utils::int_format::{token_to_fp_str, u64_to_str},
     FromBytes,
 };
 
