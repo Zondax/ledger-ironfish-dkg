@@ -164,15 +164,15 @@ impl Note {
 
         // Format amount and asset_id
         if let Some(token) = token_list.token(&asset_id) {
-            zlog_stack("Note::token_found\n");
-            let mut amount_label = String::from("Amount(");
-            amount_label.push_str(token.symbol);
-            amount_label.push_str(") ");
+            let amount_label = String::from("Amount");
             // value
             let amount_formatted =
                 token_to_fp_str(self.value, &mut buffer[..], token.decimals as usize)?;
-            let amount_formatted =
-                core::str::from_utf8(amount_formatted).map_err(|_| ParserError::UnexpectedValue)?;
+            let mut amount_formatted = String::from(
+                core::str::from_utf8(amount_formatted).map_err(|_| ParserError::UnexpectedValue)?,
+            );
+            amount_formatted.push_str(" ");
+            amount_formatted.push_str(token.symbol);
 
             // push values
             fields.push((amount_label, String::from(amount_formatted)));

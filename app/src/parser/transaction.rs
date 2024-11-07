@@ -168,14 +168,16 @@ impl<'a> Transaction<'a> {
         let mut buffer = [0; lexical_core::BUFFER_SIZE];
 
         // Format transaction fee
-        let fee_label = String::from("Fee(IRON)");
+        let fee_label = String::from("Fee");
 
         // Safe to unwrap, IRON is the oficial token
         let token = token_list.toke_by_symbol("IRON").unwrap();
         lexical_core::write(self.fee, &mut buffer[..]);
         let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
-        let fee = core::str::from_utf8(raw).unwrap();
-        fields.push((fee_label, String::from(fee)));
+        let mut fee = String::from(core::str::from_utf8(raw).unwrap());
+        fee.push_str(" ");
+        fee.push_str(token.symbol);
+        fields.push((fee_label, fee));
 
         // Add expiration
         buffer.fill(0);

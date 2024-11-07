@@ -6,12 +6,12 @@ input_file: src/parser/testvectors/transaction_simple.json
 [
     "Tx Version": "V1",
     "To ": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
-    "Amount(IRON) ": "0.0000004",
+    "Amount": "0.0000004 IRON",
     "To ": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
     "Raw Amount ": "5",
     "AssetId ": "da40fc530a12327a1c1c367b8bd66ada35100501228cdb355b8fb6c40d048a64",
     "To ": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
-    "Amount(IRON) ": "0.00000001",
-    "Fee(IRON)": "0.00000001",
+    "Amount": "0.00000001 IRON",
+    "Fee": "0.00000001 IRON",
     "Expiration": "0",
 ]
