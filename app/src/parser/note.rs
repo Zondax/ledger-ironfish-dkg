@@ -175,7 +175,7 @@ impl Note {
             amount_formatted.push_str(token.symbol);
 
             // push values
-            fields.push((amount_label, String::from(amount_formatted)));
+            fields.push((amount_label, amount_formatted));
         } else {
             zlog_stack("Note::unknown_token\n");
 
