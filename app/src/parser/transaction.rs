@@ -171,10 +171,16 @@ impl<'a> Transaction<'a> {
         let fee_label = String::from("Fee");
 
         // Safe to unwrap, IRON is the oficial token
-        let token = token_list.toke_by_symbol("IRON").unwrap();
+        let Some(token) = token_list.toke_by_symbol("IRON") else {
+            return Err(IronfishError::InvalidData);
+        };
+
         lexical_core::write(self.fee, &mut buffer[..]);
         let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
-        let mut fee = String::from(core::str::from_utf8(raw).unwrap());
+        let Ok(raw) = core::str::from_utf8(raw) else {
+            return Err(IronfishError::InvalidData);
+        };
+        let mut fee = String::from(raw);
         fee.push_str(" ");
         fee.push_str(token.symbol);
         fields.push((fee_label, fee));
