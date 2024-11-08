@@ -6,26 +6,51 @@ import Zemu, { ButtonKind, DEFAULT_START_OPTIONS, IDeviceModel, isTouchDevice } 
 import IronfishApp from '@zondax/ledger-ironfish'
 import { defaultOptions } from './common'
 
-export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any) => {
-  // create raw/proposed transaction
-  let in_note = new Note(publicAddress, BigInt(42), Buffer.from(''), Asset.nativeId(), publicAddress)
-  let out_note = new Note(publicAddress, BigInt(40), Buffer.from(''), Asset.nativeId(), publicAddress)
-  let asset = new Asset(publicAddress, 'Testcoin', 'A really cool coin')
-
-  let value = BigInt(5)
-  let mint_out_note = new Note(publicAddress, value, Buffer.from(''), asset.id(), publicAddress)
-
-  let witness = devUtils.makeFakeWitness(new NoteSDK(in_note.serialize()))
+export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any, nativeAssetOnly: boolean = false) => {
+  const nativeAssetId = Asset.nativeId()
+  // Create new custom asset
+  let new_asset = new Asset(publicAddress, 'Testcoin', 'A really cool coin')
+  let customAssetId = new_asset.id()
 
   let transaction = new Transaction(LATEST_TRANSACTION_VERSION)
-  transaction.spend(in_note, witness)
-  transaction.output(out_note)
-  transaction.mint(asset, value)
-  transaction.output(mint_out_note)
 
-  let intended_fee = BigInt(1)
+  if (nativeAssetOnly) {
+    // Case 1: Native token only
+    // inputs = outputs + 1, no mint outputs
+    const out_amount = BigInt(40)
+    const intended_fee = BigInt(1)
+    const in_amount = out_amount + intended_fee // 41 = 40 + 1
 
-  return transaction.build(proofKey.nsk, viewKeys.viewKey, viewKeys.ovk, intended_fee, publicAddress)
+    let in_note = new Note(publicAddress, in_amount, Buffer.from(''), nativeAssetId, publicAddress)
+    let out_note = new Note(publicAddress, out_amount, Buffer.from(''), nativeAssetId, publicAddress)
+
+    let witness = devUtils.makeFakeWitness(new NoteSDK(in_note.serialize()))
+
+    transaction.spend(in_note, witness)
+    transaction.output(out_note)
+
+    return transaction.build(proofKey.nsk, viewKeys.viewKey, viewKeys.ovk, intended_fee, publicAddress)
+  } else {
+    // Case 2: Mixed assets(including minting a token)
+    // inputs = 42, output = 40, mint = 5, fee = 1
+    const in_amount = BigInt(42)
+    const out_amount = BigInt(40)
+    const mint_amount = BigInt(5)
+    const intended_fee = BigInt(1)
+
+    let in_note = new Note(publicAddress, in_amount, Buffer.from(''), nativeAssetId, publicAddress)
+    let out_note = new Note(publicAddress, out_amount, Buffer.from(''), nativeAssetId, publicAddress)
+    let mint_out_note = new Note(publicAddress, mint_amount, Buffer.from(''), customAssetId, publicAddress)
+
+    let witness = devUtils.makeFakeWitness(new NoteSDK(in_note.serialize()))
+
+    transaction.spend(in_note, witness)
+    transaction.output(out_note)
+    transaction.mint(new_asset, mint_amount)
+    transaction.output(mint_out_note)
+
+    return transaction.build(proofKey.nsk, viewKeys.viewKey, viewKeys.ovk, intended_fee, publicAddress)
+  }
 }
 
 export const minimizeRound3Inputs = (index: number, round1PublicPackages: string[], round2PublicPackages: string[]) => {
