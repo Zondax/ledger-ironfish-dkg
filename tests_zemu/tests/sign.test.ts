@@ -15,7 +15,7 @@ const ONE_GLOBAL_APP = 0
 const ONE_APP_PER_PARTICIPANT = 1
 
 describe.each(models)('sign transaction', function (m) {
-  describe.each(restoreKeysTestCases)(`${m.name}`, ({ index, encrypted }) => {
+  describe.each(restoreKeysTestCases)(`${m.name}-sign_expert_mode`, ({ index, encrypted }) => {
     test(index + '', async () => {
       const participants = encrypted.length
       const globalSims: Zemu[] = []
@@ -168,6 +168,109 @@ describe.each(models)('sign transaction', function (m) {
         expect(signedTx.spends.length).toBe(1)
         expect(signedTx.mints.length).toBe(1)
         expect(signedTx.burns.length).toBe(0)
+      } finally {
+        for (let i = 0; i < globalSims.length; i++) await globalSims[i].close()
+      }
+    })
+  })
+
+  describe.each(restoreKeysTestCases)(`${m.name}-sign_normal_mode`, ({ index, encrypted }) => {
+    test(index + '', async () => {
+      const participants = encrypted.length
+      const globalSims: Zemu[] = []
+
+      let identities: any[] = []
+      let commitments: any[] = []
+      let signatures: any[] = []
+
+      if (ONE_GLOBAL_APP) globalSims.push(new Zemu(m.path))
+      else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
+
+      for (let i = 0; i < globalSims.length; i++) {
+        let sim = globalSims[i]
+        await sim.start({
+          ...defaultOptions,
+          model: m.name,
+          startText: startTextFn(m.name),
+          approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+          approveAction: ButtonKind.ApproveTapButton,
+        })
+      }
+
+      try {
+        for (let i = 0; i < participants; i++) {
+          await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            let result = app.dkgRestoreKeys(encrypted[i])
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-restore-keys`)
+
+            await result
+          })
+        }
+
+        let viewKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+          console.log('ovk', result.ovk.toString('hex'))
+
+          return {
+            viewKey: result.viewKey.toString('hex'),
+            ivk: result.ivk.toString('hex'),
+            ovk: result.ovk.toString('hex'),
+          }
+        })
+
+        let proofKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
+
+          return { ak: result.ak.toString('hex'), nsk: result.nsk.toString('hex') }
+        })
+
+        let pubkey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
+
+          return result.publicAddress.toString('hex')
+        })
+
+        let publicPackage = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result = await app.dkgGetPublicPackage()
+
+          return result.publicPackage.toString('hex')
+        })
+
+        for (let i = 0; i < participants; i++) {
+          const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            return await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
+          })
+
+          if (!identity.identity) throw new Error('no identity found')
+
+          identities.push(identity.identity.toString('hex'))
+        }
+
+        // Use only native tokens
+        const unsignedTxRaw = buildTx(pubkey, viewKey, proofKey, true)
+        const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
+
+        const serialized = unsignedTx.serialize()
+        console.log('unsignedTx', serialized.toString('hex'))
+
+        for (let i = 0; i < participants; i++) {
+          await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            // Change the approve button type to hold, as we are signing a tx now.
+            sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
+            const resultReq = app.reviewTransaction(serialized.toString('hex'))
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-review-transaction_normal_mode`)
+
+            const result = await resultReq
+            expect(result.hash.length).toBeTruthy()
+            expect(result.hash.toString('hex')).toBe(unsignedTx.hash().toString('hex'))
+
+            return result
+          })
+        }
       } finally {
         for (let i = 0; i < globalSims.length; i++) await globalSims[i].close()
       }
