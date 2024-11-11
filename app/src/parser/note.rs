@@ -164,9 +164,7 @@ impl Note {
 
         // Format amount and asset_id
         if let Some(token) = token_list.token(&asset_id) {
-            let mut amount_label = String::from("Amount(");
-            amount_label.push_str(token.symbol);
-            amount_label.push_str(") ");
+            let amount_label = String::from("Amount");
             // value
             let amount_formatted =
                 token_to_fp_str(self.value, &mut buffer[..], token.decimals as usize)?;

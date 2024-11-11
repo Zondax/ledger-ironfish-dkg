@@ -167,12 +167,6 @@ impl<'a> Transaction<'a> {
             // now get the encrypted Note
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
 
-            let owner_value = hex::encode(note.owner.public_address());
-            let mut owner_label = String::from("To ");
-            let output_num_str = int_to_str(output_number as u8);
-            owner_label.push_str(output_num_str.as_str());
-            fields.push((owner_label, owner_value));
-
             // Now process amount and fees
             note.review_fields(&token_list, &mut fields)?;
         }
@@ -185,11 +179,11 @@ impl<'a> Transaction<'a> {
         // Add fee
         lexical_core::write(self.fee, &mut buffer[..]);
         let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
-        let fee = core::str::from_utf8(raw).unwrap();
-        let mut fee_label = String::from("Fee(");
-        fee_label.push_str(token.symbol);
-        fee_label.push_str(") ");
-        fields.push((fee_label, String::from(fee)));
+        let mut fee = String::from(core::str::from_utf8(raw).unwrap());
+        let mut fee_label = String::from("Fee");
+        fee.push_str(" ");
+        fee.push_str(token.symbol);
+        fields.push((fee_label, fee));
 
         // Add expiration
         let raw = lexical_core::write(self.expiration, &mut buffer);
