@@ -1,12 +1,17 @@
+use alloc::{string::String, vec::Vec};
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
-
 use jubjub::AffinePoint;
 use nom::number::complete::le_u64;
 
+#[cfg(feature = "ledger")]
+use crate::nvm::settings::Settings;
 use crate::{
+    bolos::zlog_stack,
     crypto::{decrypt, read_scalar},
     ironfish::{errors::IronfishError, public_address::PublicAddress},
     parser::AssetIdentifier,
+    token::TokenList,
+    utils::int_format::{token_to_fp_str, u64_to_str},
     FromBytes,
 };
 
@@ -134,4 +139,68 @@ impl Note {
     //        .to_affine()
     //        .get_u()
     //}
+}
+
+impl Note {
+    /// Returns the fields to be displayed for this note:
+    /// To: destination of the funds
+    /// Amount: the amount to be send
+    /// asset_id: Only if token is unknown
+    pub fn review_fields(
+        &self,
+        token_list: &TokenList,
+        fields: &mut Vec<(String, String)>,
+    ) -> Result<(), ParserError> {
+        use lexical_core::FormattedSize;
+
+        zlog_stack("Note::review_fields\n");
+        // Format To:
+        let to = String::from("To ");
+        let address = hex::encode(self.owner.public_address());
+        fields.push((to, address));
+
+        let mut buffer = [0; u64::FORMATTED_SIZE_DECIMAL + 2];
+        let asset_id = hex::encode(self.asset_id.as_bytes());
+
+        // Format amount and asset_id
+        if let Some(token) = token_list.token(&asset_id) {
+            let mut amount_label = String::from("Amount(");
+            amount_label.push_str(token.symbol);
+            amount_label.push_str(") ");
+            // value
+            let amount_formatted =
+                token_to_fp_str(self.value, &mut buffer[..], token.decimals as usize)?;
+            let mut amount_formatted = String::from(
+                core::str::from_utf8(amount_formatted).map_err(|_| ParserError::UnexpectedValue)?,
+            );
+            amount_formatted.push_str(" ");
+            amount_formatted.push_str(token.symbol);
+
+            // push values
+            fields.push((amount_label, amount_formatted));
+        } else {
+            zlog_stack("Note::unknown_token\n");
+
+            #[cfg(feature = "ledger")]
+            if !Settings.app_expert_mode() {
+                return Err(ParserError::UnknownToken);
+            }
+
+            let amount_label = String::from("Raw Amount ");
+            let value_str = u64_to_str(self.value, &mut buffer)?;
+
+            let value_str =
+                core::str::from_utf8(value_str).map_err(|_| ParserError::UnexpectedValue)?;
+
+            // push values
+            fields.push((amount_label, String::from(value_str)));
+
+            // Add asset_id
+            let label = String::from("AssetId ");
+            let asset_id = hex::encode(self.asset_id.as_bytes());
+            fields.push((label, asset_id));
+        }
+
+        Ok(())
+    }
 }
