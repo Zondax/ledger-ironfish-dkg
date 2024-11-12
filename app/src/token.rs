@@ -8,7 +8,7 @@ pub struct TokenList<'a> {
     #[serde(rename = "schemaVersion")]
     _schema_version: u32,
     #[serde(bound(deserialize = "'de: 'a"))]
-    assets: [TokenInfo<'a>; 1],
+    pub assets: [TokenInfo<'a>; 1],
 }
 
 #[derive(Debug, Deserialize)]
@@ -30,20 +30,14 @@ pub fn get_token_list() -> Result<TokenList<'static>, ParserError> {
 }
 
 impl<'a> TokenList<'a> {
-    pub fn get_ticker(&self, asset_id: &str) -> Option<&str> {
-        self.assets.iter().find_map(|asset| {
-            if asset.identifier == asset_id {
-                Some(asset.symbol)
-            } else {
-                None
-            }
-        })
-    }
-
     pub fn token(&self, asset_id: &str) -> Option<&TokenInfo> {
         self.assets
             .iter()
             .find(|asset| asset.identifier == asset_id)
+    }
+
+    pub fn toke_by_symbol(&self, symbol: &str) -> Option<&TokenInfo> {
+        self.assets.iter().find(|asset| asset.symbol == symbol)
     }
 }
 

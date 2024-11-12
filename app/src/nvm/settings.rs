@@ -31,13 +31,16 @@ impl Settings {
         return unsafe { DATA.get_ref() };
     }
 
-    pub fn get_element(&self, index: usize) -> u8 {
+    pub fn get_element(&self, index: usize) -> Option<u8> {
         let storage = unsafe { DATA.get_ref() };
         let settings = storage.get_ref();
-        settings[index]
+        settings.get(index).copied()
     }
 
     pub fn set_element(&self, index: usize, value: u8) {
+        if index >= SETTINGS_SIZE {
+            return;
+        }
         let storage = unsafe { DATA.get_mut() };
         let mut updated_data = *storage.get_ref();
         updated_data[index] = value;
@@ -45,12 +48,14 @@ impl Settings {
     }
 
     pub fn app_expert_mode(&self) -> bool {
-        self.get_element(EXPERT_MODE_FLAG) == ON_STATE
+        self.get_element(EXPERT_MODE_FLAG)
+            .map(|mode| mode == ON_STATE)
+            .unwrap_or(false)
     }
 
     pub fn toggle_expert_mode(&self) {
         match self.get_element(EXPERT_MODE_FLAG) {
-            OFF_STATE => Settings.set_element(EXPERT_MODE_FLAG, ON_STATE),
+            Some(OFF_STATE) => Settings.set_element(EXPERT_MODE_FLAG, ON_STATE),
             _ => Settings.set_element(EXPERT_MODE_FLAG, OFF_STATE),
         }
     }

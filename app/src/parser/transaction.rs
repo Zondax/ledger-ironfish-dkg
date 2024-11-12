@@ -17,11 +17,9 @@ use crate::{
         constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
         SIGNATURE_HASH_PERSONALIZATION, TRANSACTION_SIGNATURE_VERSION, TX_HASH_LEN,
     },
-    token::{get_token_list, TokenList},
-    utils::int_format::{intstr_to_fpstr_inplace, token_to_fp_str, u64_to_str},
+    token::get_token_list,
+    utils::int_format::intstr_to_fpstr_inplace,
 };
-
-use lexical_core::FormattedSize;
 
 mod burns;
 mod mints;
@@ -30,8 +28,7 @@ mod spends;
 
 use self::mints::MintList;
 
-use super::{FromBytes, Note, ObjectList, ParserError, TransactionVersion};
-use crate::utils::int_to_str;
+use super::{FromBytes, ObjectList, ParserError, TransactionVersion};
 pub use burns::Burn;
 pub use mints::Mint;
 pub use outputs::Output;
@@ -58,7 +55,7 @@ impl<'a> FromBytes<'a> for Transaction<'a> {
     fn from_bytes_into(
         input: &'a [u8],
         out: &mut core::mem::MaybeUninit<Self>,
-    ) -> Result<&'a [u8], nom::Err<super::ParserError>> {
+    ) -> Result<&'a [u8], nom::Err<ParserError>> {
         zlog_stack("Transaction::from_bytes_into\n");
         let out = out.as_mut_ptr();
 
@@ -156,9 +153,7 @@ impl<'a> Transaction<'a> {
 
         let token_list = get_token_list()?;
 
-        for (i, output) in self.outputs.iter().enumerate() {
-            let output_number = i + 1;
-
+        for output in self.outputs.iter() {
             // Safe to unwrap because MerkleNote was also parsed in outputs from_bytes impl
             let Ok(merkle_note) = output.note() else {
                 return Err(IronfishError::InvalidData);
@@ -167,16 +162,23 @@ impl<'a> Transaction<'a> {
             // now get the encrypted Note
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
 
-            let owner_value = hex::encode(note.owner.public_address());
-            let mut owner_label = String::from("To ");
-            let output_num_str = int_to_str(output_number as u8);
-            owner_label.push_str(output_num_str.as_str());
-            fields.push((owner_label, owner_value));
-
             // Now process amount and fees
-            self.format_output(&token_list, &note, &mut fields)?;
+            note.review_fields(&token_list, &mut fields)?;
         }
+        // Safe to unwrap, IRON is the oficial token
+        let Some(token) = token_list.toke_by_symbol("IRON") else {
+            return Err(IronfishError::InvalidData);
+        };
+
         let mut buffer = [0; lexical_core::BUFFER_SIZE];
+        // Add fee
+        lexical_core::write(self.fee, &mut buffer[..]);
+        let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
+        let mut fee = String::from(core::str::from_utf8(raw).unwrap());
+        let fee_label = String::from("Fee");
+        fee.push(' ');
+        fee.push_str(token.symbol);
+        fields.push((fee_label, fee));
 
         // Add expiration
         let raw = lexical_core::write(self.expiration, &mut buffer);
@@ -184,62 +186,6 @@ impl<'a> Transaction<'a> {
         fields.push(("Expiration".to_string(), String::from(expiration)));
 
         Ok(fields)
-    }
-
-    fn format_output(
-        &self,
-        // token_list: &TokenList<'_>,
-        token_list: &TokenList<'_>,
-        note: &Note,
-        fields: &mut Vec<(String, String)>,
-    ) -> Result<(), ParserError> {
-        zlog_stack("Transaction::format_output\n");
-        let mut buffer = [0; u64::FORMATTED_SIZE_DECIMAL + 2];
-        let asset_id = hex::encode(note.asset_id.as_bytes());
-
-        if let Some(token) = token_list.token(&asset_id) {
-            zlog_stack("Transaction::token_found\n");
-            let mut amount_label = String::from("Amount(");
-            amount_label.push_str(token.symbol);
-            amount_label.push_str(") ");
-            // value
-            let amount_formatted =
-                token_to_fp_str(note.value, &mut buffer[..], token.decimals as usize)?;
-            let amount_formatted =
-                core::str::from_utf8(amount_formatted).map_err(|_| ParserError::UnexpectedValue)?;
-
-            // push values
-            fields.push((amount_label, amount_formatted.to_string()));
-
-            buffer.fill(0u8);
-            // Add fee
-            lexical_core::write(self.fee, &mut buffer[..]);
-            let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
-            let fee = core::str::from_utf8(raw).unwrap();
-            let mut fee_label = String::from("Fee(");
-            fee_label.push_str(token.symbol);
-            fee_label.push_str(") ");
-            fields.push((fee_label, String::from(fee)));
-        } else {
-            zlog_stack("Transaction::unknown_token\n");
-            let amount_label = String::from("Raw Amount ");
-            let value_str = u64_to_str(note.value, &mut buffer)?;
-
-            let value_str =
-                core::str::from_utf8(value_str).map_err(|_| ParserError::UnexpectedValue)?;
-
-            // push values
-            fields.push((amount_label, value_str.to_string()));
-
-            buffer.fill(0u8);
-
-            // Add fee
-            let raw = lexical_core::write(self.fee, &mut buffer);
-            let fee = core::str::from_utf8(raw).unwrap();
-            fields.push(("Raw Fee".to_string(), String::from(fee)));
-        }
-
-        Ok(())
     }
 
     #[inline(never)]

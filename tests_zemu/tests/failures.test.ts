@@ -23,14 +23,17 @@ describe.each(models)('wrong actions', function (m) {
       if (ONE_GLOBAL_APP) globalSims.push(new Zemu(m.path))
       else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
 
-      for (let i = 0; i < globalSims.length; i++)
-        await globalSims[i].start({
+      for (let i = 0; i < globalSims.length; i++) {
+        let sim = globalSims[i]
+        await sim.start({
           ...defaultOptions,
           model: m.name,
           startText: startTextFn(m.name),
           approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
           approveAction: ButtonKind.ApproveTapButton,
         })
+        await sim.toggleExpertMode()
+      }
 
       try {
         const reqs = []
@@ -125,6 +128,109 @@ describe.each(models)('wrong actions', function (m) {
               return result
             }),
           ).rejects.toThrow()
+        }
+      } finally {
+        for (let i = 0; i < globalSims.length; i++) await globalSims[i].close()
+      }
+    })
+  })
+
+  describe.each(restoreKeysTestCases)(`${m.name} - attempt to sign an unknown token`, ({ index, encrypted }) => {
+    test(index + '', async () => {
+      const participants = encrypted.length
+      const globalSims: Zemu[] = []
+
+      let identities: any[] = []
+
+      if (ONE_GLOBAL_APP) globalSims.push(new Zemu(m.path))
+      else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
+
+      for (let i = 0; i < globalSims.length; i++) {
+        let sim = globalSims[i]
+        await sim.start({
+          ...defaultOptions,
+          model: m.name,
+          startText: startTextFn(m.name),
+          approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+          approveAction: ButtonKind.ApproveTapButton,
+        })
+      }
+
+      try {
+        const reqs = []
+        for (let i = 0; i < participants; i++) {
+          await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            let result = app.dkgRestoreKeys(encrypted[i])
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-restore-keys`)
+
+            await result
+          })
+        }
+
+        let viewKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+
+          return {
+            viewKey: result.viewKey.toString('hex'),
+            ivk: result.ivk.toString('hex'),
+            ovk: result.ovk.toString('hex'),
+          }
+        })
+
+        let proofKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
+
+          return { ak: result.ak.toString('hex'), nsk: result.nsk.toString('hex') }
+        })
+
+        let pubkey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
+
+          return result.publicAddress.toString('hex')
+        })
+
+        let publicPackages = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result = await app.dkgGetPublicPackage()
+
+          return result.publicPackage
+        })
+
+        for (let i = 0; i < participants; i++) {
+          const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            return await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
+          })
+
+          if (!identity.identity) throw new Error('no identity found')
+
+          identities.push(identity.identity.toString('hex'))
+        }
+
+        const unsignedTxRaw = buildTx(pubkey, viewKey, proofKey)
+        const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
+
+        const serialized = unsignedTx.serialize()
+
+        for (let i = 0; i < participants; i++) {
+          await expect(
+            runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+              // Change the approve button type to hold, as we are signing a tx now.
+              sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
+              try {
+                await app.reviewTransaction(serialized.toString('hex'))
+                // await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+                // await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-review-transaction`)
+              } catch (error) {
+                // Convert unknown error to string for comparison
+                const errorStr = String(error)
+                if (errorStr.includes('Unknown Return Code: 0xB010') || errorStr.includes('Timeout waiting for screen')) {
+                  throw new Error(errorStr)
+                }
+                throw error
+              }
+            }),
+          ).rejects.toThrow(/Unknown Return Code: 0xB010|Timeout waiting for screen/)
         }
       } finally {
         for (let i = 0; i < globalSims.length; i++) await globalSims[i].close()
