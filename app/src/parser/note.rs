@@ -171,7 +171,7 @@ impl Note {
             let mut amount_formatted = String::from(
                 core::str::from_utf8(amount_formatted).map_err(|_| ParserError::UnexpectedValue)?,
             );
-            amount_formatted.push_str(" ");
+            amount_formatted.push(' ');
             amount_formatted.push_str(token.symbol);
 
             // push values

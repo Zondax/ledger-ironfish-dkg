@@ -17,11 +17,9 @@ use crate::{
         constants::{KEY_LENGTH, REDJUBJUB_SIGNATURE_LEN},
         SIGNATURE_HASH_PERSONALIZATION, TRANSACTION_SIGNATURE_VERSION, TX_HASH_LEN,
     },
-    token::{get_token_list, TokenList},
-    utils::int_format::{intstr_to_fpstr_inplace, token_to_fp_str, u64_to_str},
+    token::get_token_list,
+    utils::int_format::{intstr_to_fpstr_inplace},
 };
-
-use lexical_core::FormattedSize;
 
 mod burns;
 mod mints;
@@ -30,8 +28,7 @@ mod spends;
 
 use self::mints::MintList;
 
-use super::{FromBytes, Note, ObjectList, ParserError, TransactionVersion};
-use crate::utils::int_to_str;
+use super::{FromBytes, ObjectList, ParserError, TransactionVersion};
 pub use burns::Burn;
 pub use mints::Mint;
 pub use outputs::Output;
@@ -58,7 +55,7 @@ impl<'a> FromBytes<'a> for Transaction<'a> {
     fn from_bytes_into(
         input: &'a [u8],
         out: &mut core::mem::MaybeUninit<Self>,
-    ) -> Result<&'a [u8], nom::Err<super::ParserError>> {
+    ) -> Result<&'a [u8], nom::Err<ParserError>> {
         zlog_stack("Transaction::from_bytes_into\n");
         let out = out.as_mut_ptr();
 
@@ -156,9 +153,7 @@ impl<'a> Transaction<'a> {
 
         let token_list = get_token_list()?;
 
-        for (i, output) in self.outputs.iter().enumerate() {
-            let output_number = i + 1;
-
+        for output in self.outputs.iter() {
             // Safe to unwrap because MerkleNote was also parsed in outputs from_bytes impl
             let Ok(merkle_note) = output.note() else {
                 return Err(IronfishError::InvalidData);
@@ -180,8 +175,10 @@ impl<'a> Transaction<'a> {
         lexical_core::write(self.fee, &mut buffer[..]);
         let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
         let mut fee = String::from(core::str::from_utf8(raw).unwrap());
-        let mut fee_label = String::from("Fee");
-        fee.push_str(" ");
+        let fee_label = String::from("Fee");
+        
+        fee.push(' ');
+     
         fee.push_str(token.symbol);
         fields.push((fee_label, fee));
 
