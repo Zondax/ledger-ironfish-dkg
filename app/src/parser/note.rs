@@ -152,7 +152,7 @@ impl Note {
     ) -> Result<Vec<(String, String)>, ParserError> {
         use lexical_core::FormattedSize;
 
-        let mut fileds = Vec::new();
+        let mut fields = Vec::new();
 
         zlog_stack("Note::review_fields\n");
         // Format To:

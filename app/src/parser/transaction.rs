@@ -141,6 +141,7 @@ impl<'a> Transaction<'a> {
         &self,
         ovk: &OutgoingViewKey,
     ) -> Result<Vec<(String, String)>, IronfishError> {
+        #[cfg(ledger)]
         use crate::crypto::{derive_multisig_account, multisig_to_key_type};
 
         zlog_stack("Transaction::review_fields\n");
@@ -154,11 +155,14 @@ impl<'a> Transaction<'a> {
         ));
 
         // Add from
+        #[cfg(ledger)]
         let from = {
             let from = derive_multisig_account(None).map_err(|_| IronfishError::InvalidSecret)?;
             let from = multisig_to_key_type(&from, 0u8).map_err(|_| IronfishError::InvalidData)?;
             hex::encode(from)
         };
+        #[cfg(not(ledger))]
+        let from = "b26388e8e7c12c80c7f20a8310137d4eb6b4bf3674e8a702b26ff4955f3d58c0".to_string();
 
         fields.push((String::from("From"), from.clone()));
 
@@ -174,13 +178,14 @@ impl<'a> Transaction<'a> {
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
 
             // Now process amount and fees
-            let note_fileds = note.review_fields(&token_list)?;
+            let note_fields = note.review_fields(&token_list)?;
+            // Only render items that does not belong to us
+            if !note_fields.is_empty() && note_fields[0].1 == from {
+                continue;
+            }
+
             for (key, value) in note_fields.into_iter() {
-                if key == "To" && value == from {
-                    continue;
-                } else {
-                    fields.push((key, value));
-                }
+                fields.push((key, value));
             }
         }
 
