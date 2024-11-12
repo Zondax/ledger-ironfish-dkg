@@ -21,6 +21,17 @@ use crate::{
     utils::int_format::intstr_to_fpstr_inplace,
 };
 
+#[cfg(test)]
+use once_cell::sync::Lazy;
+
+#[cfg(test)]
+use std::sync::RwLock;
+
+#[cfg(test)]
+static FROM_ADDR: Lazy<RwLock<String>> = Lazy::new(|| {
+    RwLock::new("b26388e8e7c12c80c7f20a8310137d4eb6b4bf3674e8a702b26ff4955f3d58c0".to_string())
+});
+
 mod burns;
 mod mints;
 mod outputs;
@@ -136,6 +147,37 @@ impl<'a> Transaction<'a> {
         self.outputs.iter()
     }
 
+    fn get_our_address() -> Result<String, IronfishError> {
+        #[cfg(all(feature = "ledger", not(test)))]
+        use crate::crypto::{derive_multisig_account, multisig_to_key_type};
+
+        #[cfg(all(feature = "ledger", not(test)))]
+        {
+            use crate::crypto::{derive_multisig_account, multisig_to_key_type};
+            let from = derive_multisig_account(None).map_err(|_| IronfishError::InvalidSecret)?;
+            let from = multisig_to_key_type(&from, 0u8).map_err(|_| IronfishError::InvalidData)?;
+            Ok(hex::encode(from))
+        }
+
+        #[cfg(test)]
+        {
+            Ok(FROM_ADDR.read().unwrap().to_owned())
+        }
+
+        #[cfg(not(any(test, feature = "ledger")))]
+        {
+            Ok("b26388e8e7c12c80c7f20a8310137d4eb6b4bf3674e8a702b26ff4955f3d58c0".to_string())
+            // Or handle this case differently
+        }
+    }
+
+    #[cfg(test)]
+    fn set_from_address(from: &str) {
+        if let Ok(mut addr) = FROM_ADDR.write() {
+            *addr = from.to_string();
+        }
+    }
+
     #[inline(never)]
     pub fn review_fields(
         &self,
@@ -155,21 +197,13 @@ impl<'a> Transaction<'a> {
         ));
 
         // Add from
-        #[cfg(ledger)]
-        let from = {
-            let from = derive_multisig_account(None).map_err(|_| IronfishError::InvalidSecret)?;
-            let from = multisig_to_key_type(&from, 0u8).map_err(|_| IronfishError::InvalidData)?;
-            zlog_stack("Pushed FROM***\n");
-            hex::encode(from)
-        };
-        #[cfg(not(ledger))]
-        let from = "b26388e8e7c12c80c7f20a8310137d4eb6b4bf3674e8a702b26ff4955f3d58c0".to_string();
+        let from = Self::get_our_address()?;
 
         fields.push((String::from("From"), from.clone()));
 
         let token_list = get_token_list()?;
 
-        for output in self.outputs.iter() {
+        'note: for output in self.outputs.iter() {
             // Safe to unwrap because MerkleNote was also parsed in outputs from_bytes impl
             let Ok(merkle_note) = output.note() else {
                 return Err(IronfishError::InvalidData);
@@ -180,13 +214,12 @@ impl<'a> Transaction<'a> {
 
             // Now process amount and fees
             let note_fields = note.review_fields(&token_list)?;
-            // Only render items that does not belong to us
-            if !note_fields.is_empty() && note_fields[0].1 == from {
-                zlog_stack("Skipping change_output\n");
-                continue;
-            }
 
+            // Only render items that does not belong to us
             for (key, value) in note_fields.into_iter() {
+                if key.contains("To") && &value == &from {
+                    continue 'note;
+                }
                 fields.push((key, value));
             }
         }
@@ -304,8 +337,11 @@ mod review_transaction_test {
 
     // testing data for unit tests
     const TRANSACTION: &str = "0101000000000000000300000000000000010000000000000000000000000000000100000000000000000000003475b26a991a739f6b77dd7bce822efa46d355a28cf0e4dc9c93b6ababf073c5ad26e3f59270401ff48e7ba11d800eaea4d91dc89d4ccf0975afec009dcebb07ad26e3f59270401ff48e7ba11d800eaea4d91dc89d4ccf0975afec009dcebb0795aef72203054fbfa24ffd1c375e6d69827111b74805477b38ef4932d143c6a44efc37619fbedc3a1b46d5613202ac6baf75caadb2ac6b6c9db0b02acf8698a1f51eb6a1a1dbebf7fa0b034803716d103c96e9893180cc971824bc2b978e1b1600ebd35de5d6b921b2ce8aa4c03ef7312c9d6efc7e259f4dd68d5c7b632a88bc259386faae6cea9e44e232a6cbf1079486a29e9d622e3c25e1985155226c4d48342be389600dc829f89aac5a81c444fd880f5b5ba1541b9434d620543a6e8be7eef40fe52914631d18a7d4dfb1c41beed6c2b7a51efd985f2e210059f36f6000ec8ee990b1228496c0d1140767f2aae76d79e09f5f777ff5af0f89ef6aefe7337805000045e9b744ed2afca6615aa6ba00dcf578979391b219ca05e90447abf21315a9be00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b9032b6225f92f518e019f07373891b6524df7bd3e25afc0b0fb7f5ca2da049c419860e0eb24aff16d830bc21061662393a76e80b2ef434d6f9bbfc3926644e933210d159074e80b368c16312710226160c38e0b05e69a8f353c5de3e0e6fd1e03892c58d7e8eeb5604aab425b445d86e9357341e2a175b8835b99653d75ba42c11500beeb61c90523a7dee736d73ab2a6e496b7aa8241ae8bd222475f3e0b510b0f5a57c5a97583d342d4c8740f66fb856d730caafa608296b2b02aa7bd4a99499b3cde309b75e0200df587d09952547f29046abc4fdd47714860d09f9cdcf3f3c24fd8d8fd0e0d2f83f1191ff59f37fa811d1a4c90faf70d4da89ef228ce6d8d0af19c715cae4d74fe07d3d66c473dff6799bc3d8979fafd5a9cef9b1d7650a1f488cd3478146e27075c1b1c73697ba64e94b37d13f29d22068ef58a7a721138213f218a11d1ab4b88d41420b40a010c9cbf2e10f00f7ae52dd54eeb9b716fac76db7d364b5cf43d278b61a0863234c03485364347505af9c86b8d582c453c1c98e52882d08e49d496791a899796ea3e5773435edc97caadffcc579341474cc31b87e6b19b0d526618585a6693184f903512ef641eda23f30e3a45782e95d1c3529230566b78aa1421834c58d0d44ab79467aff475858a38cbd67d4c4af4ed0cf677a063fea0b38b193ab6a18d81b3848f941d61b46bd86f348c613a9b0dc18610fae24d7328209168bb05d58d1085496a5a4769da339fa3ef1463956da25ccaff94a58beff6417d3f94d07eece27b8ca1db74ce29cce9a40556f8967d5ebb58da4efd01e4fb9b27578fc8e883320cff5f36a1b69706816cabdaff3ba9cb06756d8c37d760419d05bd9b8ffa84ed6ea98b952f0ea2e927ba0782e90a949b8821c305c20db46d66c00b48fc4150eeff0bc07a6fd890c80a802657573703a1b7aa9bd3b6eda9ad2adce2f162d1117aaf08093c779dd4db20c94a48e62357ade7daf5284d3b4d2f6885dc03a34b48aa2890ab4c60128769bf8bef2ee7a06f4d552eaed15c4df1da5ccf3762f37b818c9d62f7464416bc40f59c4f3c6299a929a67dd3d09e00d1bd68c16d38ee66e34b54272e0fdd2eb74c91e2eb66d4db7d061ddedb0b88f709fa9f027b00a5fbacb4f70f48612b11caf119866afea8a05de5b9e63b096e45634d7d68aef803cec2d21f91a55bea60be8abb233afe7dbbc415546945350432dc858064d42b82b0f0397fca660dddd45e9d95898d98d2fcbf2eb0c5de920aed36f3f56b511dd1ca5551a14b5d1b235be781c7c1a6f3297d4bccf83abb11bcaca33e12ea204c06849b39dae12e0cee817e0cbde1b1d1906b88cac1d96ed59c1377a0f7eac1a4efe9d2cafbcfd0c270f0d8311ac9839ad60cc834c1785e2796485dd844fa0694091206f8d3563830c2160a5510a41970da6cd5a0f810d36df27339db81152a7c2acc2f958f8d847ef2a9b18862eb2ebe6e2a635f905db4416d594d25268c61d163ee17d0b9052a6103d70139ec53b9f8328d5e3eed90541e494ad15da810b71fba9543198a4505e464608367a7fc83ae6ac1f7a63f3594d20452d928b86bbdccda5f9257f615eef5f05a7513cff8d074860980bca8873d387bb23894694650c9adad3ac1ba0ef617dbcec9946d874516131944e6e3a10eb017d696a20eaf9af5ffbc83b8f2db1e2cf82bfa1a2072523b844108d8fa9c980443c92121b2a2d47114b4dec3b0dbdab9ebd96295443d8a587682a044c2cc7ba72e9842ffb1156b7c774efdf0cdb5f96be7ad6cb1c361e3d7ee645c0c57dd23b4d247d940063cfa8a4afb72b671cc1d6f9037aac0cab8852d606d5616f41a3f8d7901176060a75e4c9e18d65cd2679fe5083c6e40e247c74f29b4ab9ea38827c7f4d1f1fac5a7409262374adcf69975be903a8561b83e37980567fd179e0f7eab72cb77f5fab2e44e49f8cb75f126b5d60cdbcacd00ab422d48d32d2db75442549ed7fe4b220ca969a9d8a4248cff3725f34cb64c6a59e73d8e841e5995075f32feec14d2954af1afec302d30d24214025e833f68676b1242f27dba75dd53426b46ea4fff0163ba0cce0e6e9ceecd5191199f5c9b867e62a4ab18781f7b440e6d9470ba05f09f0ed1062a745f4cb952ca862c91c3d3e88779f51c43bdc0973f03b5266f3296772fe19ff078ad2b7f237fcbbe47e4d2ad26e3f59270401ff48e7ba11d800eaea4d91dc89d4ccf0975afec009dcebb07b1ed0a33d8f1fb025d2fdaa5af2801bdf2aff84d3b69bdbf6882b424803170ff6db19d9e05cff32d44dbb9c5d6c5e00683956df74a3db738668124f64928c5e10fe1b733def7f86b6532c9150286d71038490e719cd4dd271e883bcd278750140ba5b3dbd716a40d94a9eeed141ae4a6d007b8cfd43a175a6c862df720bd03f7c38706371ab73ab00489294f72c6b18eb470d8f395fac71672ae4b2dd9afc8cbb986aaab0a15954d29b323fa21c13772068078845159b7b52a5bf766cea25e2640fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd54657374636f696e00000000000000000000000000000000000000000000000041207265616c6c7920636f6f6c20636f696e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000389e2f71e4e9bc3e37a8b3a5b49432f7a93574eced25fce9add210b41203ed42e414a3468188977dfa4f1bbb2e36dc1bce38e759b8a54c85bea6d75a2aeea008";
+    const TRANSACTION_UI: &str = "0101000000000000000100000000000000000000000000000000000000000000000100000000000000000000006c907fc198b35ca590c879fb9d110cb4aa50f0f3bc1457dd149cbe2ac9a89459415a44f466ce65a4327cad0941d8f9caaffe57213b810e208922df5482a20a04415a44f466ce65a4327cad0941d8f9caaffe57213b810e208922df5482a20a04a3856397be85afbdb73924992293f7c4194c8eede1194c109880a17f7f77761d6eff647f742891b5d953d2777bdc586fb720e31075137d313c64e67b52aec8e44e5a45eb9056a9af057303d5972658e17c55e25c5d57da557d91853aa71c8b2b0f35f31eaf98d3bcc7d4c2213aac5f1769b4a33df0c7b4b56edd11f1545a3086f7ee754318172c483d0c0fde3bee512da2af007912aee60eb70e03bda2dacc015a254f9155e778f9ddab4aa95186f6068b38db98549c3f96e60e5177062c3e9dec9cac89391833cd10709ba8b079e949022203e84f94ff218e6404ebcf1ab051c86214a3ab2120fe2c580f02213b29f2da1dc6f18b09e82025920b06d3700560000000007be2ad0bf3e053ecf8168cb36e63d42c2e289676374e93544a15d2509407d28800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b377aab491f002a46b904d083d2f28fa0c7699ca951438c7fc781593db9745a2aa6f46b97a18e552c177a3cbfb0758cfa06a39432ef6946292c698cfe0f1023164779cac317e7f8230fbac0893018a2794dc2124b8d2491ac7552a0a4cb32eda07d8a965918a908d398ab3798e688bea0576499de480a27a6a4035e4fc3b3280b9bb302e47d6a37a1c2845d0d5505139980b9bb53ed0ef6384e2e9ff2ad90fc7b62b7b6d5f427110680a38aa37a78d3bbabbd122409f41e03468ce80aa62f69be950150f6399dc80bc15485df565486bc6cdae841a3b7d75b974c4a068be284aa6f401e4e1d6dd21639d309f1c0dae355e3b1989690da932003129d1dafd5e3afbdb4d7650d0394fc64979d163f5ca60428c793108ec7587266db3861bb67345d60f22a71bc3509b2a4cda1059a5a24b46f0498dae07b36855625cdbff862d25efade0bf58195c41968f09458063a4698ddefd46564f9376e183e84fdc3e4ff0bb9b63b9649197b54501cae811eea93ff81170bd9f8cf70a5ced8d60281dc48dfee63381a5251961999bfd808d3e01f05052b0895ad5c20bce50ef166ef1db2a380bcf4a00c55a20b9d7d4040df248ecfbd9c2a481884bec8ba1cbf84ecab30e2dc7bb0af63bc0c0a7275cbba2eee17a577814d0e6d744d10f373ab8cae38755198b60d29df54ee5612ebcf767789ddff9d3ee0ccbfbc5ec3b71433c322df49d5a796714e2732b1e5d275ccae369ac73d3e9195e543a9785c32fd6333627989d43cf77704956b6c6838397a18404e2d143e0c99979cde4f002a8698dd8b6381e8438e5e59f5efb09";
+    const TO_ADDR: &str = "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd";
     const TX_HASH: &str = "722c8f5e8e02097b821c9c03be3165c3cecf2262f31cf2e31a10bada2fe1b033";
     const OVK: &str = "49bad8395ef448eb0048af132b5c942579024736d4c3cfd685b241b994f8f8e5";
+    const OVK_UI: &str = "49bad8395ef448eb0048af132b5c942579024736d4c3cfd685b241b994f8f8e5";
 
     struct TxFields(Vec<(String, String)>);
 
@@ -341,6 +377,14 @@ mod review_transaction_test {
     }
 
     #[test]
+    fn review_transaction() {
+        // review fields
+        tx_ui();
+
+        // check change address work
+        test_change_address();
+    }
+
     #[cfg_attr(miri, ignore)]
     fn tx_ui() {
         insta::glob!("testvectors/*.json", |path| {
@@ -376,5 +420,32 @@ mod review_transaction_test {
 
             unsafe { with_leaked(data, test) };
         });
+    }
+
+    fn test_change_address() {
+        let tx = hex::decode(TRANSACTION).unwrap();
+        let (_, tx) = Transaction::from_bytes(&tx).unwrap();
+        assert_eq!(tx.num_spends(), 1);
+        assert_eq!(tx.num_outputs(), 3);
+        assert_eq!(tx.num_mints(), 1);
+        assert_eq!(tx.num_burns(), 0);
+
+        let ovk = hex::decode(OVK).unwrap();
+        let ovk = OutgoingViewKey::new(ovk.try_into().unwrap());
+
+        // This internally uses a different from address
+        // so this must cause all outputs to be renderable
+        let view_fields = tx.review_fields(&ovk).unwrap();
+
+        assert_eq!(view_fields.len(), 11);
+
+        // Now set a different from address
+        // to ensure we filter out change address going
+        // to us
+        Transaction::set_from_address(TO_ADDR);
+
+        let view_fields = tx.review_fields(&ovk).unwrap();
+
+        assert_ne!(view_fields.len(), 11);
     }
 }
