@@ -159,6 +159,7 @@ impl<'a> Transaction<'a> {
         let from = {
             let from = derive_multisig_account(None).map_err(|_| IronfishError::InvalidSecret)?;
             let from = multisig_to_key_type(&from, 0u8).map_err(|_| IronfishError::InvalidData)?;
+            zlog_stack("Pushed FROM***\n");
             hex::encode(from)
         };
         #[cfg(not(ledger))]
@@ -181,6 +182,7 @@ impl<'a> Transaction<'a> {
             let note_fields = note.review_fields(&token_list)?;
             // Only render items that does not belong to us
             if !note_fields.is_empty() && note_fields[0].1 == from {
+                zlog_stack("Skipping change_output\n");
                 continue;
             }
 
