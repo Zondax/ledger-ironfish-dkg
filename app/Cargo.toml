@@ -60,7 +60,7 @@ lto = true
 
 
 [features]
-default = ["ledger", "ledger-debug"]
+default = ["ledger"]
 ledger = ["ledger_device_sdk", "spin", "lazy_static/spin_no_std"]
 # This will require to use zondax ledger device sdk, where zlog is added.
 ledger-debug = ["ledger_device_sdk", "spin", "lazy_static/spin_no_std"]
