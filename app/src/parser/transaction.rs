@@ -141,6 +141,8 @@ impl<'a> Transaction<'a> {
         &self,
         ovk: &OutgoingViewKey,
     ) -> Result<Vec<(String, String)>, IronfishError> {
+        use crate::crypto::{derive_multisig_account, multisig_to_key_type};
+
         zlog_stack("Transaction::review_fields\n");
 
         let mut fields = Vec::new();
@@ -150,6 +152,15 @@ impl<'a> Transaction<'a> {
             "Tx Version".to_string(),
             self.tx_version.as_str().to_string(),
         ));
+
+        // Add from
+        let from = {
+            let from = derive_multisig_account(None).map_err(|_| IronfishError::InvalidSecret)?;
+            let from = multisig_to_key_type(&from, 0u8).map_err(|_| IronfishError::InvalidData)?;
+            hex::encode(from)
+        };
+
+        fields.push((String::from("From"), from));
 
         let token_list = get_token_list()?;
 
@@ -165,12 +176,14 @@ impl<'a> Transaction<'a> {
             // Now process amount and fees
             note.review_fields(&token_list, &mut fields)?;
         }
+
         // Safe to unwrap, IRON is the oficial token
         let Some(token) = token_list.toke_by_symbol("IRON") else {
             return Err(IronfishError::InvalidData);
         };
 
         let mut buffer = [0; lexical_core::BUFFER_SIZE];
+
         // Add fee
         lexical_core::write(self.fee, &mut buffer[..]);
         let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
