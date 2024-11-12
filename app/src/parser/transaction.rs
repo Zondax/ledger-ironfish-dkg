@@ -18,7 +18,7 @@ use crate::{
         SIGNATURE_HASH_PERSONALIZATION, TRANSACTION_SIGNATURE_VERSION, TX_HASH_LEN,
     },
     token::get_token_list,
-    utils::int_format::{intstr_to_fpstr_inplace},
+    utils::int_format::intstr_to_fpstr_inplace,
 };
 
 mod burns;
@@ -176,9 +176,7 @@ impl<'a> Transaction<'a> {
         let raw = intstr_to_fpstr_inplace(&mut buffer[..], token.decimals as usize)?;
         let mut fee = String::from(core::str::from_utf8(raw).unwrap());
         let fee_label = String::from("Fee");
-        
         fee.push(' ');
-     
         fee.push_str(token.symbol);
         fields.push((fee_label, fee));
 
