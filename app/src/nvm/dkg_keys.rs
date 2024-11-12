@@ -65,15 +65,16 @@ impl DkgKeys {
     }
 
     #[inline(never)]
-    pub fn get_element(&self, index: usize) -> u8 {
+    pub fn get_element(&self, index: usize) -> Option<u8> {
         let buffer_ref: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
-        buffer_ref[index]
+        buffer_ref.get(index).copied()
     }
 
     #[inline(never)]
-    pub fn get_u16(&self, start_pos: usize) -> usize {
+    pub fn get_u16(&self, start_pos: usize) -> Option<usize> {
         let buffer_ref: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
-        ((buffer_ref[start_pos] as u16) << 8 | buffer_ref[start_pos + 1] as u16) as usize
+        let bytes = buffer_ref[start_pos..start_pos + 2].try_into().ok()?;
+        Some(u16::from_be_bytes(bytes) as usize)
     }
 
     #[inline(never)]
@@ -139,7 +140,10 @@ impl DkgKeys {
         let mut updated_data: [u8; DKG_KEYS_MAX_SIZE] = unsafe { *DATA.get_mut().get_ref() };
 
         // Convert u16 to big-endian bytes and copy them
-        updated_data[index..index + 2].copy_from_slice(&value.to_be_bytes());
+        updated_data
+            .get_mut(index..index + 2)
+            .map(|slice| slice.copy_from_slice(&value.to_be_bytes()))
+            .ok_or(AppSW::BufferOutOfBounds)?;
 
         unsafe {
             DATA.get_mut().update(&updated_data);
@@ -221,8 +225,13 @@ impl DkgKeys {
         }
 
         // Read where the previous data end up
-        let identities_pos: usize = self.get_u16(IDENTITIES_POS);
-        let identities_len: usize = self.get_u16(identities_pos);
+        let identities_pos: usize = self
+            .get_u16(IDENTITIES_POS)
+            .ok_or(AppSW::InvalidDkgStatus)?;
+
+        let identities_len: usize = self
+            .get_u16(identities_pos)
+            .ok_or(AppSW::InvalidDkgStatus)?;
         let mut pos = identities_pos + 2 + identities_len;
 
         self.set_u16(KEY_PACKAGE_POS, pos as u16)?;
