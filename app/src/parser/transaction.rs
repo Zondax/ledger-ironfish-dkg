@@ -160,7 +160,7 @@ impl<'a> Transaction<'a> {
             hex::encode(from)
         };
 
-        fields.push((String::from("From"), from));
+        fields.push((String::from("From"), from.clone()));
 
         let token_list = get_token_list()?;
 
@@ -174,7 +174,14 @@ impl<'a> Transaction<'a> {
             let note = merkle_note.decrypt_note_for_spender(ovk)?;
 
             // Now process amount and fees
-            note.review_fields(&token_list, &mut fields)?;
+            let note_fileds = note.review_fields(&token_list)?;
+            for (key, value) in note_fields.into_iter() {
+                if key == "To" && value == from {
+                    continue;
+                } else {
+                    fields.push((key, value));
+                }
+            }
         }
 
         // Safe to unwrap, IRON is the oficial token
