@@ -153,7 +153,6 @@ impl<'a> Transaction<'a> {
 
         #[cfg(all(feature = "ledger", not(test)))]
         {
-            use crate::crypto::{derive_multisig_account, multisig_to_key_type};
             let from = derive_multisig_account(None).map_err(|_| IronfishError::InvalidSecret)?;
             let from = multisig_to_key_type(&from, 0u8).map_err(|_| IronfishError::InvalidData)?;
             Ok(hex::encode(from))
@@ -217,7 +216,7 @@ impl<'a> Transaction<'a> {
 
             // Only render items that does not belong to us
             for (key, value) in note_fields.into_iter() {
-                if key.contains("To") && &value == &from {
+                if key.contains("To") && value == from {
                     continue 'note;
                 }
                 fields.push((key, value));
