@@ -1,6 +1,6 @@
 import { defaultOptions, models, restoreKeysTestCases } from './common'
 import Zemu, { ButtonKind, isTouchDevice } from '@zondax/zemu'
-import { buildTx, runMethod, startTextFn } from './utils'
+import { buildTx, IronfishKeySet, runMethod, startTextFn } from './utils'
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { multisig, UnsignedTransaction, verifyTransactions } from '@ironfish/rust-nodejs'
 import { Transaction } from '@ironfish/sdk'
@@ -13,6 +13,20 @@ jest.setTimeout(450000)
 // Otherwise, if both are falsy, one app will be started per request (each round for each participant)
 const ONE_GLOBAL_APP = 0
 const ONE_APP_PER_PARTICIPANT = 1
+
+const TEST_OUTPUT_KEY: IronfishKeySet = {
+  publicAddress: '87318a66842817fcc22001782eced854259133792e8a7d492689384bc6933683',
+  viewKey: {
+    viewKey:
+      '2b3171faacabc5c785b0eb25209220cc9177ef5a8261ad007fbec5bd5e92855f6eef1a5ad6aa2ceb3a684e9fe57810de29bb780a00f60771166ed72009ca575e',
+    ivk: '9c907178ab742e018d3de3f01be9695b0cdcbbf195474ab8d707192353c2aa07',
+    ovk: '6603a0b278f2be39cb9882ae46c8b1308907edbcb49ce8a4550b6c8d9b4cc043',
+  },
+  proofKey: {
+    ak: '2b3171faacabc5c785b0eb25209220cc9177ef5a8261ad007fbec5bd5e92855f',
+    nsk: '47fcc3d6746ad4fc83414cf8b2741c9a5ffca3e2c7a4a1f0cac14c67a4990902',
+  },
+}
 
 describe.each(models)('sign transaction', function (m) {
   describe.each(restoreKeysTestCases)(`${m.name}-sign_expert_mode`, ({ index, encrypted }) => {
@@ -69,7 +83,6 @@ describe.each(models)('sign transaction', function (m) {
 
         let pubkey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
           let result: any = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
-
           return result.publicAddress.toString('hex')
         })
 
@@ -89,7 +102,12 @@ describe.each(models)('sign transaction', function (m) {
           identities.push(identity.identity.toString('hex'))
         }
 
-        const unsignedTxRaw = buildTx(pubkey, viewKey, proofKey)
+        let senderKey: IronfishKeySet = {
+          publicAddress: pubkey,
+          viewKey: viewKey,
+          proofKey: proofKey,
+        }
+        const unsignedTxRaw = buildTx(senderKey, TEST_OUTPUT_KEY)
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
         const serialized = unsignedTx.serialize()
@@ -211,7 +229,6 @@ describe.each(models)('sign transaction', function (m) {
 
         let viewKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
           let result: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
-          console.log('ovk', result.ovk.toString('hex'))
 
           return {
             viewKey: result.viewKey.toString('hex'),
@@ -248,12 +265,16 @@ describe.each(models)('sign transaction', function (m) {
           identities.push(identity.identity.toString('hex'))
         }
 
+        let senderKey: IronfishKeySet = {
+          publicAddress: pubkey,
+          viewKey: viewKey,
+          proofKey: proofKey,
+        }
         // Use only native tokens
-        const unsignedTxRaw = buildTx(pubkey, viewKey, proofKey, true)
+        const unsignedTxRaw = buildTx(senderKey, TEST_OUTPUT_KEY, true)
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
         const serialized = unsignedTx.serialize()
-        console.log('unsignedTx', serialized.toString('hex'))
 
         for (let i = 0; i < participants; i++) {
           await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
