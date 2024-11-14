@@ -19,9 +19,16 @@ export interface IronfishKeySet {
   }
 }
 
+export interface BuildTxOptions {
+  receiver?: IronfishKeySet
+  nativeAssetOnly?: boolean
+}
+
 // publicAddress: string, viewKeys: any, proofKey: any
-export const buildTx = (sender: IronfishKeySet, receiver?: IronfishKeySet, nativeAssetOnly: boolean = false) => {
+export const buildTx = (sender: IronfishKeySet, options: BuildTxOptions = {}) => {
+  const { receiver, nativeAssetOnly = false } = options
   const nativeAssetId = Asset.nativeId()
+
   // Create new custom asset
   let new_asset = new Asset(sender.publicAddress, 'Testcoin', 'A really cool coin')
   let customAssetId = new_asset.id()
@@ -31,7 +38,6 @@ export const buildTx = (sender: IronfishKeySet, receiver?: IronfishKeySet, nativ
 
   if (nativeAssetOnly) {
     // Case 1: Native token only
-    // inputs = outputs + 1, no mint outputs
     const out_amount = BigInt(40)
     const intended_fee = BigInt(1)
     const in_amount = out_amount + intended_fee // 41 = 40 + 1
@@ -46,8 +52,7 @@ export const buildTx = (sender: IronfishKeySet, receiver?: IronfishKeySet, nativ
 
     return transaction.build(sender.proofKey.nsk, sender.viewKey.viewKey, sender.viewKey.ovk, intended_fee, sender.publicAddress)
   } else {
-    // Case 2: Mixed assets(including minting a token)
-    // inputs = 42, output = 40, mint = 5, fee = 1
+    // Case 2: Mixed assets (including minting a token)
     const in_amount = BigInt(42)
     const out_amount = BigInt(40)
     const mint_amount = BigInt(5)

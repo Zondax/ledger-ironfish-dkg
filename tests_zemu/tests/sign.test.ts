@@ -28,8 +28,8 @@ const TEST_OUTPUT_KEY: IronfishKeySet = {
   },
 }
 
-describe.each(models)('sign transaction', function (m) {
-  describe.each(restoreKeysTestCases)(`${m.name}-sign_expert_mode`, ({ index, encrypted }) => {
+describe.each(models)('review transaction', function (m) {
+  describe.each(restoreKeysTestCases)(`${m.name}-review_tx_expert_mode`, ({ index, encrypted }) => {
     test(index + '', async () => {
       const participants = encrypted.length
       const globalSims: Zemu[] = []
@@ -107,7 +107,8 @@ describe.each(models)('sign transaction', function (m) {
           viewKey: viewKey,
           proofKey: proofKey,
         }
-        const unsignedTxRaw = buildTx(senderKey, TEST_OUTPUT_KEY)
+        console.log('senderAddr', senderKey.publicAddress)
+        const unsignedTxRaw = buildTx(senderKey, { receiver: TEST_OUTPUT_KEY })
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
         const serialized = unsignedTx.serialize()
@@ -119,7 +120,7 @@ describe.each(models)('sign transaction', function (m) {
             const resultReq = app.reviewTransaction(serialized.toString('hex'))
 
             await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
-            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-review-transaction`)
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-review-transaction_expert_mode`)
 
             const result = await resultReq
             expect(result.hash.length).toBeTruthy()
@@ -192,7 +193,7 @@ describe.each(models)('sign transaction', function (m) {
     })
   })
 
-  describe.each(restoreKeysTestCases)(`${m.name}-sign_normal_mode`, ({ index, encrypted }) => {
+  describe.each(restoreKeysTestCases)(`${m.name}-review_tx_normal_mode`, ({ index, encrypted }) => {
     test(index + '', async () => {
       const participants = encrypted.length
       const globalSims: Zemu[] = []
@@ -270,8 +271,9 @@ describe.each(models)('sign transaction', function (m) {
           viewKey: viewKey,
           proofKey: proofKey,
         }
+        console.log('senderAddr', senderKey.publicAddress)
         // Use only native tokens
-        const unsignedTxRaw = buildTx(senderKey, TEST_OUTPUT_KEY, true)
+        const unsignedTxRaw = buildTx(senderKey, { receiver: TEST_OUTPUT_KEY, nativeAssetOnly: true })
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
         const serialized = unsignedTx.serialize()
