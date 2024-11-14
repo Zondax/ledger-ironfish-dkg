@@ -204,7 +204,16 @@ impl<'a> Transaction<'a> {
         #[cfg(feature = "ledger")]
         let expert_mode = crate::nvm::settings::Settings.app_expert_mode();
         #[cfg(not(feature = "ledger"))]
+        // useful for rust unit testing
+        // here we do not filter out
+        // new tokens, it is done in note
+        // so here we just set expert_mode
+        // to false to control the rendering
+        // of having only one outputs, to test that
+        // in rust
         let expert_mode = false;
+
+        let is_one_output = self.num_outputs() == 1;
 
         'note: for output in self.outputs.iter() {
             // Safe to unwrap because MerkleNote was also parsed in outputs from_bytes impl
@@ -218,13 +227,16 @@ impl<'a> Transaction<'a> {
             // Now process amount and fees
             let note_fields = note.review_fields(&token_list)?;
 
+            // Is this note a change output that goings back to us?
+            let is_change_note = note_fields
+                .iter()
+                .any(|(key, value)| key.contains("To") && value == &from);
+
             // Only render items that does not belong to us
             // except if expert mode is enable, in this case show everything
-            if note_fields
-                .iter()
-                .any(|(key, value)| key.contains("To") && value == &from)
-                && !expert_mode
-            {
+            // and if this is the only output even if it is a change
+            // we display that
+            if is_change_note && !expert_mode && !is_one_output {
                 continue 'note;
             }
 
