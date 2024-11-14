@@ -201,6 +201,10 @@ impl<'a> Transaction<'a> {
         fields.push((String::from("From"), from.clone()));
 
         let token_list = get_token_list()?;
+        #[cfg(feature = "ledger")]
+        let expert_mode = crate::nvm::settings::Settings.app_expert_mode();
+        #[cfg(not(feature = "ledger"))]
+        let expert_mode = false;
 
         'note: for output in self.outputs.iter() {
             // Safe to unwrap because MerkleNote was also parsed in outputs from_bytes impl
@@ -215,12 +219,16 @@ impl<'a> Transaction<'a> {
             let note_fields = note.review_fields(&token_list)?;
 
             // Only render items that does not belong to us
-            for (key, value) in note_fields.into_iter() {
-                if key.contains("To") && value == from {
-                    continue 'note;
-                }
-                fields.push((key, value));
+            // except if expert mode is enable, in this case show everything
+            if note_fields
+                .iter()
+                .any(|(key, value)| key.contains("To") && value == &from)
+                && !expert_mode
+            {
+                continue 'note;
             }
+
+            fields.extend(note_fields);
         }
 
         // Safe to unwrap, IRON is the oficial token
