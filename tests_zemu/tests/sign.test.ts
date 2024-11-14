@@ -107,7 +107,7 @@ describe.each(models)('review transaction', function (m) {
           viewKey: viewKey,
           proofKey: proofKey,
         }
-        console.log('senderAddr', senderKey.publicAddress)
+
         const unsignedTxRaw = buildTx(senderKey, { receiver: TEST_OUTPUT_KEY })
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
@@ -271,7 +271,7 @@ describe.each(models)('review transaction', function (m) {
           viewKey: viewKey,
           proofKey: proofKey,
         }
-        console.log('senderAddr', senderKey.publicAddress)
+
         // Use only native tokens
         const unsignedTxRaw = buildTx(senderKey, { receiver: TEST_OUTPUT_KEY, nativeAssetOnly: true })
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
@@ -286,6 +286,117 @@ describe.each(models)('review transaction', function (m) {
 
             await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
             await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-review-transaction_normal_mode`)
+
+            const result = await resultReq
+            expect(result.hash.length).toBeTruthy()
+            expect(result.hash.toString('hex')).toBe(unsignedTx.hash().toString('hex'))
+
+            return result
+          })
+        }
+      } finally {
+        for (let i = 0; i < globalSims.length; i++) await globalSims[i].close()
+      }
+    })
+  })
+
+  describe.each(restoreKeysTestCases)(`${m.name}-review_tx_normal_mode_shows_change_address`, ({ index, encrypted }) => {
+    test(index + '', async () => {
+      const participants = encrypted.length
+      const globalSims: Zemu[] = []
+
+      let identities: any[] = []
+      let commitments: any[] = []
+      let signatures: any[] = []
+
+      if (ONE_GLOBAL_APP) globalSims.push(new Zemu(m.path))
+      else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
+
+      for (let i = 0; i < globalSims.length; i++) {
+        let sim = globalSims[i]
+        await sim.start({
+          ...defaultOptions,
+          model: m.name,
+          startText: startTextFn(m.name),
+          approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
+          approveAction: ButtonKind.ApproveTapButton,
+        })
+      }
+
+      try {
+        for (let i = 0; i < participants; i++) {
+          await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            let result = app.dkgRestoreKeys(encrypted[i])
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove('.', `${m.prefix.toLowerCase()}-dkg-sign-${index}-restore-keys`)
+
+            await result
+          })
+        }
+
+        let viewKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.ViewKey)
+
+          return {
+            viewKey: result.viewKey.toString('hex'),
+            ivk: result.ivk.toString('hex'),
+            ovk: result.ovk.toString('hex'),
+          }
+        })
+
+        let proofKey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.ProofGenerationKey)
+
+          return { ak: result.ak.toString('hex'), nsk: result.nsk.toString('hex') }
+        })
+
+        let pubkey = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result: any = await app.dkgRetrieveKeys(IronfishKeys.PublicAddress)
+
+          return result.publicAddress.toString('hex')
+        })
+
+        let publicPackage = await runMethod(m, globalSims, 0, async (sim: Zemu, app: IronfishApp) => {
+          let result = await app.dkgGetPublicPackage()
+
+          return result.publicPackage.toString('hex')
+        })
+
+        for (let i = 0; i < participants; i++) {
+          const identity = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            return await app.dkgRetrieveKeys(IronfishKeys.DkgIdentity)
+          })
+
+          if (!identity.identity) throw new Error('no identity found')
+
+          identities.push(identity.identity.toString('hex'))
+        }
+
+        let senderKey: IronfishKeySet = {
+          publicAddress: pubkey,
+          viewKey: viewKey,
+          proofKey: proofKey,
+        }
+        // Use only native tokens
+        // and use sender address as the change, this must be displayed
+        // because it is the only output in the transaction
+        const unsignedTxRaw = buildTx(senderKey, { nativeAssetOnly: true })
+        const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
+
+        const serialized = unsignedTx.serialize()
+
+        for (let i = 0; i < participants; i++) {
+          await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
+            // Change the approve button type to hold, as we are signing a tx now.
+            sim.startOptions.approveAction = ButtonKind.ApproveHoldButton
+            const resultReq = app.reviewTransaction(serialized.toString('hex'))
+
+            await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+            await sim.compareSnapshotsAndApprove(
+              '.',
+              `${m.prefix.toLowerCase()}-dkg-sign-${index}-review-transaction_normal_mode_shows_change_address`,
+            )
 
             const result = await resultReq
             expect(result.hash.length).toBeTruthy()
