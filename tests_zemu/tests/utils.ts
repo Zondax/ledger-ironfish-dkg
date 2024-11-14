@@ -6,11 +6,26 @@ import Zemu, { ButtonKind, DEFAULT_START_OPTIONS, IDeviceModel, isTouchDevice } 
 import IronfishApp from '@zondax/ledger-ironfish'
 import { defaultOptions } from './common'
 
-export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any, nativeAssetOnly: boolean = false) => {
+export interface IronfishKeySet {
+  publicAddress: string
+  viewKey: {
+    viewKey: string
+    ivk: string
+    ovk: string
+  }
+  proofKey: {
+    ak: string
+    nsk: string
+  }
+}
+
+// publicAddress: string, viewKeys: any, proofKey: any
+export const buildTx = (sender: IronfishKeySet, receiver?: IronfishKeySet, nativeAssetOnly: boolean = false) => {
   const nativeAssetId = Asset.nativeId()
   // Create new custom asset
-  let new_asset = new Asset(publicAddress, 'Testcoin', 'A really cool coin')
+  let new_asset = new Asset(sender.publicAddress, 'Testcoin', 'A really cool coin')
   let customAssetId = new_asset.id()
+  const recipiendAddr = receiver?.publicAddress || sender.publicAddress
 
   let transaction = new Transaction(LATEST_TRANSACTION_VERSION)
 
@@ -21,15 +36,15 @@ export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any, nat
     const intended_fee = BigInt(1)
     const in_amount = out_amount + intended_fee // 41 = 40 + 1
 
-    let in_note = new Note(publicAddress, in_amount, Buffer.from(''), nativeAssetId, publicAddress)
-    let out_note = new Note(publicAddress, out_amount, Buffer.from(''), nativeAssetId, publicAddress)
+    let in_note = new Note(sender.publicAddress, in_amount, Buffer.from(''), nativeAssetId, sender.publicAddress)
+    let out_note = new Note(recipiendAddr, out_amount, Buffer.from(''), nativeAssetId, sender.publicAddress)
 
     let witness = devUtils.makeFakeWitness(new NoteSDK(in_note.serialize()))
 
     transaction.spend(in_note, witness)
     transaction.output(out_note)
 
-    return transaction.build(proofKey.nsk, viewKeys.viewKey, viewKeys.ovk, intended_fee, publicAddress)
+    return transaction.build(sender.proofKey.nsk, sender.viewKey.viewKey, sender.viewKey.ovk, intended_fee, sender.publicAddress)
   } else {
     // Case 2: Mixed assets(including minting a token)
     // inputs = 42, output = 40, mint = 5, fee = 1
@@ -38,9 +53,9 @@ export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any, nat
     const mint_amount = BigInt(5)
     const intended_fee = BigInt(1)
 
-    let in_note = new Note(publicAddress, in_amount, Buffer.from(''), nativeAssetId, publicAddress)
-    let out_note = new Note(publicAddress, out_amount, Buffer.from(''), nativeAssetId, publicAddress)
-    let mint_out_note = new Note(publicAddress, mint_amount, Buffer.from(''), customAssetId, publicAddress)
+    let in_note = new Note(sender.publicAddress, in_amount, Buffer.from(''), nativeAssetId, sender.publicAddress)
+    let out_note = new Note(recipiendAddr, out_amount, Buffer.from(''), nativeAssetId, sender.publicAddress)
+    let mint_out_note = new Note(sender.publicAddress, mint_amount, Buffer.from(''), customAssetId, sender.publicAddress)
 
     let witness = devUtils.makeFakeWitness(new NoteSDK(in_note.serialize()))
 
@@ -49,7 +64,7 @@ export const buildTx = (publicAddress: string, viewKeys: any, proofKey: any, nat
     transaction.mint(new_asset, mint_amount)
     transaction.output(mint_out_note)
 
-    return transaction.build(proofKey.nsk, viewKeys.viewKey, viewKeys.ovk, intended_fee, publicAddress)
+    return transaction.build(sender.proofKey.nsk, sender.viewKey.viewKey, sender.viewKey.ovk, intended_fee, sender.publicAddress)
   }
 }
 
