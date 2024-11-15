@@ -14,13 +14,12 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import Zemu, { ButtonKind, DEFAULT_START_OPTIONS, IDeviceModel, isTouchDevice } from '@zondax/zemu'
-import { defaultOptions, identities, models, restoreKeysTestCases } from './common'
+import Zemu, { ButtonKind, isTouchDevice } from '@zondax/zemu'
+import { defaultOptions, models } from './common'
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { isValidPublicAddress, multisig, UnsignedTransaction, verifyTransactions } from '@ironfish/rust-nodejs'
 import { Transaction } from '@ironfish/sdk'
-import { buildTx, minimizeRound3Inputs, runMethod, startTextFn } from './utils'
-import { TModel } from '@zondax/zemu/dist/types'
+import { buildTx, IronfishKeySet, minimizeRound3Inputs, runMethod, startTextFn } from './utils'
 import aggregateSignatureShares = multisig.aggregateSignatureShares
 
 jest.setTimeout(4500000)
@@ -56,14 +55,17 @@ describe.each(models)('DKG', function (m) {
       if (ONE_GLOBAL_APP) globalSims.push(new Zemu(m.path))
       else if (ONE_APP_PER_PARTICIPANT) for (let i = 0; i < participants; i++) globalSims.push(new Zemu(m.path))
 
-      for (let i = 0; i < globalSims.length; i++)
-        await globalSims[i].start({
+      for (let i = 0; i < globalSims.length; i++) {
+        let sim = globalSims[i]
+        await sim.start({
           ...defaultOptions,
           model: m.name,
           startText: startTextFn(m.name),
           approveKeyword: isTouchDevice(m.name) ? 'Approve' : '',
           approveAction: ButtonKind.ApproveTapButton,
         })
+        await sim.toggleExpertMode()
+      }
 
       let identities: any[] = []
       let round1s: any[] = []
@@ -184,8 +186,6 @@ describe.each(models)('DKG', function (m) {
           publicPackages.push(result.publicPackage.toString('hex'))
         }
 
-        console.log('publicPackages ' + JSON.stringify(publicPackages, null, 2))
-
         for (let i = 0; i < participants; i++) {
           try {
             const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
@@ -214,8 +214,6 @@ describe.each(models)('DKG', function (m) {
           }
         }
 
-        console.log('encryptedKeys ' + JSON.stringify(encryptedKeys, null, 2))
-
         // Generate keys from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
           const result = await runMethod(m, globalSims, i, async (_sim: Zemu, app: IronfishApp) => {
@@ -231,8 +229,6 @@ describe.each(models)('DKG', function (m) {
           expect(isValidPublicAddress(result.publicAddress.toString('hex')))
           pks.push(result.publicAddress.toString('hex'))
         }
-
-        console.log('publicAddresses ' + JSON.stringify(pks, null, 2))
 
         // Check that the public address generated on each participant for the multisig account is the same
         const pksMap = pks.reduce((acc: { [key: string]: boolean }, pk) => {
@@ -263,8 +259,6 @@ describe.each(models)('DKG', function (m) {
           })
         }
 
-        console.log('viewKeys ' + JSON.stringify(viewKeys, null, 2))
-
         // Generate view keys from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
           const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
@@ -284,8 +278,6 @@ describe.each(models)('DKG', function (m) {
           })
         }
 
-        console.log('proofKeys ' + JSON.stringify(proofKeys, null, 2))
-
         // get identity from the multisig DKG process just finalized
         for (let i = 0; i < participants; i++) {
           const result = await runMethod(m, globalSims, i, async (sim: Zemu, app: IronfishApp) => {
@@ -303,7 +295,12 @@ describe.each(models)('DKG', function (m) {
 
         // Craft new tx, to get the tx hash and the public randomness
         // Pass those values to the following commands
-        const unsignedTxRaw = buildTx(pks[0], viewKeys[0], proofKeys[0])
+        let senderKey: IronfishKeySet = {
+          publicAddress: pks[0],
+          viewKey: viewKeys[0],
+          proofKey: proofKeys[0],
+        }
+        const unsignedTxRaw = buildTx(senderKey)
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
         const serialized = unsignedTx.serialize()
 

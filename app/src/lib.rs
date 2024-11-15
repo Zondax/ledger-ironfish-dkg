@@ -28,6 +28,8 @@ pub mod parser;
 pub mod status;
 #[cfg(test)]
 mod test_ui;
+pub mod token;
+pub mod token_info;
 pub mod utils;
 
 // Public re-exports

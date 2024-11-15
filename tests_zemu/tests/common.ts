@@ -4,8 +4,8 @@ import { resolve } from 'path'
 
 export const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
-const APP_PATH_S = resolve('../app/target/nanos/release/ironfish-dkg')
-const APP_PATH_X = resolve('../app/target/nanox/release/ironfish-dkg')
+// const APP_PATH_S = resolve('../app/target/nanos/release/ironfish-dkg')
+// const APP_PATH_X = resolve('../app/target/nanox/release/ironfish-dkg')
 const APP_PATH_SP = resolve('../app/target/nanosplus/release/ironfish-dkg')
 const APP_PATH_ST = resolve('../app/target/stax/release/ironfish-dkg')
 const APP_PATH_FL = resolve('../app/target/flex/release/ironfish-dkg')

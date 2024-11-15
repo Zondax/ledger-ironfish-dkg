@@ -1,20 +1,18 @@
 ---
 source: src/parser/transaction.rs
-assertion_line: 355
 expression: reduced
 input_file: src/parser/testvectors/transaction_simple.json
 ---
 [
     "Tx Version": "V1",
-    "Owner 1": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
-    "Amount 1": "40",
-    "AssetID 1": "51f33a2f14f92735e562dc658a5639279ddca3d5079a6d1242b2a588a9cbf44c",
-    "Owner 2": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
-    "Amount 2": "5",
-    "AssetID 2": "da40fc530a12327a1c1c367b8bd66ada35100501228cdb355b8fb6c40d048a64",
-    "Owner 3": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
-    "Amount 3": "1",
-    "AssetID 3": "51f33a2f14f92735e562dc658a5639279ddca3d5079a6d1242b2a588a9cbf44c",
-    "Fee": "1",
+    "From": "b26388e8e7c12c80c7f20a8310137d4eb6b4bf3674e8a702b26ff4955f3d58c0",
+    "To": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
+    "Amount": "0.0000004 IRON",
+    "To": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
+    "Raw Amount ": "5",
+    "AssetId ": "da40fc530a12327a1c1c367b8bd66ada35100501228cdb355b8fb6c40d048a64",
+    "To": "40fae059d8ee3361b7a08429867254523f937c7654ae6fe7b188c1f0da57e9cd",
+    "Amount": "0.00000001 IRON",
+    "Fee": "0.00000001 IRON",
     "Expiration": "0",
 ]
