@@ -149,13 +149,14 @@ impl Note {
     pub fn review_fields(
         &self,
         token_list: &TokenList,
-        fields: &mut Vec<(String, String)>,
-    ) -> Result<(), ParserError> {
+    ) -> Result<Vec<(String, String)>, ParserError> {
         use lexical_core::FormattedSize;
+
+        let mut fields = Vec::new();
 
         zlog_stack("Note::review_fields\n");
         // Format To:
-        let to = String::from("To ");
+        let to = String::from("To");
         let address = hex::encode(self.owner.public_address());
         fields.push((to, address));
 
@@ -199,6 +200,6 @@ impl Note {
             fields.push((label, asset_id));
         }
 
-        Ok(())
+        Ok(fields)
     }
 }

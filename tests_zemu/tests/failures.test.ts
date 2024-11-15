@@ -1,6 +1,6 @@
 import { defaultOptions, identities, models, restoreKeysTestCases } from './common'
 import Zemu, { ButtonKind, isTouchDevice } from '@zondax/zemu'
-import { buildTx, runMethod, startTextFn } from './utils'
+import { buildTx, IronfishKeySet, runMethod, startTextFn } from './utils'
 import IronfishApp, { IronfishKeys } from '@zondax/ledger-ironfish'
 import { UnsignedTransaction } from '@ironfish/rust-nodejs'
 
@@ -86,7 +86,12 @@ describe.each(models)('wrong actions', function (m) {
           identities.push(identity.identity.toString('hex'))
         }
 
-        const unsignedTxRaw = buildTx(pubkey, viewKey, proofKey)
+        let senderKey: IronfishKeySet = {
+          publicAddress: pubkey,
+          viewKey: viewKey,
+          proofKey: proofKey,
+        }
+        const unsignedTxRaw = buildTx(senderKey)
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
         const serialized = unsignedTx.serialize()
@@ -207,7 +212,12 @@ describe.each(models)('wrong actions', function (m) {
           identities.push(identity.identity.toString('hex'))
         }
 
-        const unsignedTxRaw = buildTx(pubkey, viewKey, proofKey)
+        let senderKey: IronfishKeySet = {
+          publicAddress: pubkey,
+          viewKey: viewKey,
+          proofKey: proofKey,
+        }
+        const unsignedTxRaw = buildTx(senderKey)
         const unsignedTx = new UnsignedTransaction(unsignedTxRaw)
 
         const serialized = unsignedTx.serialize()
