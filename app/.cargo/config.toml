@@ -1,6 +1,6 @@
 [env]
 HEAP_SIZE = "16384"
-APPVERSION = "0.6.0"
+APPVERSION = "1.0.0"
 
 [unstable]
 build-std = ["core", "alloc"]
