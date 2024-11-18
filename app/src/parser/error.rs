@@ -24,6 +24,7 @@ pub enum ParserError {
     BufferFull,
     InvalidTokenList,
     UnknownToken,
+    ErrExpertModeMustBeEnabled,
 
     UnexpectedError,
 }
