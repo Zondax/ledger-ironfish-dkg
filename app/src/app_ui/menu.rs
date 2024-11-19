@@ -59,7 +59,7 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
             false => "Disabled",
         };
 
-        app_version = String::from("x");
+        // app_version = String::from("x");
         let pages = [
             &Page::from((_first_page_label, &APP_ICON)),
             &Page::from((["Expert Mode", expert_mode_label], true, true)),

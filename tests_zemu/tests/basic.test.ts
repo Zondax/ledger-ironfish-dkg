@@ -36,7 +36,7 @@ describe('Basic', function () {
   })
 
   // TODO fix ST and FL main menu
-  test.skip.each(models)('main menu', async function (m) {
+  test.each(models.filter(v => v.name === 'nanosp'))('main menu', async function (m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name, startText: startTextFn(m.name) })
@@ -58,7 +58,7 @@ describe('Basic', function () {
 
       expect(resp.testMode).toBe(false)
       expect(resp.major).toBe(1)
-      expect(resp.minor).toBe(0)
+      expect(resp.minor).toBe(1)
       expect(resp.patch).toBe(0)
     } finally {
       await sim.close()

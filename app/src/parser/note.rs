@@ -182,7 +182,7 @@ impl Note {
 
             #[cfg(feature = "ledger")]
             if !Settings.app_expert_mode() {
-                return Err(ParserError::UnknownToken);
+                return Err(ParserError::ErrExpertModeMustBeEnabled);
             }
 
             let amount_label = String::from("Raw Amount ");
