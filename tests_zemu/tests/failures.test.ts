@@ -234,13 +234,14 @@ describe.each(models)('wrong actions', function (m) {
               } catch (error) {
                 // Convert unknown error to string for comparison
                 const errorStr = String(error)
-                if (errorStr.includes('Unknown Return Code: 0xB010') || errorStr.includes('Timeout waiting for screen')) {
+                console.log('ErrorStr ', errorStr)
+                if (errorStr.includes('Unknown Return Code: 0xB027') || errorStr.includes('Timeout waiting for screen')) {
                   throw new Error(errorStr)
                 }
                 throw error
               }
             }),
-          ).rejects.toThrow(/Unknown Return Code: 0xB010|Timeout waiting for screen/)
+          ).rejects.toThrow(/Error: Unknown Return Code: 0xB027|Timeout waiting for screen/)
         }
       } finally {
         for (let i = 0; i < globalSims.length; i++) await globalSims[i].close()

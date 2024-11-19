@@ -41,9 +41,7 @@ pub fn ui_review_transaction<'a>(
 
     #[cfg(not(any(target_os = "stax", target_os = "flex")))]
     {
-        let field_pairs = transaction
-            .review_fields(ovk)
-            .map_err(|_| AppSW::BufferOutOfBounds)?;
+        let field_pairs = transaction.review_fields(ovk)?;
 
         // Create a vector to hold the Field structs
         let fields: Vec<Field> = field_pairs
@@ -77,9 +75,7 @@ pub fn ui_review_transaction<'a>(
         #[cfg(target_os = "flex")]
         const FERRIS: NbglGlyph = NbglGlyph::from_include(include_gif!("flex_icon.gif", NBGL));
 
-        let field_pairs = transaction
-            .review_fields(ovk)
-            .map_err(|_| AppSW::BufferOutOfBounds)?;
+        let field_pairs = transaction.review_fields(ovk)?;
 
         // Create a vector to hold the Field structs
         let fields: Vec<Field> = field_pairs

@@ -13,11 +13,9 @@ pub enum AppSW {
     WrongP1P2 = 0x6A86,
     InsNotSupported = 0x6D00,
     ClaNotSupported = 0x6E00,
-    TxDisplayFail = 0xB001,
     AddrDisplayFail = 0xB002,
     TxWrongLength = 0xB004,
     TxParsingFail = 0xB005,
-    TxHashFail = 0xB006,
     TxSignFail = 0xB008,
     KeyDeriveFail = 0xB009,
     VersionParsingFail = 0xB00A,
@@ -43,6 +41,7 @@ pub enum AppSW {
     TooManyParticipants = 0xB024,
     InvalidTxHash = 0xB025,
     InvalidToken = 0xB026,
+    ErrExpertModeMustBeEnabled = 0xB027,
     #[cfg(feature = "ledger")]
     WrongApduLength = StatusWords::BadLen as u16,
     Ok = 0x9000,
@@ -61,6 +60,7 @@ impl From<IronfishError> for AppSW {
             IronfishError::RoundTwoSigningFailure => AppSW::DkgRound2Fail,
             IronfishError::InvalidSigningKey => AppSW::KeyDeriveFail,
             IronfishError::InvalidSecret => AppSW::InvalidGroupSecretKey,
+            IronfishError::ErrExpertModeMustBeEnabled => AppSW::ErrExpertModeMustBeEnabled,
             // For errors that don't have a direct mapping, use a generic error
             _ => AppSW::Deny,
         }
@@ -89,6 +89,7 @@ impl From<ParserError> for AppSW {
             ParserError::BufferFull => AppSW::BufferOutOfBounds,
             ParserError::InvalidTokenList => AppSW::InvalidPublicPackage,
             ParserError::UnknownToken => AppSW::InvalidToken,
+            ParserError::ErrExpertModeMustBeEnabled => AppSW::ErrExpertModeMustBeEnabled,
         }
     }
 }
@@ -133,6 +134,7 @@ impl From<ParserError> for IronfishError {
             ParserError::InvalidTokenList => IronfishError::InvalidAssetIdentifier,
             ParserError::UnexpectedError => IronfishError::InvalidData,
             ParserError::UnknownToken => IronfishError::InvalidData,
+            ParserError::ErrExpertModeMustBeEnabled => IronfishError::ErrExpertModeMustBeEnabled,
         }
     }
 }
