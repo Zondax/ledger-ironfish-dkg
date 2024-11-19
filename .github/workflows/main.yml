@@ -47,7 +47,7 @@ jobs:
         run: make zemu_test
       - name: Upload Snapshots (only failure)
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: snapshots-tmp
           path: tests_zemu/snapshots-tmp/
@@ -109,7 +109,7 @@ jobs:
           prerelease: false
       - name: Upload script (only if not published)
         if: ${{ github.ref != 'refs/heads/master' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: installer_nanos_plus.sh
           path: ./app/pkg/installer_nanos_plus.sh
@@ -171,7 +171,7 @@ jobs:
           prerelease: false
       - name: Upload script (only if not published)
         if: ${{ github.ref != 'refs/heads/master' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: installer_stax.sh
           path: ./app/pkg/installer_stax.sh
@@ -233,7 +233,7 @@ jobs:
           prerelease: false
       - name: Upload script (only if not published)
         if: ${{ github.ref != 'refs/heads/master' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: installer_flex.sh
           path: ./app/pkg/installer_flex.sh
