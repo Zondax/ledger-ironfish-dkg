@@ -76,9 +76,9 @@ pub fn compute_key() -> EncryptionKeyGuard {
     let path_0: Vec<u32> = vec![
         (0x80000000 | 0x2c),
         (0x80000000 | 0x53a),
-        (0x80000000), // (0x80000000 | 0x0)
-        (0x80000000), // (0x80000000 | 0x0)
-        (0x80000000), // (0x80000000 | 0x0)
+        (0x80000000),
+        (0x80000000),
+        (0x80000000),
     ];
 
     let mut secret_key_0 = Secret::<ED25519_KEY_LEN>::new();
