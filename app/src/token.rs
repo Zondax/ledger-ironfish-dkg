@@ -22,11 +22,9 @@ pub struct TokenInfo<'a> {
 }
 
 pub fn get_token_list() -> Result<TokenList<'static>, ParserError> {
-    let t = serde_json_core::from_str::<TokenList>(TOKEN_LIST)
+    serde_json_core::from_str::<TokenList>(TOKEN_LIST)
         .map(|(t, _)| t)
-        .unwrap();
-    // .map_err(|_| ParserError::InvalidTokenList)?;
-    Ok(t)
+        .map_err(|_| ParserError::InvalidTokenList)
 }
 
 impl<'a> TokenList<'a> {
