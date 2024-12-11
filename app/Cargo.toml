@@ -1,6 +1,6 @@
 [package]
 name = "ironfish-dkg"
-version = "0.0.0"     # The version is being taken from Makefile.version file
+version = "1.1.3" # This version is used by ledger to set the app version on deployment. The version displayed inside the main menu is set on app/.cargo/config.toml
 edition = "2021"
 
 [[bin]]
